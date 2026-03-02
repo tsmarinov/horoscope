@@ -1,0 +1,70 @@
+services:
+
+  horo_redis:
+    image: redis:alpine
+    container_name: horo_redis
+    restart: unless-stopped
+    ports:
+      - "6382:6379"
+    networks:
+      - shared-network
+
+  horo_php:
+    image: php:8.2-fpm
+    container_name: horo_php
+    restart: unless-stopped
+    depends_on:
+      - horo_redis
+      - horo_mysql
+    environment:
+      - APP_ENV=local
+    build:
+      context: ./php
+    volumes:
+      - ./src:/var/www/html
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shared-network
+
+  horo_nginx:
+    image: nginx:latest
+    container_name: horo_nginx
+    restart: unless-stopped
+    ports:
+      - "8085:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./src:/var/www/html
+    depends_on:
+      - horo_php
+    networks:
+      - shared-network
+
+  horo_mysql:
+    image: mysql:8.3
+    container_name: horo_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: horo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: horo
+      MYSQL_PASSWORD: horo
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "33063:3306"
+    networks:
+      - shared-network
+
+# !!! IMPORTANT !!! : if error during build about 'Error response from daemon: network docker-common-network not found'
+# use:  docker network create docker-common-network
+
+networks:
+  shared-network:
+    external: true
+    name: docker-common-network
+
+volumes:
+  dbdata:
+    driver: local
