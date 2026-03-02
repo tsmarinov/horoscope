@@ -6,8 +6,6 @@ services:
     restart: unless-stopped
     ports:
       - "6382:6379"
-    networks:
-      - shared-network
 
   horo_php:
     image: php:8.2-fpm
@@ -24,8 +22,6 @@ services:
       - ./src:/var/www/html
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    networks:
-      - shared-network
 
   horo_nginx:
     image: nginx:latest
@@ -38,8 +34,6 @@ services:
       - ./src:/var/www/html
     depends_on:
       - horo_php
-    networks:
-      - shared-network
 
   horo_mysql:
     image: mysql:8.3
@@ -54,16 +48,6 @@ services:
       - dbdata:/var/lib/mysql
     ports:
       - "33063:3306"
-    networks:
-      - shared-network
-
-# !!! IMPORTANT !!! : if error during build about 'Error response from daemon: network docker-common-network not found'
-# use:  docker network create docker-common-network
-
-networks:
-  shared-network:
-    external: true
-    name: docker-common-network
 
 volumes:
   dbdata:
