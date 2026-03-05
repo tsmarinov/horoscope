@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"docker exec horo_php php artisan horoscope:generate-texts --key=sun_trine_moon --dry-run 2>&1\",\"description\":\"Dry run sun_trine_moon\"}",
+  "error": "Exit code 1\nSection: natal | Keys: 1 | Variants: 3 | Model: claude-haiku-4-5-20251001\n[DRY RUN] — nothing will be saved\n[1/1] sun_trine_moon\n  PROMPT:\nWrite 3 variants for natal aspect: Sun trine Moon\n\nTone: positive (flowing, supportive energy)\n\nReturn only a JSON array, no extra text:\n[\n  {\"variant\": 1, \"tone\": \"positive|negative|neutral\", \"text\": \"...\"},\n  {\"variant\": 2, \"tone\": \"positive|negative|neutral\", \"text\": \"...\"},\n  {\"variant\": 3, \"tone\": \"positive|negative|neutral\", \"text\": \"...\"}\n]...",
+  "timestamp": "2026-03-04T20:23:24.276Z",
+  "retry_count": 1
+}
