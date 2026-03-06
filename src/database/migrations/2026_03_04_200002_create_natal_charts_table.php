@@ -11,12 +11,12 @@ return new class extends Migration
         Schema::create('natal_charts', function (Blueprint $table) {
             $table->id();
 
-            // Polymorphic subject: User, GuestSession, DemoProfile
-            $table->morphs('subject');
+            $table->unsignedBigInteger('profile_id');
+            $table->foreign('profile_id')->references('id')->on('profiles')->cascadeOnDelete();
 
             $table->unsignedTinyInteger('chart_tier'); // 1, 2, or 3
 
-            // Calculated planetary positions — array of {body, longitude, speed, is_retrograde}
+            // Calculated planetary positions — array of {body, sign, degree, house, is_retrograde}
             $table->json('planets');
 
             // Calculated aspects — array of {body_a, body_b, aspect, orb, applying}
@@ -30,8 +30,9 @@ return new class extends Migration
             $table->decimal('mc', 9, 6)->nullable();
 
             // No updated_at — chart is replaced on birth data change, never updated in place
-            // morphs() already creates an index on (subject_type, subject_id)
             $table->timestamp('calculated_at')->useCurrent();
+
+            $table->index('profile_id');
         });
     }
 

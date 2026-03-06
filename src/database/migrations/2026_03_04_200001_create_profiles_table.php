@@ -8,51 +8,35 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('user_profiles', function (Blueprint $table) {
+        Schema::create('profiles', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->unique();
+
+            // Exactly one of user_id / guest_id is set, or neither (is_demo = true)
+            $table->unsignedBigInteger('user_id')->nullable()->unique();
+            $table->unsignedBigInteger('guest_id')->nullable()->unique();
+            $table->boolean('is_demo')->default(false);
+
+            // Required for demo profiles; optional for registered users (display name)
+            $table->string('name')->nullable();
+
+            // URL slug — demo profiles only
+            $table->string('slug')->nullable()->unique();
+
             $table->date('birth_date')->nullable();
             $table->time('birth_time')->nullable();
             $table->boolean('birth_time_approximate')->default(false);
             $table->unsignedBigInteger('birth_city_id')->nullable();
+
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreign('birth_city_id')->references('id')->on('cities')->nullOnDelete();
-        });
-
-        Schema::create('guest_profiles', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('guest_session_id')->unique();
-            $table->string('name')->nullable();
-            $table->date('birth_date')->nullable();
-            $table->time('birth_time')->nullable();
-            $table->boolean('birth_time_approximate')->default(false);
-            $table->unsignedBigInteger('birth_city_id')->nullable();
-            $table->timestamps();
-
-            $table->foreign('guest_session_id')->references('id')->on('guest_sessions')->cascadeOnDelete();
-            $table->foreign('birth_city_id')->references('id')->on('cities')->nullOnDelete();
-        });
-
-        Schema::create('demo_profiles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('slug')->unique();
-            $table->date('birth_date');
-            $table->time('birth_time')->nullable();
-            $table->boolean('birth_time_approximate')->default(false);
-            $table->unsignedBigInteger('birth_city_id')->nullable();
-            $table->timestamps();
-
+            $table->foreign('guest_id')->references('id')->on('guests')->cascadeOnDelete();
             $table->foreign('birth_city_id')->references('id')->on('cities')->nullOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('demo_profiles');
-        Schema::dropIfExists('guest_profiles');
-        Schema::dropIfExists('user_profiles');
+        Schema::dropIfExists('profiles');
     }
 };

@@ -14,11 +14,10 @@ class NatalTexts extends Command
                             {--from-key= : Start from a specific block key (resume)}
                             {--key= : Generate only this specific block key}
                             {--dry-run : Show prompt and response without saving}
+                            {--short : Generate 1-sentence simplified variants (natal_short section)}
                             {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
 
     protected $description = 'Generate natal aspect text blocks (planet_aspect_planet)';
-
-    private const SECTION = 'natal';
 
     private array $aspectLabels = [
         'conjunction'  => 'conjunction',
@@ -32,7 +31,9 @@ class NatalTexts extends Command
 
     public function handle(): int
     {
-        $variants = (int) $this->option('variants');
+        $short    = $this->option('short');
+        $section  = $short ? 'natal_short' : 'natal';
+        $variants = $short ? 1 : (int) $this->option('variants');
         $dryRun   = $this->option('dry-run');
         $model    = $this->option('model');
         $onlyKey  = $this->option('key');
@@ -57,9 +58,12 @@ class NatalTexts extends Command
             });
         }
 
-        $keys  = array_values($keys);
-        $total = count($keys);
-        $this->info("Natal aspects | Keys: {$total} | Variants: {$variants} | Model: {$model}");
+        $keys      = array_values($keys);
+        $total     = count($keys);
+        $totalCost = 0.0;
+        $prIn      = 0.80 / 1_000_000;
+        $prOut     = 4.00 / 1_000_000;
+        $this->info("Natal aspects | Section: {$section} | Keys: {$total} | Variants: {$variants} | Model: {$model}");
 
         if ($dryRun) {
             $this->warn('[DRY RUN] — nothing will be saved');
@@ -71,7 +75,7 @@ class NatalTexts extends Command
 
             if (! $dryRun && ! $onlyKey) {
                 $existing = TextBlock::where('key', $key)
-                    ->where('section', self::SECTION)
+                    ->where('section', $section)
                     ->where('language', 'en')
                     ->count();
 
@@ -92,7 +96,7 @@ class NatalTexts extends Command
                     maxTokens: 1024,
                     messages: [['role' => 'user', 'content' => $prompt]],
                     model: $model,
-                    system: $this->systemPrompt(),
+                    system: $this->systemPrompt($short),
                 );
 
                 $raw  = $response->content[0]->text ?? '';
@@ -111,50 +115,75 @@ class NatalTexts extends Command
                     continue;
                 }
 
+                $in  = $response->usage->inputTokens  ?? 0;
+                $out = $response->usage->outputTokens ?? 0;
+                $perBlock = $variants > 0 ? [
+                    'tokens_in'  => (int) round($in  / $variants),
+                    'tokens_out' => (int) round($out / $variants),
+                    'cost_usd'   => round(($in * $prIn + $out * $prOut) / $variants, 8),
+                ] : [];
+
                 foreach ($blocks as $block) {
                     TextBlock::updateOrCreate(
                         [
                             'key'      => $key,
-                            'section'  => self::SECTION,
+                            'section'  => $section,
                             'language' => 'en',
                             'variant'  => $block['variant'],
                         ],
-                        [
+                        array_merge([
                             'text' => $block['text'],
                             'tone' => $block['tone'] ?? 'neutral',
-                        ]
+                        ], $perBlock)
                     );
                 }
-
-                $this->line("  → saved {$variants} variants");
+                $cost = $in * $prIn + $out * $prOut;
+                $totalCost += $cost;
+                $this->line(sprintf('  → saved %d variants | $%.4f | total $%.4f', $variants, $cost, $totalCost));
 
             } catch (\Exception $e) {
                 $this->error("  ERROR: " . $e->getMessage());
             }
         }
 
-        $this->info('Done.');
+        $this->info(sprintf('Done. Total cost: $%.4f', $totalCost));
         return self::SUCCESS;
     }
 
-    private function systemPrompt(): string
+    private function systemPrompt(bool $short = false): string
     {
-        return <<<PROMPT
-You are an experienced astrologer writing natal chart interpretations for a horoscope application.
+        if ($short) {
+            return <<<PROMPT
+You are writing one-sentence natal chart aspect summaries for a horoscope application.
 
 Style rules:
-- Write organic narrative paragraphs — not bullet lists, not catalogs of facts
+- Exactly 1 sentence per text — no more
+- Write impersonally — no "you", no "your", no direct address
+- Describe the key behavioural trait as a fact: "Natural harmony between willpower and emotion." or "Difficulty committing to decisions without second-guessing."
+- Plain everyday words only — no abstract concepts, no spiritual or psychological jargon
+- Be specific about the domain: use "emotional", "psychological", "practical", "social" — never vague words like "wounds", "healing", "struggles", "energy", "forces"
+- No metaphors, no poetic language
+- Write like an SMS — maximum 20 words. Cut every unnecessary word.
+- NEVER mention planet names, sign names, or aspect names in the text — they are already shown in the label above.
+- Use HTML formatting: <strong> for the key trait; <em> for planet and sign names
+PROMPT;
+        }
+
+        return <<<PROMPT
+You are writing natal chart aspect descriptions for a horoscope application.
+
+Style rules:
+- Write like a psychologist giving honest feedback — not an astrologer
 - Address the person as "you" (gender-neutral, no he/she)
 - Each text is 3–5 sentences
-- Each variant takes a different angle on the same aspect (different imagery, different life area emphasis)
-- Conversational but meaningful — as if spoken during a real consultation
-- Use plain, simple language — avoid literary or academic phrasing; many readers are non-native English speakers
-- Vary sentence length: mix short punchy sentences with longer ones for rhythm
+- Short, simple sentences — one idea per sentence, no dashes, no semicolons. Plain everyday words only — no abstract concepts, no spiritual or psychological jargon.
+- Be specific about the domain: use "emotional", "psychological", "practical", "social" — never vague words like "wounds", "healing", "struggles", "energy", "forces"
+- Describe what the person actually does in real situations. Concrete behaviour only.
+- Each variant takes a different angle on the same aspect (different behaviour, different life area)
 - Do NOT start with "This aspect...", "With [aspect]...", or "[Planet] [aspect] [Planet] means..."
-- Write directly about the person's experience, not about the symbols
-- Use HTML formatting generously: <strong> for key qualities, themes, and memorable phrases; <em> for planet and sign names
-- Aim for at least one <strong> or <em> per sentence — formatting should be dense, not sparse
-- Example: "<em>Sun</em> conjunct <em>Moon</em> gives you a rare <strong>internal coherence</strong>. What you feel and who you are align naturally — your instincts and your will <strong>speak the same language</strong>. People sense this: there is no gap between your words and your heart."
+- Forbidden words: journey, path, lifetime, depth, soul, essence, force, pull, tension, dance, dissolves
+- No metaphors. No poetic language.
+- Use HTML formatting: <strong> for key behavioural traits; <em> for planet and sign names
 PROMPT;
     }
 
@@ -167,6 +196,11 @@ PROMPT;
         $aspectLabel = $this->aspectLabels[$aspect] ?? $aspect;
         $toneHint    = $this->toneHint($aspect);
 
+        $template = implode(",\n", array_map(
+            fn($i) => "  {\"variant\": {$i}, \"tone\": \"positive|negative|neutral\", \"text\": \"...\"}",
+            range(1, $variants)
+        ));
+
         return <<<PROMPT
 Write {$variants} variants for natal aspect: {$nameA} {$aspectLabel} {$nameB}
 
@@ -174,9 +208,7 @@ Write {$variants} variants for natal aspect: {$nameA} {$aspectLabel} {$nameB}
 
 Return only a JSON array, no extra text:
 [
-  {"variant": 1, "tone": "positive|negative|neutral", "text": "..."},
-  {"variant": 2, "tone": "positive|negative|neutral", "text": "..."},
-  {"variant": 3, "tone": "positive|negative|neutral", "text": "..."}
+{$template}
 ]
 PROMPT;
     }

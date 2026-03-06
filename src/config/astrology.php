@@ -18,6 +18,12 @@ return [
     // Orb for directions and progressions (overrides everything, no mutual reception)
     'progression_orb' => 1.0,
 
+    // AI provider configuration
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'claude'),
+        'model'    => env('AI_MODEL', 'claude-sonnet-4-6'),
+    ],
+
     // Modern rulerships: sign index (0=Aries…11=Pisces) => ruling planet body constant
     // Used for mutual reception detection (natal chart + transits only)
     'rulerships' => [

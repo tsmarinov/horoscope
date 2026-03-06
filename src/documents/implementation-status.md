@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 ---
 
@@ -31,6 +31,42 @@ Last updated: 2026-03-04
 ### Contracts & Support
 - `HoroscopeSubject` interface — getBirthDate/Time/City, getChartTier, isGuest/isFull/isPremium/isDemo
 - `GuestSubject` — чист PHP обект за unit тестове (fromSession() премахнат)
+
+### ReportBuilder + AI Adapter ✅
+- `app/Enums/ReportMode.php` — `Organic | Simplified | AiL1 | AiL1Haiku`
+- `app/Contracts/AiProvider.php` — `generate(prompt, system, maxTokens): string`
+- `app/Services/Ai/ClaudeProvider.php` — Anthropic SDK (`anthropic-ai/sdk`)
+- `app/Services/ReportBuilder.php` — assembles natal reports per mode
+- `app/Facades/ReportBuilder.php`
+- `app/DataTransfer/NatalReport.php` + `NatalReportSection.php` — readonly DTOs
+- `app/Models/NatalReport.php`, `NatalReportSection.php`, `AiText.php`
+- Migration `2026_03_05_100000` — tables: `natal_reports`, `natal_report_sections`, `ai_texts`
+- Migration `2026_03_06_200000` — cost columns moved: `ai_texts` + `text_blocks` get `tokens_in/out, cost_usd`; removed from `natal_reports`
+- Config: `config/astrology.php` → `ai.provider` + `ai.model`; `.env` → `AI_PROVIDER`, `AI_MODEL`
+
+**Report modes:**
+| Mode | Text source | AI calls | Cost | Caching |
+|------|-------------|----------|------|---------|
+| Organic | TextBlock (3-5 sentences, rotated variants) | none | free | yes (non-guests) |
+| Simplified | TextBlock short variant (1 sentence, SMS style) | none | free | yes (non-guests) |
+| AI L1 | TextBlock standard + AI portrait intro (5 paragraphs) | ~1 call | ~$0.004 | yes (non-guests) |
+| AI L1 Haiku | TextBlock short + AI compact portrait (1 paragraph, 5 sentences) | ~1 call | ~$0.001 | yes (non-guests) |
+
+**AI L1 portrait:** 5 paragraphs (P1-4: 4-5 sentences, P5: 6-8 synthesis) — psychologist style, "you/your", no planet names, no jargon. Model: `claude-haiku-4-5-20251001`.
+
+**AI L1 Haiku portrait:** 1 paragraph of 5 short sentences (max 12 words each) — compact, "you/your", no planet names. Uses simplified short text blocks. Future UI: separate "Haiku Horoscopes" page, not a toggle.
+
+**Simplified / short text rules:**
+- Sections: `natal_short`, `natal_positions_short`, `natal_ascendant_short`
+- Always variant=1 — one definitive text per key
+- Style: impersonal, SMS-style, max 20 words, no planet/sign names in text (label already shows them), domain-specific (emotional/psychological not generic)
+- Generated with `--short` flag on both generation commands
+
+**Guest policy:** Guests always get Organic mode, result is never persisted.
+
+**Cache invalidation:** `natal_reports` has `natal_chart_id FK → cascade delete` — when the natal chart is recalculated, all cached reports for that subject are automatically dropped.
+
+**Cost tracking:** Per-text cost stored on `ai_texts.cost_usd` (AI-generated) and `text_blocks.cost_usd` (pre-generated). `natal_reports` has no cost columns.
 
 ### AspectCalculator ✅ одобрено от консултант
 - Фасада `App\Facades\AspectCalculator`
@@ -75,8 +111,8 @@ Last updated: 2026-03-04
 - [ ] Houses / ASC / MC изчисление (Tier 2/3) — засега null в NatalChart
 - [ ] Транзити — аспекти между транзитни и натални позиции
 - [ ] Дирекции и прогресии (progression_orb=1°, без mutual_reception)
-- [ ] `ReportBuilder` — избира текстови блокове по активни аспекти
-- [ ] `VariantPicker` — user_id + date → детерминистичен seed → вариант
+- [x] `ReportBuilder` — избира текстови блокове по активни аспекти, поддържа Organic / Simplified / AI L1 / AI L2
+- [x] `VariantPicker` — user_id + date → детерминистичен seed → вариант
 
 ### Етап 3 — Auth
 - [ ] Регистрация (email + password)
@@ -87,7 +123,7 @@ Last updated: 2026-03-04
 - [ ] Social login — Socialite (нисък приоритет)
 
 ### Етап 4 — Текстова база
-- [ ] `text_blocks` миграция — key, language, variant, text
+- [x] `text_blocks` миграция — key, language, variant, text + `is_simplified` column
 - [ ] `horoscope:generate-texts` command (Anthropic API batch)
 - [ ] `horoscope:import-texts` command
 - [ ] `horoscope:review-texts` command

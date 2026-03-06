@@ -6,7 +6,6 @@ use App\Contracts\HoroscopeSubject;
 use App\Models\NatalChart;
 use App\Models\PlanetaryPosition;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class AspectCalculator
@@ -16,7 +15,7 @@ class AspectCalculator
     private float $sunOrb;
     private float $moonOrb;
 
-    public function __construct()
+    public function __construct(private readonly HouseCalculator $houseCalculator)
     {
         $this->aspectConfig = config('astrology.aspects', []);
         $this->rulerships   = config('astrology.rulerships', []);
@@ -26,28 +25,26 @@ class AspectCalculator
 
     public function calculate(HoroscopeSubject $subject): NatalChart
     {
-        // For persistable subjects (User, GuestSession, DemoProfile) load cached chart
-        if ($subject instanceof Model && $subject->natalChart) {
+        // Load cached chart for persisted profiles
+        if ($subject->exists && $subject->natalChart) {
             return $subject->natalChart;
         }
 
         $result = $this->computeChart($subject);
 
-        // Persist for Model-based subjects only (not GuestSubject)
-        if ($subject instanceof Model) {
-            $chart = $subject->natalChart()->create([
+        // Persist for saved profiles (registered, guest, demo with a DB row)
+        if ($subject->exists) {
+            return $subject->natalChart()->create([
                 'chart_tier' => $subject->getChartTier(),
                 'planets'    => $result['planets'],
                 'aspects'    => $result['aspects'],
-                'houses'     => null,
-                'ascendant'  => null,
-                'mc'         => null,
+                'houses'     => $result['houses'] ?? null,
+                'ascendant'  => $result['ascendant'] ?? null,
+                'mc'         => $result['mc'] ?? null,
             ]);
-
-            return $chart;
         }
 
-        // GuestSubject — return unsaved NatalChart instance
+        // Unsaved (anonymous CLI --birth-date) — return transient NatalChart
         return new NatalChart([
             'chart_tier' => $subject->getChartTier(),
             'planets'    => $result['planets'],
@@ -79,13 +76,67 @@ class AspectCalculator
                 'is_retrograde' => $pos->is_retrograde,
                 'sign'          => (int) floor($longitude / 30),
                 'degree'        => fmod($longitude, 30),
+                'house'         => null, // populated below if birth time + city available
             ];
         })->values()->all();
+
+        // Calculate Placidus houses when we have birth time and city coordinates (tier 3)
+        $housesResult = $this->computeHouses($subject, $timeFraction, $tier);
+
+        if ($housesResult !== null) {
+            $cusps   = $housesResult['cusps'];
+            $lons    = array_column($planets, 'longitude');
+            $houseNums = $this->houseCalculator->assignHouses($cusps, $lons);
+
+            foreach ($planets as $i => &$planet) {
+                $planet['house'] = $houseNums[$i];
+            }
+            unset($planet);
+        }
 
         return [
             'planets' => $planets,
             'aspects' => $this->calculateAspects($planets, includeMutualReception: true),
+            'houses'  => $housesResult ? $housesResult['cusps'] : null,
+            'ascendant' => $housesResult ? $housesResult['ascendant'] : null,
+            'mc'        => $housesResult ? $housesResult['mc'] : null,
         ];
+    }
+
+    /**
+     * Compute Placidus houses if subject has birth time and city with coordinates.
+     * Returns null when house calculation is not possible (tier < 3 or missing city).
+     */
+    private function computeHouses(HoroscopeSubject $subject, ?float $timeFraction, int $tier): ?array
+    {
+        if ($tier < 3 || $timeFraction === null) {
+            return null;
+        }
+
+        $city = $subject->getBirthCity();
+        if ($city === null || $city->lat === null || $city->lng === null) {
+            return null;
+        }
+
+        $birthTime = $subject->getBirthTime();
+        if ($birthTime === null) {
+            return null;
+        }
+
+        // Parse birth datetime in local timezone → UTC
+        $timezone = $city->timezone ?? 'UTC';
+        $localDt  = \Carbon\Carbon::parse($subject->getBirthDate() . ' ' . $birthTime, $timezone);
+        $utcDt    = $localDt->utc();
+
+        $jd = HouseCalculator::toJulianDay(
+            $utcDt->year,
+            $utcDt->month,
+            $utcDt->day,
+            $utcDt->hour,
+            $utcDt->minute,
+        );
+
+        return $this->houseCalculator->calculate($jd, (float) $city->lat, (float) $city->lng);
     }
 
     private function resolveTimeFraction(HoroscopeSubject $subject, int $tier): ?float
@@ -133,6 +184,65 @@ class AspectCalculator
             $longitude += 360;
         }
         return $longitude;
+    }
+
+    /**
+     * Transit-to-transit aspects: aspects between transiting planets on a given date.
+     * Input: array of planet data from PlanetaryPosition::forDate(), each cast to array.
+     */
+    public function transitToTransit(array $transitPlanets): array
+    {
+        return $this->calculateAspects($transitPlanets, false);
+    }
+
+    /**
+     * Transit-to-natal aspects: aspects between transiting and natal planets.
+     * Input: arrays of planet data (transit positions + natal planets from NatalChart->planets).
+     * Returns aspects sorted by orb ascending (tightest first).
+     */
+    public function transitToNatal(array $transitPlanets, array $natalPlanets): array
+    {
+        $aspects  = [];
+        $lilith   = 12;
+
+        foreach ($transitPlanets as $t) {
+            foreach ($natalPlanets as $n) {
+                $lilitInvolved = $t['body'] === $lilith || $n['body'] === $lilith;
+                $orbLimit      = $this->resolveOrbLimit($t['body'], $n['body']);
+
+                $diff = abs($t['longitude'] - $n['longitude']);
+                if ($diff > 180) {
+                    $diff = 360 - $diff;
+                }
+
+                $best    = null;
+                $bestOrb = PHP_FLOAT_MAX;
+
+                foreach ($this->aspectConfig as $name => $def) {
+                    if ($lilitInvolved && $def['angle'] !== 0) {
+                        continue;
+                    }
+                    $effectiveOrb = $orbLimit ?? $def['orb'];
+                    $deviation    = abs($diff - $def['angle']);
+                    if ($deviation <= $effectiveOrb && $deviation < $bestOrb) {
+                        $bestOrb = $deviation;
+                        $best    = [
+                            'transit_body' => $t['body'],
+                            'natal_body'   => $n['body'],
+                            'aspect'       => $name,
+                            'orb'          => round($deviation, 6),
+                        ];
+                    }
+                }
+
+                if ($best !== null) {
+                    $aspects[] = $best;
+                }
+            }
+        }
+
+        usort($aspects, fn ($a, $b) => $a['orb'] <=> $b['orb']);
+        return $aspects;
     }
 
     private function calculateAspects(array $planets, bool $includeMutualReception = false): array

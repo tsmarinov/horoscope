@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('guest_sessions', function (Blueprint $table) {
+        Schema::create('guests', function (Blueprint $table) {
             $table->id();
             $table->string('uuid', 36)->unique();
             $table->timestamp('last_seen_at')->useCurrent();
@@ -18,6 +18,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('guest_sessions');
+        Schema::dropIfExists('guests');
     }
 };

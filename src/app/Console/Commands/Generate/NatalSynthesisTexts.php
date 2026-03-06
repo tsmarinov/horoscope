@@ -14,11 +14,14 @@ class NatalSynthesisTexts extends Command
                             {--from-key= : Start from a specific block key (resume)}
                             {--key= : Generate only this specific block key}
                             {--dry-run : Show prompt and response without saving}
+                            {--short : Generate 1-sentence simplified variants (_short sections)}
                             {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
 
-    protected $description = 'Generate natal synthesis text blocks (ascendant, dominant element, planet in sign+house)';
+    protected $description = 'Generate natal position text blocks (Ascendant in sign, planet in sign+house)';
 
-    private const SECTION = 'natal_synthesis';
+    // Cost reference (2026-03-05, claude-haiku-4-5-20251001):
+    // 732 keys × 1 variant = ~$1.06
+    // 732 keys × 3 variants = ~$3.20 (estimated)
 
     private array $signNames = [
         0 => 'Aries', 1 => 'Taurus', 2 => 'Gemini', 3 => 'Cancer',
@@ -33,7 +36,8 @@ class NatalSynthesisTexts extends Command
 
     public function handle(): int
     {
-        $variants = (int) $this->option('variants');
+        $short    = $this->option('short');
+        $variants = $short ? 1 : (int) $this->option('variants');
         $dryRun   = $this->option('dry-run');
         $model    = $this->option('model');
         $onlyKey  = $this->option('key');
@@ -58,9 +62,12 @@ class NatalSynthesisTexts extends Command
             });
         }
 
-        $keys  = array_values($keys);
-        $total = count($keys);
-        $this->info("Natal synthesis | Keys: {$total} | Variants: {$variants} | Model: {$model}");
+        $keys      = array_values($keys);
+        $total     = count($keys);
+        $totalCost = 0.0;
+        $prIn      = 0.80 / 1_000_000;   // Haiku input $/token
+        $prOut     = 4.00 / 1_000_000;   // Haiku output $/token
+        $this->info("Natal positions | Keys: {$total} | Variants: {$variants} | Model: {$model}");
 
         if ($dryRun) {
             $this->warn('[DRY RUN] — nothing will be saved');
@@ -70,9 +77,11 @@ class NatalSynthesisTexts extends Command
             $num = $i + 1;
             $this->line("[{$num}/{$total}] {$key}");
 
+            $section = $this->sectionForKey($key, $short);
+
             if (! $dryRun && ! $onlyKey) {
                 $existing = TextBlock::where('key', $key)
-                    ->where('section', self::SECTION)
+                    ->where('section', $section)
                     ->where('language', 'en')
                     ->count();
 
@@ -93,7 +102,8 @@ class NatalSynthesisTexts extends Command
                     maxTokens: 1024,
                     messages: [['role' => 'user', 'content' => $prompt]],
                     model: $model,
-                    system: $this->systemPrompt(),
+                    system: $this->systemPrompt($short),
+                    temperature: 1.0,
                 );
 
                 $raw  = $response->content[0]->text ?? '';
@@ -112,87 +122,117 @@ class NatalSynthesisTexts extends Command
                     continue;
                 }
 
+                $in  = $response->usage->inputTokens  ?? 0;
+                $out = $response->usage->outputTokens ?? 0;
+                $perBlock = $variants > 0 ? [
+                    'tokens_in'  => (int) round($in  / $variants),
+                    'tokens_out' => (int) round($out / $variants),
+                    'cost_usd'   => round(($in * $prIn + $out * $prOut) / $variants, 8),
+                ] : [];
+
                 foreach ($blocks as $block) {
                     TextBlock::updateOrCreate(
                         [
                             'key'      => $key,
-                            'section'  => self::SECTION,
+                            'section'  => $section,
                             'language' => 'en',
                             'variant'  => $block['variant'],
                         ],
-                        [
+                        array_merge([
                             'text' => $block['text'],
                             'tone' => $block['tone'] ?? 'neutral',
-                        ]
+                        ], $perBlock)
                     );
                 }
 
-                $this->line("  → saved {$variants} variants");
+                $cost = $in * $prIn + $out * $prOut;
+                $totalCost += $cost;
+                $this->line(sprintf('  → saved %d variants | $%.4f | total $%.4f', $variants, $cost, $totalCost));
 
             } catch (\Exception $e) {
                 $this->error("  ERROR: " . $e->getMessage());
             }
         }
 
-        $this->info('Done.');
+        $this->info(sprintf('Done. Total cost: $%.4f', $totalCost));
         return self::SUCCESS;
     }
 
-    private function systemPrompt(): string
+    private function systemPrompt(bool $short = false): string
     {
-        return <<<PROMPT
-You are an experienced astrologer writing natal chart interpretations for a horoscope application.
+        if ($short) {
+            return <<<PROMPT
+You are writing one-sentence natal chart placement summaries for a horoscope application.
 
 Style rules:
-- Write organic narrative paragraphs — not bullet lists, not catalogs of facts
+- Exactly 1 sentence per text — no more
+- Write impersonally — no "you", no "your", no direct address
+- Describe the key behavioural trait as a fact: "Direct and bold in self-assertion." or "Strong need for emotional security before opening up."
+- Plain everyday words only — no abstract concepts, no spiritual or psychological jargon
+- Be specific about the domain: use "emotional", "psychological", "practical", "social" — never vague words like "wounds", "healing", "struggles", "energy", "forces"
+- No metaphors, no poetic language
+- Write like an SMS — maximum 20 words. Cut every unnecessary word.
+- NEVER mention planet names, sign names, or house numbers in the text — they are already shown in the label above.
+- Use HTML formatting: <strong> for the key trait; <em> for planet and sign names
+PROMPT;
+        }
+
+        return <<<PROMPT
+You are writing natal chart placement descriptions for a horoscope application.
+
+Style rules:
+- Write like a psychologist giving honest feedback — not an astrologer
 - Address the person as "you" (gender-neutral, no he/she)
 - Each text is 3–5 sentences
-- Each variant takes a different angle (different imagery, different life area emphasis)
-- Conversational but meaningful — as if spoken during a real consultation
-- Use plain, simple language — avoid literary or academic phrasing; many readers are non-native English speakers
-- Vary sentence length: mix short punchy sentences with longer ones for rhythm
+- Short, simple sentences — one idea per sentence, no dashes, no semicolons. Plain everyday words only — no abstract concepts, no spiritual or psychological jargon.
+- Be specific about the domain: use "emotional", "psychological", "practical", "social" — never vague words like "wounds", "healing", "struggles", "energy", "forces"
+- Describe what the person actually does in real situations. Concrete behaviour only.
+- Each variant takes a different angle on the same placement (different behaviour, different life area)
 - Do NOT start with "This placement...", "With [planet] in [sign]...", or "[Planet] in [sign] means..."
-- Write directly about the person's experience, not about the symbols
-- These are standalone paragraphs that will be combined into a flowing natal chart narrative
-- Use HTML formatting generously: <strong> for key qualities, themes, and memorable phrases; <em> for planet and sign names
-- Aim for at least one <strong> or <em> per sentence — formatting should be dense, not sparse
-- Example: "<em>Sun</em> conjunct <em>Moon</em> gives you a rare <strong>internal coherence</strong>. What you feel and who you are align naturally — your instincts and your will <strong>speak the same language</strong>. People sense this: there is no gap between your words and your heart."
+- Forbidden words: journey, path, lifetime, depth, soul, essence, force, pull, tension, dance, dissolves
+- No metaphors. No poetic language.
+- Use HTML formatting: <strong> for key behavioural traits; <em> for planet and sign names
 PROMPT;
     }
 
     private function buildPrompt(string $key, int $variants): string
     {
-        // ascendant_in_aries
         if (str_starts_with($key, 'ascendant_in_')) {
-            $sign = ucfirst(str_replace('ascendant_in_', '', $key));
-            return $this->jsonPrompt(
-                "Write {$variants} variants describing what it means to have {$sign} as the Ascendant (rising sign) in a natal chart.",
-                $variants
-            );
+            return $this->buildAscendantPrompt($key, $variants);
         }
 
-        // dominant_fire / dominant_earth / dominant_water / dominant_air
-        if (str_starts_with($key, 'dominant_')) {
-            $element = ucfirst(str_replace('dominant_', '', $key));
-            return $this->jsonPrompt(
-                "Write {$variants} variants describing what it means to have {$element} as the dominant element in a natal chart.",
-                $variants
-            );
-        }
-
-        // sun_in_aries_house_1
         if (preg_match('/^(\w+)_in_(\w+)_house_(\d+)$/', $key, $m)) {
-            $bodies = array_flip(array_map('strtolower', PlanetaryPosition::BODY_NAMES));
-            $planet = PlanetaryPosition::BODY_NAMES[$bodies[$m[1]] ?? -1] ?? ucfirst($m[1]);
-            $sign   = ucfirst($m[2]);
-            $house  = $this->ordinals[(int) $m[3]] ?? $m[3];
-            return $this->jsonPrompt(
-                "Write {$variants} variants describing what it means to have {$planet} in {$sign} in the {$house} house in a natal chart.\nTone: neutral (describe the energy, challenges and gifts without judgment)",
-                $variants
-            );
+            return $this->buildPositionPrompt($key, $variants, $m);
         }
 
         return $this->jsonPrompt("Write {$variants} variants for: {$key}", $variants);
+    }
+
+    private function buildAscendantPrompt(string $key, int $variants): string
+    {
+        $sign = ucfirst(str_replace('ascendant_in_', '', $key));
+        return $this->jsonPrompt(
+            "Write {$variants} variants for natal placement: {$sign} Ascendant (rising sign).",
+            $variants
+        );
+    }
+
+    private function buildPositionPrompt(string $key, int $variants, array $m): string
+    {
+        $bodies = array_flip(array_map('strtolower', PlanetaryPosition::BODY_NAMES));
+        $planet = PlanetaryPosition::BODY_NAMES[$bodies[$m[1]] ?? -1] ?? ucfirst($m[1]);
+        $sign   = ucfirst($m[2]);
+        $house  = $this->ordinals[(int) $m[3]] ?? $m[3];
+        return $this->jsonPrompt(
+            "Write {$variants} variants for natal placement: {$planet} in {$sign} in the {$house} house.",
+            $variants
+        );
+    }
+
+    private function sectionForKey(string $key, bool $short = false): string
+    {
+        $base = str_starts_with($key, 'ascendant_in_') ? 'natal_ascendant' : 'natal_positions';
+        return $short ? $base . '_short' : $base;
     }
 
     private function jsonPrompt(string $instruction, int $variants): string
@@ -217,18 +257,16 @@ PROMPT;
     {
         $keys = [];
 
-        // Ascendant by sign
+        // natal_ascendant — ASC in sign (12 keys)
         foreach ($this->signNames as $sign) {
             $keys[] = 'ascendant_in_' . strtolower($sign);
         }
 
-        // Dominant element
-        foreach (['fire', 'earth', 'air', 'water'] as $element) {
-            $keys[] = 'dominant_' . $element;
-        }
+        // natal_positions — Sun, Moon, Mercury, Venus, Mars in sign + house (5 × 12 × 12 = 720 keys)
+        // Jupiter/Saturn/outer planets excluded — covered by aspect sections.
+        $positionBodies = array_intersect_key(PlanetaryPosition::BODY_NAMES, array_flip([0, 1, 2, 3, 4]));
 
-        // Planet in sign + house
-        foreach (PlanetaryPosition::BODY_NAMES as $planet) {
+        foreach ($positionBodies as $planet) {
             foreach ($this->signNames as $sign) {
                 for ($house = 1; $house <= 12; $house++) {
                     $keys[] = strtolower($planet) . '_in_' . strtolower($sign) . '_house_' . $house;

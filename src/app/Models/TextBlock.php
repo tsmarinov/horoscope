@@ -26,6 +26,9 @@ class TextBlock extends Model
         'variant',
         'text',
         'tone',
+        'tokens_in',
+        'tokens_out',
+        'cost_usd',
     ];
 
     /** Fetch all variants for a specific block key. */
