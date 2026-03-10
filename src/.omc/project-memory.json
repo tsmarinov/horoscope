@@ -1,0 +1,242 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1773007228464,
+  "projectRoot": "/var/www/horo/web/src",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "PHP",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "composer.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vite",
+        "version": "7.0.7",
+        "category": "build"
+      }
+    ],
+    "packageManager": "composer",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "build": "vite build",
+      "dev": "vite"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "public",
+      "scripts",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1773007228439,
+      "keyFiles": [
+        "AGENTS.md"
+      ]
+    },
+    "bootstrap": {
+      "path": "bootstrap",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1773007228440,
+      "keyFiles": [
+        "app.php",
+        "providers.php"
+      ]
+    },
+    "config": {
+      "path": "config",
+      "purpose": "Configuration files",
+      "fileCount": 11,
+      "lastAccessed": 1773007228442,
+      "keyFiles": [
+        "app.php",
+        "astrology.php",
+        "auth.php",
+        "cache.php",
+        "database.php"
+      ]
+    },
+    "database": {
+      "path": "database",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1773007228456,
+      "keyFiles": [
+        "AGENTS.md",
+        "database.sqlite"
+      ]
+    },
+    "documents": {
+      "path": "documents",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1773007228459,
+      "keyFiles": [
+        "console-commands.md",
+        "implementation-status.md"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 4,
+      "lastAccessed": 1773007228460,
+      "keyFiles": [
+        "favicon.ico",
+        "index.php",
+        "robots.txt"
+      ]
+    },
+    "resources": {
+      "path": "resources",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1773007228460,
+      "keyFiles": []
+    },
+    "routes": {
+      "path": "routes",
+      "purpose": "Route handlers",
+      "fileCount": 3,
+      "lastAccessed": 1773007228460,
+      "keyFiles": [
+        "AGENTS.md",
+        "console.php",
+        "web.php"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 2,
+      "lastAccessed": 1773007228460,
+      "keyFiles": [
+        "generate_ephemeris.py",
+        "planetary_positions.csv"
+      ]
+    },
+    "storage": {
+      "path": "storage",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1773007228460,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 1,
+      "lastAccessed": 1773007228460,
+      "keyFiles": [
+        "TestCase.php"
+      ]
+    },
+    "vendor": {
+      "path": "vendor",
+      "purpose": "Third-party code",
+      "fileCount": 1,
+      "lastAccessed": 1773007228461,
+      "keyFiles": [
+        "autoload.php"
+      ]
+    },
+    "app/Models": {
+      "path": "app/Models",
+      "purpose": "Data models",
+      "fileCount": 11,
+      "lastAccessed": 1773007228461,
+      "keyFiles": [
+        "AiText.php",
+        "City.php",
+        "CityTranslation.php"
+      ]
+    },
+    "app/Services": {
+      "path": "app/Services",
+      "purpose": "Business logic services",
+      "fileCount": 4,
+      "lastAccessed": 1773007228461,
+      "keyFiles": [
+        "AspectCalculator.php",
+        "HouseCalculator.php",
+        "ReportBuilder.php"
+      ]
+    },
+    "database/migrations": {
+      "path": "database/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 14,
+      "lastAccessed": 1773007228462,
+      "keyFiles": [
+        "0001_01_01_000000_create_users_table.php",
+        "0001_01_01_000001_create_cache_table.php",
+        "0001_01_01_000002_create_jobs_table.php"
+      ]
+    },
+    "resources/views": {
+      "path": "resources/views",
+      "purpose": "View templates",
+      "fileCount": 1,
+      "lastAccessed": 1773007228463,
+      "keyFiles": [
+        "welcome.blade.php"
+      ]
+    },
+    "storage/app": {
+      "path": "storage/app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1773007228464,
+      "keyFiles": []
+    },
+    "vendor/bin": {
+      "path": "vendor/bin",
+      "purpose": "Executable scripts",
+      "fileCount": 9,
+      "lastAccessed": 1773007228464,
+      "keyFiles": [
+        "carbon",
+        "patch-type-declarations",
+        "php-parse"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

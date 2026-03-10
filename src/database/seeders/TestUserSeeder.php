@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\UserProfile;
+use App\Models\Profile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -19,7 +19,7 @@ class TestUserSeeder extends Seeder
             ]
         );
 
-        UserProfile::firstOrCreate(
+        Profile::firstOrCreate(
             ['user_id' => $user->id],
             [
                 // Test profile — 15 March 1985, 02:15, London

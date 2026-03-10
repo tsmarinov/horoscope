@@ -112,6 +112,11 @@ class ReportBuilder
             );
         }
 
+        // House Lords (pre-generated)
+        foreach ($this->houseLordSections($chart, $isSimplified, $language) as $section) {
+            $sections[] = $section;
+        }
+
         return new NatalReportDTO(
             chart:    $chart,
             sections: $sections,
@@ -138,8 +143,9 @@ class ReportBuilder
         $organic = $this->buildOrganic($subject, $chart, ReportMode::Organic, $language);
 
         // 2. AI generates only the portrait introduction from chart data
-        $chartSummary = $this->chartSummary($chart);
-        $system       = $this->aiSystemPrompt($language);
+        $chartSummary    = $this->chartSummary($chart);
+        $houseLordsSummary = $this->houseLordsSummary($chart);
+        $system          = $this->aiSystemPrompt($language);
 
         $name   = $subject->name ?? 'you';
         $prompt = <<<PROMPT
@@ -147,6 +153,9 @@ class ReportBuilder
 
         **Chart Data:**
         {$chartSummary}
+
+        **House Lords (whole sign houses):**
+        {$houseLordsSummary}
 
         Write a portrait introduction (exactly 5 paragraphs). Rules:
         - Paragraphs 1-4: 4-5 sentences each
@@ -168,12 +177,25 @@ class ReportBuilder
         - Paragraph 4: something most people around you probably misunderstand about you
         - Paragraph 5: synthesis — how all of this adds up, what kind of person emerges from this chart taken as a whole
 
-        Return valid JSON with a single key: introduction (string with 5 <p> tags).
-        Use <strong> for key qualities, <em> for planet/sign names.
+        After the 5-paragraph portrait, write the house lords section. For each house from 2nd through 12th:
+        - Name the house ruler (lord) and where it sits (sign + house) using the House Lords data above
+        - Describe in 3-4 sentences what this means in real daily behaviour
+        - Address as "you/your", plain words, no jargon, no metaphors
+        - Do NOT mention degrees or technical astrology terms
+
+        Return valid JSON with exactly two keys:
+        - introduction: string with exactly 5 <p> tags
+        - house_lords: array of exactly 11 objects, one per house (2nd through 12th), each with:
+            - house: integer (2 through 12)
+            - text: string of 3-4 sentences (plain text, no HTML tags)
+        Use <strong> for key qualities, <em> for planet/sign names in introduction only.
         PROMPT;
 
-        $response = $this->aiProvider->generate($prompt, $system, 2000);
+        $response = $this->aiProvider->generate($prompt, $system, 6000);
         $data     = $this->parseJsonResponse($response->text);
+
+        $houseLordsRaw = $data['house_lords'] ?? null;
+        $houseLordsJson = is_array($houseLordsRaw) ? json_encode($houseLordsRaw) : $houseLordsRaw;
 
         return new NatalReportDTO(
             chart:        $chart,
@@ -181,6 +203,7 @@ class ReportBuilder
             mode:         ReportMode::AiL1,
             language:     $language,
             introduction: $data['introduction'] ?? null,
+            houseLords:   $houseLordsJson,
             aiTokensIn:   $response->inputTokens,
             aiTokensOut:  $response->outputTokens,
             aiCostUsd:    $response->costUsd,
@@ -292,6 +315,11 @@ class ReportBuilder
             $report->update(['introduction_ai_text_id' => $intro->id]);
         }
 
+        if ($dto->houseLords !== null) {
+            $hl = $report->aiTexts()->create(['type' => 'house_lords', 'text' => $dto->houseLords]);
+            $report->update(['house_lords_ai_text_id' => $hl->id]);
+        }
+
         if ($dto->conclusion !== null) {
             $concl = $report->aiTexts()->create(['type' => 'conclusion', 'text' => $dto->conclusion]);
             $report->update(['conclusion_ai_text_id' => $concl->id]);
@@ -317,7 +345,7 @@ class ReportBuilder
 
     private function hydrateFromModel(NatalReport $model, NatalChart $chart): NatalReportDTO
     {
-        $model->load(['sections.textBlock', 'sections.aiText', 'sections.transitionAiText', 'introductionAiText', 'conclusionAiText']);
+        $model->load(['sections.textBlock', 'sections.aiText', 'sections.transitionAiText', 'introductionAiText', 'houseLordsAiText', 'conclusionAiText']);
 
         $sections = $model->sections->map(function ($row) {
             $text = $row->textBlock?->text ?? $row->aiText?->text ?? '';
@@ -339,6 +367,7 @@ class ReportBuilder
             mode:         $model->mode,
             language:     $model->language,
             introduction: $model->introductionAiText?->text,
+            houseLords:   $model->houseLordsAiText?->text,
             conclusion:   $model->conclusionAiText?->text,
         );
     }
@@ -401,6 +430,60 @@ class ReportBuilder
      *
      * Jupiter/Saturn/outer planets are covered by the aspect sections only.
      */
+    /**
+     * Modern rulership map: sign index → body id.
+     */
+    private const ASC_LORD_MAP = [
+        0  => 4,  // Aries → Mars
+        1  => 3,  // Taurus → Venus
+        2  => 2,  // Gemini → Mercury
+        3  => 1,  // Cancer → Moon
+        4  => 0,  // Leo → Sun
+        5  => 2,  // Virgo → Mercury
+        6  => 3,  // Libra → Venus
+        7  => 9,  // Scorpio → Pluto
+        8  => 5,  // Sagittarius → Jupiter
+        9  => 6,  // Capricorn → Saturn
+        10 => 7,  // Aquarius → Uranus
+        11 => 8,  // Pisces → Neptune
+    ];
+
+    /**
+     * Build the ASC lord key: "asc_in_{asc_sign}_lord_in_{lord_sign}_house_{lord_house}".
+     * Returns null if ASC is unknown or lord planet not found in chart.
+     */
+    private function ascLordKey(NatalChart $chart): ?string
+    {
+        if ($chart->ascendant === null) {
+            return null;
+        }
+
+        $ascSignIdx = (int) floor($chart->ascendant / 30);
+        $ascSign    = strtolower(PlanetaryPosition::SIGN_NAMES[$ascSignIdx] ?? '');
+        if ($ascSign === '') {
+            return null;
+        }
+
+        $lordBodyId = self::ASC_LORD_MAP[$ascSignIdx] ?? null;
+        if ($lordBodyId === null) {
+            return null;
+        }
+
+        $lordPlanet = collect($chart->planets ?? [])->firstWhere('body', $lordBodyId);
+        if ($lordPlanet === null) {
+            return null;
+        }
+
+        $lordSign  = strtolower(PlanetaryPosition::SIGN_NAMES[$lordPlanet['sign']] ?? '');
+        $lordHouse = $lordPlanet['house'] ?? null;
+
+        if ($lordSign === '' || $lordHouse === null) {
+            return null;
+        }
+
+        return "asc_in_{$ascSign}_lord_in_{$lordSign}_house_{$lordHouse}";
+    }
+
     private function positionKeys(NatalChart $chart): array
     {
         $pairs     = [];
@@ -438,16 +521,141 @@ class ReportBuilder
         return $pairs;
     }
 
+    /**
+     * Load pre-generated house lord text blocks for houses 1-12.
+     * Key format: house_{house}_cusp_{cusp_sign}_lord_in_{lord_sign}_house_{lord_house}
+     */
+    private function houseLordSections(NatalChart $chart, bool $isSimplified, string $language): array
+    {
+        if ($chart->ascendant === null) {
+            return [];
+        }
+
+        $ascSignIdx = (int) floor($chart->ascendant / 30);
+        $planets    = collect($chart->planets ?? []);
+        $section    = $isSimplified ? 'natal_house_lords_short' : 'natal_house_lords';
+        $result     = [];
+
+        for ($house = 1; $house <= 12; $house++) {
+            $cuspSignIdx = ($ascSignIdx + $house - 1) % 12;
+            $cuspSign    = strtolower(PlanetaryPosition::SIGN_NAMES[$cuspSignIdx] ?? '');
+            if ($cuspSign === '') {
+                continue;
+            }
+
+            $lordBodyId = self::ASC_LORD_MAP[$cuspSignIdx] ?? null;
+            if ($lordBodyId === null) {
+                continue;
+            }
+
+            $lordPlanet = $planets->firstWhere('body', $lordBodyId);
+            if ($lordPlanet === null) {
+                continue;
+            }
+
+            $lordSign  = strtolower(PlanetaryPosition::SIGN_NAMES[$lordPlanet['sign']] ?? '');
+            $lordHouse = $lordPlanet['house'] ?? null;
+
+            if ($lordSign === '' || $lordHouse === null) {
+                continue;
+            }
+
+            $key   = "house_{$house}_cusp_{$cuspSign}_lord_in_{$lordSign}_house_{$lordHouse}";
+            $block = TextBlock::pick($key, $section, 1, $language);
+
+            if ($block === null) {
+                continue;
+            }
+
+            $result[] = new NatalReportSectionDTO(
+                key:         $key,
+                section:     $section,
+                title:       $this->humanTitle($key),
+                text:        $block->text,
+                tone:        $block->tone,
+                textBlockId: $block->id,
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Build a house lords summary for houses 2-12 using whole sign houses.
+     * House 1 = ASC sign, house 2 = next sign, etc.
+     *
+     * Returns lines like:
+     *   House 2: Taurus → Venus in Aries, house 9
+     */
+    private function houseLordsSummary(NatalChart $chart): string
+    {
+        if ($chart->ascendant === null) {
+            return 'House data unavailable (no ASC).';
+        }
+
+        $ascSignIdx = (int) floor($chart->ascendant / 30);
+        $planets    = collect($chart->planets ?? []);
+        $lines      = [];
+
+        for ($house = 2; $house <= 12; $house++) {
+            $signIdx  = ($ascSignIdx + $house - 1) % 12;
+            $signName = PlanetaryPosition::SIGN_NAMES[$signIdx] ?? $signIdx;
+
+            $lordBodyId = self::ASC_LORD_MAP[$signIdx] ?? null;
+            if ($lordBodyId === null) {
+                $lines[] = "House {$house}: {$signName} → ruler unknown";
+                continue;
+            }
+
+            $lordName   = PlanetaryPosition::BODY_NAMES[$lordBodyId] ?? $lordBodyId;
+            $lordPlanet = $planets->firstWhere('body', $lordBodyId);
+
+            if ($lordPlanet === null) {
+                $lines[] = "House {$house}: {$signName} → {$lordName} (position unknown)";
+                continue;
+            }
+
+            $lordSign  = PlanetaryPosition::SIGN_NAMES[$lordPlanet['sign']] ?? $lordPlanet['sign'];
+            $lordHouse = $lordPlanet['house'] ?? null;
+            $houseStr  = $lordHouse ? ", house {$lordHouse}" : '';
+
+            $lines[] = "House {$house}: {$signName} → {$lordName} in {$lordSign}{$houseStr}";
+        }
+
+        return implode("\n", $lines);
+    }
+
     private function chartSummary(NatalChart $chart): string
     {
         $lines = [];
+
+        // ASC line
+        if ($chart->ascendant !== null) {
+            $ascSignIdx = (int) floor($chart->ascendant / 30);
+            $ascSign    = PlanetaryPosition::SIGN_NAMES[$ascSignIdx] ?? $ascSignIdx;
+            $lines[]    = "ASC: {$ascSign}";
+
+            // ASC Lord
+            $lordBodyId = self::ASC_LORD_MAP[$ascSignIdx] ?? null;
+            if ($lordBodyId !== null) {
+                $lordPlanet = collect($chart->planets ?? [])->firstWhere('body', $lordBodyId);
+                if ($lordPlanet !== null) {
+                    $lordName  = PlanetaryPosition::BODY_NAMES[$lordBodyId] ?? $lordBodyId;
+                    $lordSign  = PlanetaryPosition::SIGN_NAMES[$lordPlanet['sign']] ?? $lordPlanet['sign'];
+                    $lordHouse = $lordPlanet['house'] ?? null;
+                    $houseStr  = $lordHouse ? ", house {$lordHouse}" : '';
+                    $lines[]   = "ASC Lord: {$lordName} in {$lordSign}{$houseStr}";
+                }
+            }
+        }
 
         foreach ($chart->planets ?? [] as $p) {
             $body  = PlanetaryPosition::BODY_NAMES[$p['body']] ?? $p['body'];
             $sign  = PlanetaryPosition::SIGN_NAMES[$p['sign']] ?? $p['sign'];
             $deg   = round($p['degree'], 2);
             $retro = ($p['is_retrograde'] ?? false) ? ' Rx' : '';
-            $lines[] = "{$body}: {$sign} {$deg}°{$retro}";
+            $house = isset($p['house']) ? ", house {$p['house']}" : '';
+            $lines[] = "{$body}: {$sign} {$deg}°{$retro}{$house}";
         }
 
         foreach ($chart->aspects ?? [] as $a) {

@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"mkdir -p /var/www/horo/web/src/scripts/ephe && \\\\\\nwget -q --show-progress \\\"https://www.astro.com/ftp/swisseph/ephe/seas_18.se1\\\" \\\\\\n  -O /var/www/horo/web/src/scripts/ephe/seas_18.se1 2...",
-  "error": "Exit code 8",
-  "timestamp": "2026-03-04T12:43:00.354Z",
-  "retry_count": 1
+  "tool_input_preview": "{\"command\":\"docker exec horo_php php artisan migrate:status 2>&1\",\"description\":\"Check migration status\"}",
+  "error": "Exit code 1\n\n   ERROR  Migration table not found.",
+  "timestamp": "2026-03-08T19:48:08.464Z",
+  "retry_count": 2
 }

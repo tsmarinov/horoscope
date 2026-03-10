@@ -117,10 +117,15 @@ class UiNatalReport extends Command
             $this->put($this->row($line));
         }
 
-        // Split into 3 groups (support both full and _short section variants)
-        $ascSections     = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_ascendant')));
-        $posSections     = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_positions')));
-        $aspectSections  = array_values(array_filter($report->sections, fn ($s) => !str_starts_with($s->section, 'natal_ascendant') && !str_starts_with($s->section, 'natal_positions')));
+        // Split into 4 groups (support both full and _short section variants)
+        $ascSections          = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_ascendant')));
+        $posSections          = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_positions')));
+        $houseLordPreSections = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_house_lords')));
+        $aspectSections       = array_values(array_filter($report->sections, fn ($s) =>
+            !str_starts_with($s->section, 'natal_ascendant') &&
+            !str_starts_with($s->section, 'natal_positions') &&
+            !str_starts_with($s->section, 'natal_house_lords')
+        ));
         $sectionCount    = count($report->sections);
 
         if ($sectionCount === 0) {
@@ -152,6 +157,76 @@ class UiNatalReport extends Command
                 }
             }
             $this->put($this->row(''));
+        }
+
+        // ── House Lords (pre-generated) ───────────────────────────────────
+        if (count($houseLordPreSections) > 0) {
+            $houseLabels = [
+                1  => '1st House — Self & Identity',
+                2  => '2nd House — Money & Resources',
+                3  => '3rd House — Communication & Short Travel',
+                4  => '4th House — Home & Family',
+                5  => '5th House — Creativity & Romance',
+                6  => '6th House — Work & Health',
+                7  => '7th House — Partnerships',
+                8  => '8th House — Transformation & Shared Resources',
+                9  => '9th House — Philosophy & Long Travel',
+                10 => '10th House — Career & Public Life',
+                11 => '11th House — Friends & Aspirations',
+                12 => '12th House — Hidden Matters & Solitude',
+            ];
+            $this->put($this->divider());
+            $this->put($this->row($this->spread('  ◎  HOUSE LORDS', '')));
+            foreach ($houseLordPreSections as $section) {
+                // Extract house number from key: house_{N}_cusp_...
+                preg_match('/^house_(\d+)_/', $section->key, $m);
+                $houseNum = isset($m[1]) ? (int) $m[1] : null;
+                $label    = $houseLabels[$houseNum] ?? ('House ' . ($houseNum ?? '?'));
+                $text     = trim(strip_tags($section->text));
+                $this->put($this->row(''));
+                $this->put($this->row('  · ' . $label));
+                if ($text !== '') {
+                    foreach ($this->wrap($text, self::IW - 4) as $line) {
+                        $this->put($this->row('    ' . $line));
+                    }
+                }
+            }
+            $this->put($this->row(''));
+        }
+
+        // ── AI House Lords ────────────────────────────────────────────────
+        if (isset($report->houseLords) && $report->houseLords !== null) {
+            $houseLordsData = json_decode($report->houseLords, true);
+            if (is_array($houseLordsData)) {
+                $houseLabels = [
+                    2  => '2nd House — Money & Resources',
+                    3  => '3rd House — Communication & Short Travel',
+                    4  => '4th House — Home & Family',
+                    5  => '5th House — Creativity & Romance',
+                    6  => '6th House — Work & Health',
+                    7  => '7th House — Partnerships',
+                    8  => '8th House — Transformation & Shared Resources',
+                    9  => '9th House — Philosophy & Long Travel',
+                    10 => '10th House — Career & Public Life',
+                    11 => '11th House — Friends & Aspirations',
+                    12 => '12th House — Hidden Matters & Solitude',
+                ];
+                $this->put($this->divider());
+                $this->put($this->row($this->spread('  ◎  HOUSE LORDS', '')));
+                foreach ($houseLordsData as $hl) {
+                    $houseNum = $hl['house'] ?? null;
+                    $label    = $houseLabels[$houseNum] ?? ('House ' . ($houseNum ?? '?'));
+                    $text     = trim(strip_tags($hl['text'] ?? ''));
+                    $this->put($this->row(''));
+                    $this->put($this->row('  · ' . $label));
+                    if ($text !== '') {
+                        foreach ($this->wrap($text, self::IW - 4) as $line) {
+                            $this->put($this->row('    ' . $line));
+                        }
+                    }
+                }
+                $this->put($this->row(''));
+            }
         }
 
         // ── Planet Positions ──────────────────────────────────────────────

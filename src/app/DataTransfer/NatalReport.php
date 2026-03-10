@@ -17,6 +17,8 @@ readonly class NatalReport
         public string      $language,
         /** AI-generated introduction (L1/L1 Haiku only) */
         public ?string     $introduction  = null,
+        /** AI-generated house lords section (L1 only) */
+        public ?string     $houseLords    = null,
         /** AI-generated conclusion */
         public ?string     $conclusion    = null,
         /** Token usage — passed through to ai_texts on persist */

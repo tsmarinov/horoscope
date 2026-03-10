@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ReportMode $mode
  * @property string     $language
  * @property int|null   $introduction_ai_text_id
+ * @property int|null   $house_lords_ai_text_id
  * @property int|null   $conclusion_ai_text_id
  */
 class NatalReport extends Model
@@ -27,6 +28,7 @@ class NatalReport extends Model
         'ai_tokens_out',
         'ai_cost_usd',
         'introduction_ai_text_id',
+        'house_lords_ai_text_id',
         'conclusion_ai_text_id',
     ];
 
@@ -60,6 +62,11 @@ class NatalReport extends Model
     public function introductionAiText(): BelongsTo
     {
         return $this->belongsTo(AiText::class, 'introduction_ai_text_id');
+    }
+
+    public function houseLordsAiText(): BelongsTo
+    {
+        return $this->belongsTo(AiText::class, 'house_lords_ai_text_id');
     }
 
     public function conclusionAiText(): BelongsTo
