@@ -86,19 +86,35 @@ class UiDailyReport extends Command
         [315, 360, '🌘', 'Waning Crescent'],
     ];
 
-    // ── Life categories ──────────────────────────────────────────────────
+    // ── Life categories — house indices (0-based: H1=0 … H12=11) ────────
     private const CATEGORIES = [
-        ['emoji' => '❤️',  'name' => 'Love',              'affected_by' => ['venus']],
-        ['emoji' => '🏠',  'name' => 'Home',              'affected_by' => ['moon']],
-        ['emoji' => '🎨',  'name' => 'Creativity',        'affected_by' => ['venus', 'sun']],
-        ['emoji' => '🔮',  'name' => 'Spirituality',      'affected_by' => []],
-        ['emoji' => '💚',  'name' => 'Health',            'affected_by' => ['mars']],
-        ['emoji' => '💰',  'name' => 'Finance',           'affected_by' => ['venus', 'jupiter']],
-        ['emoji' => '✈️',  'name' => 'Travel',            'affected_by' => ['jupiter', 'mercury']],
-        ['emoji' => '💼',  'name' => 'Career',            'affected_by' => ['saturn', 'mars']],
-        ['emoji' => '🌱',  'name' => 'New Beginnings',    'affected_by' => ['mercury']],
-        ['emoji' => '💬',  'name' => 'Communication',     'affected_by' => ['mercury']],
-        ['emoji' => '📝',  'name' => 'Contracts',         'affected_by' => ['mercury']],
+        ['emoji' => '❤️',  'name' => 'Love',             'houses' => [4, 6]],
+        ['emoji' => '🏠',  'name' => 'Home',             'houses' => [3]],
+        ['emoji' => '🎨',  'name' => 'Creativity',       'houses' => [4]],
+        ['emoji' => '🔮',  'name' => 'Spirituality',     'houses' => [8, 11]],
+        ['emoji' => '💚',  'name' => 'Health',           'houses' => [5, 0]],
+        ['emoji' => '💰',  'name' => 'Finance',          'houses' => [1, 7]],
+        ['emoji' => '✈️',  'name' => 'Travel',           'houses' => [8, 2]],
+        ['emoji' => '💼',  'name' => 'Career',           'houses' => [9]],
+        ['emoji' => '🌱',  'name' => 'Personal Growth',  'houses' => [0]],
+        ['emoji' => '💬',  'name' => 'Communication',    'houses' => [2]],
+        ['emoji' => '📝',  'name' => 'Contracts',        'houses' => [6, 2]],
+    ];
+
+    // ── Sign rulers (traditional, body IDs) ──────────────────────────────
+    private const SIGN_RULERS = [
+        0 => 4,  // Aries   → Mars
+        1 => 3,  // Taurus  → Venus
+        2 => 2,  // Gemini  → Mercury
+        3 => 1,  // Cancer  → Moon
+        4 => 0,  // Leo     → Sun
+        5 => 2,  // Virgo   → Mercury
+        6 => 3,  // Libra   → Venus
+        7 => 4,  // Scorpio → Mars
+        8 => 5,  // Sagittarius → Jupiter
+        9 => 6,  // Capricorn   → Saturn
+       10 => 6,  // Aquarius    → Saturn
+       11 => 5,  // Pisces      → Jupiter
     ];
 
     // ── Entry point ──────────────────────────────────────────────────────
@@ -150,15 +166,12 @@ class UiDailyReport extends Command
             'is_retrograde' => $p->is_retrograde,
         ])->values()->all();
 
-        // Transit-to-natal aspects (top 5 by orb)
+        // Transit-to-natal aspects — full list for scoring + top 5 for display
         $natalPlanets = $profile->natalChart?->planets ?? [];
-        $transitNatalAspects = [];
-        if (! empty($natalPlanets)) {
-            $transitNatalAspects = array_slice(
-                $calculator->transitToNatal($transitPlanets, $natalPlanets),
-                0, 5
-            );
-        }
+        $allTransitNatalAspects = ! empty($natalPlanets)
+            ? $calculator->transitToNatal($transitPlanets, $natalPlanets)
+            : [];
+        $transitNatalAspects = array_slice($allTransitNatalAspects, 0, 5);
 
         // Transit-to-transit aspects (top 3 by orb, skip mutual_reception)
         $transitAspects = array_slice(
@@ -240,6 +253,8 @@ class UiDailyReport extends Command
                 $moonSignName,
                 $moonPhaseName,
                 $lunarDay,
+                $simplified,
+                $profile->id,
             );
             if ($synthesis) {
                 $this->put($this->divider());
@@ -266,7 +281,6 @@ class UiDailyReport extends Command
             $nGlyph   = self::BODY_GLYPHS[$asp['natal_body']] ?? '?';
             $aspGlyph = self::ASPECT_GLYPHS[$asp['aspect']] ?? '·';
             $aspWord  = ucfirst(str_replace('_', '-', $asp['aspect']));
-            $orb      = number_format($asp['orb'], 1) . '°';
 
             $chip    = $tGlyph . ' ' . $tName . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $nGlyph . ' natal ' . $nName;
             $key     = 'transit_' . strtolower($tName) . '_' . $asp['aspect'] . '_natal_' . strtolower($nName);
@@ -275,7 +289,7 @@ class UiDailyReport extends Command
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
-            $this->put($this->row($this->spread('  · ' . $chip, $orb . '  ')));
+            $this->put($this->row('  · ' . $chip));
             if ($text) {
                 $this->put($this->row(''));
                 foreach ($this->wrap($text, self::IW - 4) as $line) {
@@ -315,7 +329,6 @@ class UiDailyReport extends Command
             $glyphB   = self::BODY_GLYPHS[$asp['body_b']] ?? '?';
             $aspGlyph = self::ASPECT_GLYPHS[$asp['aspect']] ?? '·';
             $aspWord  = ucfirst(str_replace('_', '-', $asp['aspect']));
-            $orb      = number_format($asp['orb'], 1) . '°';
 
             $chip  = $glyphA . ' ' . $nameA . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $glyphB . ' ' . $nameB;
             $key   = strtolower($nameA) . '_' . $asp['aspect'] . '_' . strtolower($nameB);
@@ -323,7 +336,7 @@ class UiDailyReport extends Command
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
-            $this->put($this->row($this->spread('  · ' . $chip, $orb . '  ')));
+            $this->put($this->row('  · ' . $chip));
             if ($text) {
                 $this->put($this->row(''));
                 foreach ($this->wrap($text, self::IW - 4) as $line) {
@@ -368,7 +381,7 @@ class UiDailyReport extends Command
         // ── Tip of the day ───────────────────────────────────────────────
         $tipKey   = strtolower($carbon->format('l')) . '_moon_in_' . strtolower($moonSignName);
         $tipBlock = TextBlock::where('key', $tipKey)
-            ->where('section', 'daily_tip')
+            ->where('section', $simplified ? 'daily_tip_short' : 'daily_tip')
             ->where('language', 'en')
             ->first();
         $this->put($this->divider());
@@ -383,21 +396,64 @@ class UiDailyReport extends Command
         }
         $this->put($this->row(''));
 
-        // ── Areas of life ────────────────────────────────────────────────
+        // ── Areas of life (personalised scoring) ─────────────────────────
         $this->put($this->divider());
         $this->put($this->row($this->spread('  ★  AREAS OF LIFE', '')));
         $this->put($this->row(''));
 
-        $mercuryRx = in_array(PlanetaryPosition::MERCURY, $rxBodies);
-        $venusRx   = in_array(PlanetaryPosition::VENUS,   $rxBodies);
-        $marsRx    = in_array(PlanetaryPosition::MARS,    $rxBodies);
+        // Aspect weights: positive = good, negative = challenging
+        $aspectWeights = [
+            'trine'        => +2,
+            'sextile'      => +1,
+            'conjunction'  => +1,
+            'semi_sextile' => 0,
+            'quincunx'     => -1,
+            'square'       => -2,
+            'opposition'   => -2,
+        ];
+
+        // Accumulate aspect scores per natal body (what natal point is being activated)
+        $natalBodyScores = [];
+        foreach ($allTransitNatalAspects as $asp) {
+            $w = $aspectWeights[$asp['aspect']] ?? 0;
+            $nb = $asp['natal_body'];
+            $natalBodyScores[$nb] = ($natalBodyScores[$nb] ?? 0) + $w;
+        }
+        // Retrograde penalty: impairs the Rx planet's own natal domain
+        foreach ($rxBodies as $body) {
+            $natalBodyScores[$body] = ($natalBodyScores[$body] ?? 0) - 1;
+        }
+
+        // House cusps → sign → ruler body (personalised per profile)
+        $houseCusps = $profile->natalChart?->houses ?? [];
 
         foreach (self::CATEGORIES as $cat) {
-            $affected = in_array('mercury', $cat['affected_by']) && $mercuryRx
-                     || in_array('venus',   $cat['affected_by']) && $venusRx
-                     || in_array('mars',    $cat['affected_by']) && $marsRx;
+            $score = 0;
+            $rulerCount = 0;
+            foreach ($cat['houses'] as $hIdx) {
+                $cuspLon = $houseCusps[$hIdx] ?? null;
+                if ($cuspLon === null) { continue; }
+                $signIdx = (int) floor(fmod($cuspLon, 360) / 30);
+                $rulerBody = self::SIGN_RULERS[$signIdx] ?? null;
+                if ($rulerBody !== null) {
+                    $score += $natalBodyScores[$rulerBody] ?? 0;
+                    $rulerCount++;
+                }
+            }
+            // Average across houses if multiple
+            if ($rulerCount > 1) {
+                $score = $score / $rulerCount;
+            }
 
-            $rating   = $affected ? '⚠ wait  ' : '★★★     ';
+            $score100 = max(1, min(100, 50 + (int) round($score * 8)));
+            if ($score100 >= 67) {
+                $rating = '★★★     ';
+            } elseif ($score100 >= 34) {
+                $rating = '★★      ';
+            } else {
+                $rating = '⚠ wait  ';
+            }
+
             $this->put($this->row($this->spread('  ' . $cat['emoji'] . ' ' . $cat['name'], $rating)));
         }
         $this->put($this->row(''));
@@ -460,7 +516,21 @@ class UiDailyReport extends Command
         string $moonSignName,
         string $moonPhaseName,
         int $lunarDay,
+        bool $simplified = false,
+        int $profileId = 0,
     ): ?string {
+        // ── Cache check ───────────────────────────────────────────────────
+        $cacheKey = 'daily_' . $profileId . '_' . $carbon->toDateString() . ($simplified ? '_short' : '');
+        $cached   = TextBlock::where('key', $cacheKey)
+            ->where('section', 'ai_synthesis')
+            ->where('language', 'en')
+            ->first();
+
+        if ($cached) {
+            $this->line("  <fg=gray>[AI synthesis: cached]</>");
+            return $cached->text;
+        }
+
         /** @var \App\Contracts\AiProvider $ai */
         $ai = app(\App\Contracts\AiProvider::class);
 
@@ -482,32 +552,51 @@ class UiDailyReport extends Command
             $prompt .= "\nThe following pre-generated descriptions will be shown to the person below this intro:\n\n";
             $prompt .= implode("\n\n", $assembledTexts);
         }
-        $prompt .= "\n\nWrite exactly 2 paragraphs as a daily horoscope intro that synthesizes and introduces what follows.";
+        $prompt .= $simplified
+            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short daily horoscope intro that captures the key tone of the day."
+            : "\n\nWrite exactly 2 paragraphs as a daily horoscope intro that synthesizes and introduces what follows.";
 
-        $system = <<<SYSTEM
-You are writing a personalized daily horoscope intro for a single person.
+        $paragraphRule = $simplified
+            ? '- 1 paragraph only — 2–3 sentences total'
+            : "- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
 
-Style rules:
-- Write like a psychologist giving honest feedback — not an astrologer
-- Address the person as "you" (gender-neutral, no he/she)
-- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists
-- Each paragraph: 3–4 sentences
-- Short, simple sentences — one idea per sentence, no dashes, no semicolons
-- Plain everyday words only — no abstract concepts, no spiritual or psychological jargon
-- Be specific about the domain: use "emotional", "psychological", "practical", "social" — never vague words like "wounds", "healing", "struggles", "energy", "forces"
-- Describe what the person actually notices or does in real situations — concrete behaviour only
-- First paragraph: the overall tone of the day based on the sky (moon, transits, retrogrades)
-- Second paragraph: the personal angle — what these transits activate for this specific person today
-- Do NOT start with "Today is...", "This is...", or "With [planet]..."
-- Forbidden words: journey, path, soul, essence, portal, gateway, threshold, healing, wounds, dance, dissolves, energy, forces
-- No metaphors. No poetic language.
-- No HTML — plain text only
-SYSTEM;
+        $system = "You are writing a personalized daily horoscope intro for a single person.\n\n"
+            . "Style rules:\n"
+            . "- Write like a psychologist giving honest feedback — not an astrologer\n"
+            . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
+            . "{$paragraphRule}\n"
+            . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
+            . ($simplified ? "- Cut all filler: no \"The good news is\", \"This is a day for\", \"At the same time\", \"which means\", \"so if you\" — every sentence states a fact or concrete action\n" : '')
+            . "- Plain everyday words only — no abstract concepts, no spiritual or psychological jargon\n"
+            . "- Describe what the person actually notices or does in real situations — concrete behaviour only\n"
+            . ($simplified ? '' : "- First paragraph: the overall tone of the day based on the sky (moon, transits, retrogrades)\n- Second paragraph: the personal angle — what these transits activate for this specific person today\n")
+            . "- Do NOT start with \"Today is...\", \"This is...\", or \"With [planet]...\"\n"
+            . "- Forbidden words: journey, path, soul, essence, portal, gateway, threshold, healing, wounds, dance, dissolves, energy, forces\n"
+            . "- No metaphors. No poetic language.\n"
+            . "- No HTML — plain text only";
 
         try {
             $response = $ai->generate($prompt, $system, maxTokens: 500);
             $cost     = number_format($response->costUsd, 5);
             $this->line("  <fg=gray>[AI synthesis: {$response->inputTokens} in / {$response->outputTokens} out / \${$cost}]</>");
+
+            // ── Save to cache ──────────────────────────────────────────────
+            if ($profileId > 0) {
+                $now = now();
+                TextBlock::updateOrCreate(
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => 'en', 'variant' => 1],
+                    [
+                        'text'       => $response->text,
+                        'tone'       => 'neutral',
+                        'tokens_in'  => $response->inputTokens,
+                        'tokens_out' => $response->outputTokens,
+                        'cost_usd'   => $response->costUsd,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+            }
+
             return $response->text;
         } catch (\Exception $e) {
             $this->warn('AI synthesis failed: ' . $e->getMessage());
