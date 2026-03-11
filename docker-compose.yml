@@ -20,6 +20,7 @@ services:
       context: ./php
     volumes:
       - ./src:/var/www/html
+      - ./deploy:/var/www/deploy
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
