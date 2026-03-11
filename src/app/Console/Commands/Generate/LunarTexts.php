@@ -15,11 +15,12 @@ use Illuminate\Console\Command;
 class LunarTexts extends Command
 {
     protected $signature = 'horoscope:generate-lunar
-                            {--type=lunar_day : Section type: lunar_day | lunation_house}
+                            {--type=lunar_day : Section type: lunar_day | lunation_house | lunation_sign}
                             {--variants=1 : Number of variants per block}
                             {--from-key= : Start from a specific block key (resume)}
                             {--key= : Generate only this specific block key}
                             {--dry-run : Show prompt and response without saving}
+                            {--short : Generate 1-sentence simplified variants (_short sections)}
                             {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
 
     protected $description = 'Generate lunar calendar text blocks (moon-in-sign + lunation house)';
@@ -48,6 +49,8 @@ class LunarTexts extends Command
     public function handle(): int
     {
         $type     = $this->option('type');
+        $short    = (bool) $this->option('short');
+        $section  = $short ? $type . '_short' : $type;
         $variants = (int) $this->option('variants');
         $dryRun   = $this->option('dry-run');
         $model    = $this->option('model');
@@ -84,7 +87,7 @@ class LunarTexts extends Command
         $prIn      = 0.80 / 1_000_000;
         $prOut     = 4.00 / 1_000_000;
 
-        $this->info("Lunar texts | Type: {$type} | Keys: {$total} | Variants: {$variants} | Model: {$model}");
+        $this->info("Lunar texts | Section: {$section} | Keys: {$total} | Variants: {$variants} | Model: {$model}");
 
         if ($dryRun) {
             $this->warn('[DRY RUN] — nothing will be saved');
@@ -96,7 +99,7 @@ class LunarTexts extends Command
 
             if (! $dryRun && ! $onlyKey) {
                 $existing = TextBlock::where('key', $key)
-                    ->where('section', $type)
+                    ->where('section', $section)
                     ->where('language', 'en')
                     ->count();
 

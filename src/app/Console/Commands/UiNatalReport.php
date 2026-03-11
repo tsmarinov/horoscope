@@ -25,8 +25,7 @@ use Illuminate\Console\Command;
 class UiNatalReport extends Command
 {
     protected $signature = 'horoscope:ui-natal-report
-                            {profile? : Profile ID}
-                            {--user=  : User email (default: test@horo.test)}
+                            {profile? : Profile ID (default: 1)}
                             {--demo=  : Demo profile slug}
                             {--birth-date= : Anonymous guest birth date (YYYY-MM-DD)}
                             {--mode=organic : Report mode: organic / simplified / ai_l1 / ai_l1_haiku}
@@ -71,7 +70,7 @@ class UiNatalReport extends Command
         $subject = $this->resolveSubject();
 
         if ($subject === null) {
-            $this->error('Subject not found. Use --user, --demo, or --birth-date.');
+            $this->error('Subject not found. Use a profile ID, --demo, or --birth-date.');
             return self::FAILURE;
         }
 
@@ -97,7 +96,7 @@ class UiNatalReport extends Command
         // ── Header ───────────────────────────────────────────────────────
         $this->put($this->top());
         $this->put($this->row(
-            $this->spread('  ☽ NATAL CHART REPORT', '[' . $report->mode->value . ']  ')
+            $this->spread('  ☽ NATAL CHART REPORT', '')
         ));
         $this->put($this->row('  ' . $this->subjectLine($subject)));
         $this->put($this->divider());
@@ -116,6 +115,8 @@ class UiNatalReport extends Command
         foreach ($this->planetListLines($chart->planets ?? []) as $line) {
             $this->put($this->row($line));
         }
+        $this->put($this->row(''));
+        $this->put($this->row('  * Rx = Retrograde (apparent backward motion)'));
 
         // Split into 4 groups (support both full and _short section variants)
         $ascSections          = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_ascendant')));
@@ -162,7 +163,7 @@ class UiNatalReport extends Command
         // ── House Lords (pre-generated) ───────────────────────────────────
         if (count($houseLordPreSections) > 0) {
             $houseLabels = [
-                1  => '1st House — Self & Identity',
+                1  => 'ASC — Self & Identity',
                 2  => '2nd House — Money & Resources',
                 3  => '3rd House — Communication & Short Travel',
                 4  => '4th House — Home & Family',
@@ -261,10 +262,7 @@ class UiNatalReport extends Command
                 };
 
                 $this->put($this->row(''));
-                $this->put($this->row($this->spread(
-                    '  ' . $toneTag . '  ' . $heading,
-                    $section->tone . '  ',
-                )));
+                $this->put($this->row('  ' . $toneTag . '  ' . $heading));
 
                 $text = trim(strip_tags($section->text));
                 if ($text !== '') {
@@ -317,21 +315,7 @@ class UiNatalReport extends Command
             return new Profile(['birth_date' => $birthDate]);
         }
 
-        $email = trim($this->option('user') ?: 'test@horo.test');
-        $user  = \App\Models\User::where('email', $email)->first();
-
-        if ($user === null) {
-            $this->warn("No user found for email: {$email}");
-            return null;
-        }
-
-        $profile = $user->profile;
-
-        if ($profile === null) {
-            $this->warn("User {$email} has no profile yet.");
-        }
-
-        return $profile;
+        return Profile::find(1);
     }
 
     // ── Natal wheel placeholder ──────────────────────────────────────────
@@ -372,14 +356,14 @@ class UiNatalReport extends Command
         // Sun (0)
         if ($p = $indexed->get(0)) {
             $sign    = PlanetaryPosition::SIGN_NAMES[$p['sign']] ?? '';
-            $parts[] = self::BODY_GLYPHS[0] . ' Sun ' . self::SIGN_GLYPHS[$p['sign']] . ' ' . $sign;
+            $parts[] = self::BODY_GLYPHS[0] . ' Sun in ' . self::SIGN_GLYPHS[$p['sign']] . ' ' . $sign;
         }
 
         // Moon (1)
         if ($p = $indexed->get(1)) {
             $sign    = PlanetaryPosition::SIGN_NAMES[$p['sign']] ?? '';
             $retro   = ($p['is_retrograde'] ?? false) ? ' Rx' : '';
-            $parts[] = self::BODY_GLYPHS[1] . ' Moon ' . self::SIGN_GLYPHS[$p['sign']] . ' ' . $sign . $retro;
+            $parts[] = self::BODY_GLYPHS[1] . ' Moon in ' . self::SIGN_GLYPHS[$p['sign']] . ' ' . $sign . $retro;
         }
 
         return implode('  ·  ', $parts);
@@ -398,7 +382,7 @@ class UiNatalReport extends Command
             $sg    = self::SIGN_GLYPHS[$p['sign']] ?? '';
             $house = $p['house'] ? ' H' . $p['house'] : '';
             $retro = ($p['is_retrograde'] ?? false) ? ' Rx' : '';
-            $col[] = $glyph . ' ' . $name . ' ' . $sg . ' ' . $sign . $house . $retro;
+            $col[] = $glyph . ' ' . $name . ' in ' . $sg . ' ' . $sign . $house . $retro;
         }
 
         // Two columns
@@ -562,16 +546,13 @@ class UiNatalReport extends Command
 
     private function subjectLine(Profile $subject): string
     {
-        $name = $subject->name
-            ?? ($subject->isFull() ? $subject->user?->email : null)
-            ?? 'Anonymous Guest';
+        $name = $subject->name ?? $subject->user?->name ?? 'Anonymous Guest';
 
         $parts = array_filter([
             $name,
             'Born ' . $subject->getBirthDate(),
             $subject->getBirthTime(),
             $subject->getBirthCity()?->name,
-            'Tier ' . $subject->getChartTier(),
         ]);
 
         return implode('  ·  ', $parts);

@@ -8,14 +8,13 @@ interface HoroscopeSubject
 {
     public function getBirthDate(): string;
     public function getBirthTime(): ?string;
-    public function isBirthTimeApproximate(): bool;
     public function getBirthCity(): ?City;
 
     /**
      * Chart tier:
-     *   1 — birth date only (no time, no city)
-     *   2 — approximate time, or exact time without city
-     *   3 — exact time + city
+     *   1 — birth date only (no time)
+     *   2 — birth time without city
+     *   3 — birth time + city
      */
     public function getChartTier(): int;
 

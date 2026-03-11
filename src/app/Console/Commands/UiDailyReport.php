@@ -175,7 +175,7 @@ class UiDailyReport extends Command
         $this->put($this->top());
         $this->put($this->row($this->spread('  ☽ DAILY HOROSCOPE', '[' . $date . ']  ')));
         $this->put($this->row('  ' . $carbon->format('l, j F Y')));
-        $this->put($this->row('  Profile: ' . ($profile->name ?? 'Profile #' . $profile->id)));
+        $this->put($this->row('  ' . ($profile->name ?? $profile->user?->name ?? 'Profile #' . $profile->id)));
         $this->put($this->divider());
 
         // ── Bi-wheel placeholder ─────────────────────────────────────────
@@ -188,6 +188,7 @@ class UiDailyReport extends Command
         // ── Transit subtitle (Sun · Moon · Mercury Rx) ───────────────────
         $this->put($this->divider());
         $this->put($this->row('  ' . $this->transitSubtitle($planets)));
+        $this->put($this->row('  * Rx = Retrograde (apparent backward motion)'));
         $this->put($this->row(''));
 
         // ── Transit planet list ──────────────────────────────────────────
@@ -289,7 +290,7 @@ class UiDailyReport extends Command
             $signName = PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '';
             $bodyName = PlanetaryPosition::BODY_NAMES[$p->body] ?? '';
             $chip     = (self::BODY_GLYPHS[$p->body] ?? '?') . ' ' . $bodyName . ' Retrograde'
-                      . '  ·  '
+                      . '  ·  in '
                       . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' ' . $signName;
 
             $rxKey = strtolower($bodyName) . '_rx_' . strtolower($signName);
@@ -353,7 +354,7 @@ class UiDailyReport extends Command
             . '  ·  Day ' . $lunarDay . ' / 30  ·  ' . $moonPhaseName
         ));
         $lunarKey   = 'moon_in_' . strtolower($moonSignName);
-        $lunarBlock = TextBlock::pick($lunarKey, 'lunar_day', 1);
+        $lunarBlock = TextBlock::pick($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 1);
         $lunarText  = $lunarBlock ? trim(strip_tags($lunarBlock->text)) : null;
         if ($lunarText) {
             foreach ($this->wrap($lunarText, self::IW - 4) as $line) {
@@ -424,7 +425,7 @@ class UiDailyReport extends Command
             $clothingKey = strtolower($carbon->format('l'))
                          . '_venus_in_' . strtolower($signNames[$venusSign] ?? '');
             $block = TextBlock::where('key', $clothingKey)
-                ->where('section', 'weekday_clothing')
+                ->where('section', $simplified ? 'weekday_clothing_short' : 'weekday_clothing')
                 ->where('language', 'en')
                 ->first();
             if ($block) {
@@ -522,7 +523,7 @@ SYSTEM;
 
         if ($sun = $planets->get(PlanetaryPosition::SUN)) {
             $signIdx = (int) floor($sun->longitude / 30);
-            $parts[] = '☉ Sun '
+            $parts[] = '☉ Sun in '
                      . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
                      . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '');
         }
@@ -530,7 +531,7 @@ SYSTEM;
         if ($moon = $planets->get(PlanetaryPosition::MOON)) {
             $signIdx = (int) floor($moon->longitude / 30);
             $retro   = $moon->is_retrograde ? ' Rx' : '';
-            $parts[] = '☽ Moon '
+            $parts[] = '☽ Moon in '
                      . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
                      . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '') . $retro;
         }
@@ -551,7 +552,7 @@ SYSTEM;
             $deg     = number_format(fmod($p->longitude, 30), 1) . '°';
             $retro   = $p->is_retrograde ? ' Rx' : '';
             $col[]   = (self::BODY_GLYPHS[$p->body] ?? '?') . ' '
-                     . (PlanetaryPosition::BODY_NAMES[$p->body] ?? '') . ' '
+                     . (PlanetaryPosition::BODY_NAMES[$p->body] ?? '') . ' in '
                      . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
                      . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '') . ' '
                      . $deg . $retro;

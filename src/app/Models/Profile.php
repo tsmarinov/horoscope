@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string|null      $slug
  * @property \Carbon\Carbon|null $birth_date
  * @property string|null      $birth_time
- * @property bool             $birth_time_approximate
  * @property int|null         $birth_city_id
  */
 class Profile extends Model implements HoroscopeSubject
@@ -33,16 +32,14 @@ class Profile extends Model implements HoroscopeSubject
         'slug',
         'birth_date',
         'birth_time',
-        'birth_time_approximate',
         'birth_city_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_demo'                => 'boolean',
-            'birth_date'             => 'date',
-            'birth_time_approximate' => 'boolean',
+            'is_demo'    => 'boolean',
+            'birth_date' => 'date',
         ];
     }
 
@@ -80,11 +77,6 @@ class Profile extends Model implements HoroscopeSubject
         return $this->birth_time;
     }
 
-    public function isBirthTimeApproximate(): bool
-    {
-        return (bool) $this->birth_time_approximate;
-    }
-
     public function getBirthCity(): ?City
     {
         return $this->birthCity;
@@ -96,7 +88,7 @@ class Profile extends Model implements HoroscopeSubject
             return 1;
         }
 
-        if ($this->birth_time_approximate || ! $this->birth_city_id) {
+        if (! $this->birth_city_id) {
             return 2;
         }
 

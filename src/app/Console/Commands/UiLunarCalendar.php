@@ -31,7 +31,8 @@ class UiLunarCalendar extends Command
 {
     protected $signature = 'horoscope:ui-lunar-calendar
                             {profile? : Profile ID (optional, for personalized lunation card)}
-                            {--month= : Month to show (YYYY-MM, default: current month)}';
+                            {--month= : Month to show (YYYY-MM, default: current month)}
+                            {--mode=organic : Report mode: organic / simplified}';
 
     protected $description = 'Render a lunar calendar in pseudo-browser console UI';
 
@@ -78,7 +79,10 @@ class UiLunarCalendar extends Command
 
     public function handle(): int
     {
-        $monthStr = $this->option('month') ?: now()->format('Y-m');
+        $monthStr  = $this->option('month') ?: now()->format('Y-m');
+        $short     = $this->option('mode') === 'simplified';
+        $daySection = $short ? 'lunar_day_short' : 'lunar_day';
+        $tagSection = $short ? 'lunation_sign_short' : 'lunation_sign';
 
         if (! preg_match('/^\d{4}-\d{2}$/', $monthStr)) {
             $this->error("Invalid month format. Use YYYY-MM (e.g. 2026-03).");
@@ -290,7 +294,7 @@ class UiLunarCalendar extends Command
 
             // Day text — show only on the first day the Moon enters a sign
             if ($day['sign_idx'] !== $prevSignIdx) {
-                $dayBlock = TextBlock::pick('moon_in_' . strtolower($signName), 'lunar_day', 1);
+                $dayBlock = TextBlock::pick('moon_in_' . strtolower($signName), $daySection, 1);
                 if ($dayBlock) {
                     $dayText = trim(strip_tags($dayBlock->text));
                     foreach ($this->wrap($dayText, self::IW - 4) as $line) {
@@ -318,7 +322,7 @@ class UiLunarCalendar extends Command
                 $c        = $lun['carbon'];
                 $signName = PlanetaryPosition::SIGN_NAMES[$lun['sign_idx']] ?? '';
                 $tagKey   = ($lun['new_moon'] ? 'new_moon_in_' : 'full_moon_in_') . strtolower($signName);
-                $tagBlock = TextBlock::pick($tagKey, 'lunation_sign', 1);
+                $tagBlock = TextBlock::pick($tagKey, $tagSection, 1);
                 $tagText  = $tagBlock ? ' — ' . $tagBlock->text : '';
                 $this->put($this->row(
                     '  ' . $icon . '  ' . $c->format('j M') . '  '
