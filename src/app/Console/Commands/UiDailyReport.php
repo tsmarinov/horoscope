@@ -2,13 +2,15 @@
 
 namespace App\Console\Commands;
 
+use App\DataTransfer\Horoscope\DailyHoroscopeDTO;
+use App\DataTransfer\Horoscope\TransitAspectDTO;
+use App\DataTransfer\Horoscope\TransitTransitDTO;
 use App\Models\PlanetaryPosition;
 use App\Models\Profile;
 use App\Models\TextBlock;
-use App\Services\AspectCalculator;
+use App\Services\Horoscope\DailyHoroscopeService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 
 /**
  * Pseudo-browser UI for the daily horoscope — no actual browser needed.
@@ -63,63 +65,34 @@ class UiDailyReport extends Command
         'semi_sextile'     => '∠', 'mutual_reception' => '⇌',
     ];
 
-    // ── Day rulers: indexed by Carbon dayOfWeek (0=Sun … 6=Sat) ─────────
-    private const DAY_RULERS = [
-        0 => ['planet' => 'Sun',     'body' => 0, 'color' => 'gold, amber',         'gem' => 'amber, citrine',      'number' => 1],
-        1 => ['planet' => 'Moon',    'body' => 1, 'color' => 'silver, pearl white', 'gem' => 'moonstone, pearl',    'number' => 2],
-        2 => ['planet' => 'Mars',    'body' => 4, 'color' => 'red, crimson',        'gem' => 'ruby, garnet',        'number' => 9],
-        3 => ['planet' => 'Mercury', 'body' => 2, 'color' => 'yellow, orange',      'gem' => 'citrine, topaz',      'number' => 5],
-        4 => ['planet' => 'Jupiter', 'body' => 5, 'color' => 'blue, violet',        'gem' => 'sapphire, amethyst',  'number' => 3],
-        5 => ['planet' => 'Venus',   'body' => 3, 'color' => 'green, rose pink',    'gem' => 'emerald, rose quartz','number' => 6],
-        6 => ['planet' => 'Saturn',  'body' => 6, 'color' => 'black, dark navy',    'gem' => 'obsidian, onyx',      'number' => 8],
+    private const AREA_EMOJIS = [
+        'love'            => '❤️',
+        'home'            => '🏠',
+        'creativity'      => '🎨',
+        'spirituality'    => '🔮',
+        'health'          => '💚',
+        'finance'         => '💰',
+        'travel'          => '✈️',
+        'career'          => '💼',
+        'personal_growth' => '🌱',
+        'communication'   => '💬',
+        'contracts'       => '📝',
     ];
 
-    // ── Moon phases ──────────────────────────────────────────────────────
-    private const MOON_PHASES = [
-        [0,   45,  '🌑', 'New Moon'],
-        [45,  90,  '🌒', 'Waxing Crescent'],
-        [90,  135, '🌓', 'First Quarter'],
-        [135, 180, '🌔', 'Waxing Gibbous'],
-        [180, 225, '🌕', 'Full Moon'],
-        [225, 270, '🌖', 'Waning Gibbous'],
-        [270, 315, '🌗', 'Last Quarter'],
-        [315, 360, '🌘', 'Waning Crescent'],
-    ];
-
-    // ── Life categories — house indices (0-based: H1=0 … H12=11) ────────
-    private const CATEGORIES = [
-        ['emoji' => '❤️',  'name' => 'Love',             'houses' => [4, 6]],
-        ['emoji' => '🏠',  'name' => 'Home',             'houses' => [3]],
-        ['emoji' => '🎨',  'name' => 'Creativity',       'houses' => [4]],
-        ['emoji' => '🔮',  'name' => 'Spirituality',     'houses' => [8, 11]],
-        ['emoji' => '💚',  'name' => 'Health',           'houses' => [5, 0]],
-        ['emoji' => '💰',  'name' => 'Finance',          'houses' => [1, 7]],
-        ['emoji' => '✈️',  'name' => 'Travel',           'houses' => [8, 2]],
-        ['emoji' => '💼',  'name' => 'Career',           'houses' => [9]],
-        ['emoji' => '🌱',  'name' => 'Personal Growth',  'houses' => [0]],
-        ['emoji' => '💬',  'name' => 'Communication',    'houses' => [2]],
-        ['emoji' => '📝',  'name' => 'Contracts',        'houses' => [6, 2]],
-    ];
-
-    // ── Sign rulers (traditional, body IDs) ──────────────────────────────
-    private const SIGN_RULERS = [
-        0 => 4,  // Aries   → Mars
-        1 => 3,  // Taurus  → Venus
-        2 => 2,  // Gemini  → Mercury
-        3 => 1,  // Cancer  → Moon
-        4 => 0,  // Leo     → Sun
-        5 => 2,  // Virgo   → Mercury
-        6 => 3,  // Libra   → Venus
-        7 => 4,  // Scorpio → Mars
-        8 => 5,  // Sagittarius → Jupiter
-        9 => 6,  // Capricorn   → Saturn
-       10 => 6,  // Aquarius    → Saturn
-       11 => 5,  // Pisces      → Jupiter
+    private const MOON_PHASE_EMOJIS = [
+        'new_moon'        => '🌑',
+        'waxing_crescent' => '🌒',
+        'first_quarter'   => '🌓',
+        'waxing_gibbous'  => '🌔',
+        'full_moon'       => '🌕',
+        'waning_gibbous'  => '🌖',
+        'last_quarter'    => '🌗',
+        'waning_crescent' => '🌘',
     ];
 
     // ── Entry point ──────────────────────────────────────────────────────
 
-    public function handle(AspectCalculator $calculator): int
+    public function handle(DailyHoroscopeService $service): int
     {
         $date       = $this->option('date') ?: now()->toDateString();
         $simplified = $this->option('simplified');
@@ -130,57 +103,14 @@ class UiDailyReport extends Command
             return self::FAILURE;
         }
 
-        $positions = PlanetaryPosition::forDate($date)->orderBy('body')->get();
-
-        if ($positions->isEmpty()) {
-            $this->error("No planetary positions found for {$date}.");
+        try {
+            $dto = $service->build($profile, $date);
+        } catch (\RuntimeException $e) {
+            $this->error($e->getMessage());
             return self::FAILURE;
         }
 
-        $planets   = $positions->keyBy('body');
-        $carbon    = Carbon::parse($date);
-        $ruler     = self::DAY_RULERS[$carbon->dayOfWeek];
-
-        // Moon data
-        $moon       = $planets->get(PlanetaryPosition::MOON);
-        $sun        = $planets->get(PlanetaryPosition::SUN);
-        $elongation   = fmod(($moon?->longitude ?? 0) - ($sun?->longitude ?? 0) + 360, 360);
-        $lunarDay     = max(1, (int) ceil($elongation / (360 / 29.53)));
-        [$moonEmoji, $moonPhaseName] = $this->moonPhase($elongation);
-        $moonSignIdx  = (int) floor(($moon?->longitude ?? 0) / 30);
-        $moonSignName = PlanetaryPosition::SIGN_NAMES[$moonSignIdx] ?? '';
-
-        // Notable retrogrades (Mercury–Saturn)
-        $retrogrades = $positions
-            ->filter(fn ($p) => $p->is_retrograde && $p->body >= 2 && $p->body <= 6)
-            ->values();
-
-        $rxBodies = $retrogrades->pluck('body')->toArray();
-
-        // Build transit planet arrays for AspectCalculator
-        $transitPlanets = $positions->map(fn ($p) => [
-            'body'          => $p->body,
-            'longitude'     => $p->longitude,
-            'speed'         => $p->speed,
-            'sign'          => (int) floor($p->longitude / 30),
-            'is_retrograde' => $p->is_retrograde,
-        ])->values()->all();
-
-        // Transit-to-natal aspects — full list for scoring + top 5 for display
-        $natalPlanets = $profile->natalChart?->planets ?? [];
-        $allTransitNatalAspects = ! empty($natalPlanets)
-            ? $calculator->transitToNatal($transitPlanets, $natalPlanets)
-            : [];
-        $transitNatalAspects = array_slice($allTransitNatalAspects, 0, 5);
-
-        // Transit-to-transit aspects (top 3 by orb, skip mutual_reception)
-        $transitAspects = array_slice(
-            array_filter(
-                $calculator->transitToTransit($transitPlanets),
-                fn ($a) => $a['aspect'] !== 'mutual_reception'
-            ),
-            0, 3
-        );
+        $carbon = Carbon::parse($date);
 
         $this->newLine();
 
@@ -188,7 +118,7 @@ class UiDailyReport extends Command
         $this->put($this->top());
         $this->put($this->row($this->spread('  ☽ DAILY HOROSCOPE', '[' . $date . ']  ')));
         $this->put($this->row('  ' . $carbon->format('l, j F Y')));
-        $this->put($this->row('  ' . ($profile->name ?? $profile->user?->name ?? 'Profile #' . $profile->id)));
+        $this->put($this->row('  ' . $dto->profileName));
         $this->put($this->divider());
 
         // ── Bi-wheel placeholder ─────────────────────────────────────────
@@ -200,59 +130,52 @@ class UiDailyReport extends Command
 
         // ── Transit subtitle (Sun · Moon · Mercury Rx) ───────────────────
         $this->put($this->divider());
-        $this->put($this->row('  ' . $this->transitSubtitle($planets)));
+        $this->put($this->row('  ' . $this->transitSubtitle($dto)));
         $this->put($this->row('  * Rx = Retrograde (apparent backward motion)'));
         $this->put($this->row(''));
 
         // ── Transit planet list ──────────────────────────────────────────
-        foreach ($this->transitLines($positions->all()) as $line) {
+        foreach ($this->transitLines($dto) as $line) {
             $this->put($this->row($line));
         }
 
         // ── Collect TextBlock texts for AI L1 synthesis ──────────────────
-        // (pre-generated texts that will be shown in KEY TRANSIT FACTORS)
         $assembledTexts = [];
 
-        foreach (array_slice($transitNatalAspects, 0, 5) as $asp) {
-            $tName = PlanetaryPosition::BODY_NAMES[$asp['transit_body']] ?? '';
-            $nName = PlanetaryPosition::BODY_NAMES[$asp['natal_body']] ?? '';
-            $aspWord = ucfirst(str_replace('_', ' ', $asp['aspect']));
-            $key   = 'transit_' . strtolower($tName) . '_' . $asp['aspect'] . '_natal_' . strtolower($nName);
+        foreach ($dto->transitNatalAspects as $asp) {
+            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+            $key   = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $block = TextBlock::pick($key, 'transit_natal', 1);
             if ($block) {
-                $assembledTexts[] = "[Transit {$tName} {$aspWord} natal {$nName}]\n" . trim(strip_tags($block->text));
+                $assembledTexts[] = "[Transit {$asp->transitName} {$aspWord} natal {$asp->natalName}]\n" . trim(strip_tags($block->text));
             }
         }
-        foreach ($retrogrades as $p) {
-            $signIdx  = (int) floor($p->longitude / 30);
-            $signName = PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '';
-            $bodyName = PlanetaryPosition::BODY_NAMES[$p->body] ?? '';
-            $rxKey = strtolower($bodyName) . '_rx_' . strtolower($signName);
+        foreach ($dto->retrogrades as $rx) {
+            $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
             $block = TextBlock::pick($rxKey, 'retrograde', 1);
             if ($block) {
-                $assembledTexts[] = "[{$bodyName} Retrograde in {$signName}]\n" . trim(strip_tags($block->text));
+                $assembledTexts[] = "[{$rx->name} " . __('ui.retrograde') . " in {$rx->signName}]\n" . trim(strip_tags($block->text));
             }
         }
-        foreach (array_slice($transitAspects, 0, 3) as $asp) {
-            $nameA = PlanetaryPosition::BODY_NAMES[$asp['body_a']] ?? '';
-            $nameB = PlanetaryPosition::BODY_NAMES[$asp['body_b']] ?? '';
-            $aspWord = ucfirst(str_replace('_', ' ', $asp['aspect']));
-            $key   = strtolower($nameA) . '_' . $asp['aspect'] . '_' . strtolower($nameB);
+        foreach ($dto->transitTransitAspects as $asp) {
+            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+            $key   = strtolower($asp->nameA) . '_' . $asp->aspect . '_' . strtolower($asp->nameB);
             $block = TextBlock::pick($key, 'transit', 1);
             if ($block) {
-                $assembledTexts[] = "[{$nameA} {$aspWord} {$nameB}]\n" . trim(strip_tags($block->text));
+                $assembledTexts[] = "[{$asp->nameA} {$aspWord} {$asp->nameB}]\n" . trim(strip_tags($block->text));
             }
         }
 
         // ── Synthesis (AI L1) ────────────────────────────────────────────
         if ($this->option('ai')) {
+            $natalPlanets = $profile->natalChart?->planets ?? [];
             $synthesis = $this->generateSynthesis(
                 $assembledTexts,
                 $natalPlanets,
                 $carbon,
-                $moonSignName,
-                $moonPhaseName,
-                $lunarDay,
+                $dto->moon->signName,
+                $dto->moon->phaseName,
+                $dto->moon->lunarDay,
                 $simplified,
                 $profile->id,
             );
@@ -274,19 +197,17 @@ class UiDailyReport extends Command
         $this->put($this->row($this->spread('  ◆  KEY TRANSIT FACTORS', '')));
 
         // 1. Transit-to-natal aspects
-        foreach ($transitNatalAspects as $asp) {
-            $tName    = PlanetaryPosition::BODY_NAMES[$asp['transit_body']] ?? '';
-            $nName    = PlanetaryPosition::BODY_NAMES[$asp['natal_body']] ?? '';
-            $tGlyph   = self::BODY_GLYPHS[$asp['transit_body']] ?? '?';
-            $nGlyph   = self::BODY_GLYPHS[$asp['natal_body']] ?? '?';
-            $aspGlyph = self::ASPECT_GLYPHS[$asp['aspect']] ?? '·';
-            $aspWord  = ucfirst(str_replace('_', '-', $asp['aspect']));
+        foreach ($dto->transitNatalAspects as $asp) {
+            $tGlyph   = self::BODY_GLYPHS[$asp->transitBody] ?? '?';
+            $nGlyph   = self::BODY_GLYPHS[$asp->natalBody] ?? '?';
+            $aspGlyph = self::ASPECT_GLYPHS[$asp->aspect] ?? '·';
+            $aspWord  = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
 
-            $chip    = $tGlyph . ' ' . $tName . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $nGlyph . ' natal ' . $nName;
-            $key     = 'transit_' . strtolower($tName) . '_' . $asp['aspect'] . '_natal_' . strtolower($nName);
+            $chip    = $tGlyph . ' ' . $asp->transitName . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $nGlyph . ' natal ' . $asp->natalName;
+            $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $section = $simplified ? 'transit_natal_short' : 'transit_natal';
             $block   = TextBlock::pick($key, $section, 1);
-            $text  = $block ? trim(strip_tags($block->text)) : null;
+            $text    = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
             $this->put($this->row('  · ' . $chip));
@@ -299,15 +220,12 @@ class UiDailyReport extends Command
         }
 
         // 2. Retrograde planets
-        foreach ($retrogrades as $p) {
-            $signIdx  = (int) floor($p->longitude / 30);
-            $signName = PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '';
-            $bodyName = PlanetaryPosition::BODY_NAMES[$p->body] ?? '';
-            $chip     = (self::BODY_GLYPHS[$p->body] ?? '?') . ' ' . $bodyName . ' Retrograde'
-                      . '  ·  in '
-                      . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' ' . $signName;
+        foreach ($dto->retrogrades as $rx) {
+            $chip = (self::BODY_GLYPHS[$rx->body] ?? '?') . ' ' . $rx->name . ' ' . __('ui.retrograde')
+                  . '  ·  in '
+                  . (self::SIGN_GLYPHS[$rx->signIndex] ?? '') . ' ' . $rx->signName;
 
-            $rxKey = strtolower($bodyName) . '_rx_' . strtolower($signName);
+            $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
             $block = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
@@ -322,16 +240,14 @@ class UiDailyReport extends Command
         }
 
         // 3. Transit-to-transit aspects
-        foreach ($transitAspects as $asp) {
-            $nameA    = PlanetaryPosition::BODY_NAMES[$asp['body_a']] ?? '';
-            $nameB    = PlanetaryPosition::BODY_NAMES[$asp['body_b']] ?? '';
-            $glyphA   = self::BODY_GLYPHS[$asp['body_a']] ?? '?';
-            $glyphB   = self::BODY_GLYPHS[$asp['body_b']] ?? '?';
-            $aspGlyph = self::ASPECT_GLYPHS[$asp['aspect']] ?? '·';
-            $aspWord  = ucfirst(str_replace('_', '-', $asp['aspect']));
+        foreach ($dto->transitTransitAspects as $asp) {
+            $glyphA   = self::BODY_GLYPHS[$asp->bodyA] ?? '?';
+            $glyphB   = self::BODY_GLYPHS[$asp->bodyB] ?? '?';
+            $aspGlyph = self::ASPECT_GLYPHS[$asp->aspect] ?? '·';
+            $aspWord  = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
 
-            $chip  = $glyphA . ' ' . $nameA . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $glyphB . ' ' . $nameB;
-            $key   = strtolower($nameA) . '_' . $asp['aspect'] . '_' . strtolower($nameB);
+            $chip  = $glyphA . ' ' . $asp->nameA . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $glyphB . ' ' . $asp->nameB;
+            $key   = strtolower($asp->nameA) . '_' . $asp->aspect . '_' . strtolower($asp->nameB);
             $block = TextBlock::pick($key, $simplified ? 'transit_short' : 'transit', 1);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
@@ -345,7 +261,7 @@ class UiDailyReport extends Command
             }
         }
 
-        if (empty($transitNatalAspects) && $retrogrades->isEmpty() && empty($transitAspects)) {
+        if (empty($dto->transitNatalAspects) && empty($dto->retrogrades) && empty($dto->transitTransitAspects)) {
             $this->put($this->row(''));
             $this->put($this->row('    No significant transit factors today.'));
         }
@@ -354,19 +270,20 @@ class UiDailyReport extends Command
 
         // ── Lunar block ──────────────────────────────────────────────────
         $this->put($this->divider());
-        $moonSignG = self::SIGN_GLYPHS[$moonSignIdx] ?? '';
+        $moonSignG = self::SIGN_GLYPHS[$dto->moon->signIndex] ?? '';
+        $phaseEmoji = self::MOON_PHASE_EMOJIS[$dto->moon->phaseSlug] ?? '🌑';
         $this->put($this->row(
             $this->spread(
-                '  ' . $moonEmoji . '  LUNAR DAY ' . $lunarDay,
-                $moonPhaseName . '  '
+                '  ' . $phaseEmoji . '  LUNAR DAY ' . $dto->moon->lunarDay,
+                $dto->moon->phaseName . '  '
             )
         ));
         $this->put($this->row(''));
         $this->put($this->row(
-            '  ' . $moonEmoji . ' Moon in ' . $moonSignG . ' ' . $moonSignName
-            . '  ·  Day ' . $lunarDay . ' / 30  ·  ' . $moonPhaseName
+            '  ' . $phaseEmoji . ' Moon in ' . $moonSignG . ' ' . $dto->moon->signName
+            . '  ·  Day ' . $dto->moon->lunarDay . ' / 30  ·  ' . $dto->moon->phaseName
         ));
-        $lunarKey   = 'moon_in_' . strtolower($moonSignName);
+        $lunarKey   = 'moon_in_' . strtolower($dto->moon->signName);
         $lunarBlock = TextBlock::pick($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 1);
         $lunarText  = $lunarBlock ? trim(strip_tags($lunarBlock->text)) : null;
         if ($lunarText) {
@@ -379,13 +296,13 @@ class UiDailyReport extends Command
         $this->put($this->row(''));
 
         // ── Tip of the day ───────────────────────────────────────────────
-        $tipKey   = strtolower($carbon->format('l')) . '_moon_in_' . strtolower($moonSignName);
+        $tipKey   = strtolower($carbon->format('l')) . '_moon_in_' . strtolower($dto->moon->signName);
         $tipBlock = TextBlock::where('key', $tipKey)
             ->where('section', $simplified ? 'daily_tip_short' : 'daily_tip')
             ->where('language', 'en')
             ->first();
         $this->put($this->divider());
-        $this->put($this->row($this->spread('  💡  TIP OF THE DAY', 'Moon in ' . $moonSignName . '  ')));
+        $this->put($this->row($this->spread('  💡  TIP OF THE DAY', 'Moon in ' . $dto->moon->signName . '  ')));
         $this->put($this->row(''));
         if ($tipBlock) {
             foreach ($this->wrap(trim(strip_tags($tipBlock->text)), self::IW - 4) as $line) {
@@ -396,97 +313,42 @@ class UiDailyReport extends Command
         }
         $this->put($this->row(''));
 
-        // ── Areas of life (personalised scoring) ─────────────────────────
+        // ── Areas of life ────────────────────────────────────────────────
         $this->put($this->divider());
         $this->put($this->row($this->spread('  ★  AREAS OF LIFE', '')));
         $this->put($this->row(''));
 
-        // Aspect weights: positive = good, negative = challenging
-        $aspectWeights = [
-            'trine'        => +2,
-            'sextile'      => +1,
-            'conjunction'  => +1,
-            'semi_sextile' => 0,
-            'quincunx'     => -1,
-            'square'       => -2,
-            'opposition'   => -2,
-        ];
-
-        // Accumulate aspect scores per natal body (what natal point is being activated)
-        $natalBodyScores = [];
-        foreach ($allTransitNatalAspects as $asp) {
-            $w = $aspectWeights[$asp['aspect']] ?? 0;
-            $nb = $asp['natal_body'];
-            $natalBodyScores[$nb] = ($natalBodyScores[$nb] ?? 0) + $w;
-        }
-        // Retrograde penalty: impairs the Rx planet's own natal domain
-        foreach ($rxBodies as $body) {
-            $natalBodyScores[$body] = ($natalBodyScores[$body] ?? 0) - 1;
-        }
-
-        // House cusps → sign → ruler body (personalised per profile)
-        $houseCusps = $profile->natalChart?->houses ?? [];
-
-        foreach (self::CATEGORIES as $cat) {
-            $score = 0;
-            $rulerCount = 0;
-            foreach ($cat['houses'] as $hIdx) {
-                $cuspLon = $houseCusps[$hIdx] ?? null;
-                if ($cuspLon === null) { continue; }
-                $signIdx = (int) floor(fmod($cuspLon, 360) / 30);
-                $rulerBody = self::SIGN_RULERS[$signIdx] ?? null;
-                if ($rulerBody !== null) {
-                    $score += $natalBodyScores[$rulerBody] ?? 0;
-                    $rulerCount++;
-                }
-            }
-            // Average across houses if multiple
-            if ($rulerCount > 1) {
-                $score = $score / $rulerCount;
-            }
-
-            $score100 = max(1, min(100, 50 + (int) round($score * 8)));
-            if ($score100 >= 67) {
-                $rating = '★★★     ';
-            } elseif ($score100 >= 34) {
-                $rating = '★★      ';
-            } else {
-                $rating = '⚠ wait  ';
-            }
-
-            $this->put($this->row($this->spread('  ' . $cat['emoji'] . ' ' . $cat['name'], $rating)));
+        foreach ($dto->areasOfLife as $area) {
+            $emoji = self::AREA_EMOJIS[$area->slug] ?? '';
+            $this->put($this->row($this->spread('  ' . $emoji . ' ' . $area->name, $this->ratingDisplay($area->rating, $area->maxRating))));
         }
         $this->put($this->row(''));
 
         // ── Day meta ─────────────────────────────────────────────────────
         $this->put($this->divider());
-        $rg = self::BODY_GLYPHS[$ruler['body']] ?? '';
+        $rg = self::BODY_GLYPHS[$dto->dayRuler->body] ?? '';
         $this->put($this->row(
-            '  🗓 ' . $carbon->format('l')
-            . '  ·  ' . $rg . ' ' . $ruler['planet']
-            . '  ·  🎨 ' . $ruler['color']
+            '  🗓 ' . $dto->dayRuler->weekday
+            . '  ·  ' . $rg . ' ' . $dto->dayRuler->planet
+            . '  ·  🎨 ' . $dto->dayRuler->color
         ));
         $this->put($this->row(
-            '  💎 ' . $ruler['gem']
-            . '  ·  🔢 ' . $ruler['number']
+            '  💎 ' . $dto->dayRuler->gem
+            . '  ·  🔢 ' . $dto->dayRuler->number
         ));
 
-        // ── Clothing & Jewelry tip (natal Venus × weekday) ────────────────
-        $venusSign = null;
-        foreach ($profile->natalChart?->planets ?? [] as $pl) {
-            if ($pl['body'] === 3) { $venusSign = $pl['sign']; break; }
-        }
-        if ($venusSign !== null) {
+        // ── Clothing & Jewelry tip ───────────────────────────────────────
+        if ($dto->natalVenusSign !== null) {
             $signNames   = PlanetaryPosition::SIGN_NAMES;
             $clothingKey = strtolower($carbon->format('l'))
-                         . '_venus_in_' . strtolower($signNames[$venusSign] ?? '');
+                         . '_venus_in_' . strtolower($signNames[$dto->natalVenusSign] ?? '');
             $block = TextBlock::where('key', $clothingKey)
                 ->where('section', $simplified ? 'weekday_clothing_short' : 'weekday_clothing')
                 ->where('language', 'en')
                 ->first();
             if ($block) {
                 $this->put($this->row(''));
-                $this->put($this->row('  👗  Clothing & Jewelry  ·  Venus in ' . ($signNames[$venusSign] ?? '')));
+                $this->put($this->row('  👗  Clothing & Jewelry  ·  Venus in ' . ($signNames[$dto->natalVenusSign] ?? '')));
                 $this->put($this->row(''));
                 foreach ($this->wrap(strip_tags($block->text), self::IW - 4) as $line) {
                     $this->put($this->row('    ' . $line));
@@ -497,10 +359,10 @@ class UiDailyReport extends Command
 
         // ── Footer ────────────────────────────────────────────────────────
         $this->put($this->divider());
-        $rxLabel = $retrogrades->count() > 0
-            ? $retrogrades->map(fn ($p) => (PlanetaryPosition::BODY_NAMES[$p->body] ?? '?') . ' Rx')->implode(', ')
+        $rxLabel = ! empty($dto->retrogrades)
+            ? implode(', ', array_map(fn ($rx) => $rx->name . ' Rx', $dto->retrogrades))
             : 'no Rx';
-        $this->put($this->row('  daily  ·  ' . $date . '  ·  ' . $positions->count() . ' transits  ·  ' . $rxLabel));
+        $this->put($this->row('  daily  ·  ' . $date . '  ·  ' . count($dto->positions) . ' transits  ·  ' . $rxLabel));
         $this->put($this->bottom());
         $this->newLine();
 
@@ -518,8 +380,8 @@ class UiDailyReport extends Command
         int $lunarDay,
         bool $simplified = false,
         int $profileId = 0,
+        string $language = 'en',
     ): ?string {
-        // ── Cache check ───────────────────────────────────────────────────
         $cacheKey = 'daily_' . $profileId . '_' . $carbon->toDateString() . ($simplified ? '_short' : '');
         $cached   = TextBlock::where('key', $cacheKey)
             ->where('section', 'ai_synthesis')
@@ -534,7 +396,6 @@ class UiDailyReport extends Command
         /** @var \App\Contracts\AiProvider $ai */
         $ai = app(\App\Contracts\AiProvider::class);
 
-        // Natal Sun + Moon context
         $natalLines = [];
         foreach ($natalPlanets as $np) {
             if (! in_array($np['body'] ?? -1, [0, 1])) continue;
@@ -560,7 +421,8 @@ class UiDailyReport extends Command
             ? '- 1 paragraph only — 2–3 sentences total'
             : "- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
 
-        $system = "You are writing a personalized daily horoscope intro for a single person.\n\n"
+        $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
+        $system = "{$langNote}\n\nYou are writing a personalized daily horoscope intro for a single person.\n\n"
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
@@ -580,11 +442,10 @@ class UiDailyReport extends Command
             $cost     = number_format($response->costUsd, 5);
             $this->line("  <fg=gray>[AI synthesis: {$response->inputTokens} in / {$response->outputTokens} out / \${$cost}]</>");
 
-            // ── Save to cache ──────────────────────────────────────────────
             if ($profileId > 0) {
                 $now = now();
                 TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => 'en', 'variant' => 1],
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
                     [
                         'text'       => $response->text,
                         'tone'       => 'neutral',
@@ -606,45 +467,39 @@ class UiDailyReport extends Command
 
     // ── Transit helpers ──────────────────────────────────────────────────
 
-    private function transitSubtitle(Collection $planets): string
+    private function transitSubtitle(DailyHoroscopeDTO $dto): string
     {
         $parts = [];
-
-        if ($sun = $planets->get(PlanetaryPosition::SUN)) {
-            $signIdx = (int) floor($sun->longitude / 30);
-            $parts[] = '☉ Sun in '
-                     . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
-                     . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '');
+        foreach ($dto->positions as $pos) {
+            if ($pos->body === PlanetaryPosition::SUN) {
+                $parts[] = '☉ Sun in '
+                         . (self::SIGN_GLYPHS[$pos->signIndex] ?? '') . ' '
+                         . $pos->signName;
+            }
+            if ($pos->body === PlanetaryPosition::MOON) {
+                $retro = $pos->isRetrograde ? ' Rx' : '';
+                $parts[] = '☽ Moon in '
+                         . (self::SIGN_GLYPHS[$pos->signIndex] ?? '') . ' '
+                         . $pos->signName . $retro;
+            }
+            if ($pos->body === PlanetaryPosition::MERCURY && $pos->isRetrograde) {
+                $parts[] = '☿ Mercury Rx';
+            }
         }
-
-        if ($moon = $planets->get(PlanetaryPosition::MOON)) {
-            $signIdx = (int) floor($moon->longitude / 30);
-            $retro   = $moon->is_retrograde ? ' Rx' : '';
-            $parts[] = '☽ Moon in '
-                     . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
-                     . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '') . $retro;
-        }
-
-        if (($mercury = $planets->get(PlanetaryPosition::MERCURY)) && $mercury->is_retrograde) {
-            $parts[] = '☿ Mercury Rx';
-        }
-
         return implode('  ·  ', $parts);
     }
 
-    /** Two-column transit planet list with degree within sign. */
-    private function transitLines(array $positions): array
+    private function transitLines(DailyHoroscopeDTO $dto): array
     {
         $col = [];
-        foreach ($positions as $p) {
-            $signIdx = (int) floor($p->longitude / 30);
-            $deg     = number_format(fmod($p->longitude, 30), 1) . '°';
-            $retro   = $p->is_retrograde ? ' Rx' : '';
-            $col[]   = (self::BODY_GLYPHS[$p->body] ?? '?') . ' '
-                     . (PlanetaryPosition::BODY_NAMES[$p->body] ?? '') . ' in '
-                     . (self::SIGN_GLYPHS[$signIdx] ?? '') . ' '
-                     . (PlanetaryPosition::SIGN_NAMES[$signIdx] ?? '') . ' '
-                     . $deg . $retro;
+        foreach ($dto->positions as $pos) {
+            $deg   = number_format($pos->degreeInSign, 1) . '°';
+            $retro = $pos->isRetrograde ? ' Rx' : '';
+            $col[] = (self::BODY_GLYPHS[$pos->body] ?? '?') . ' '
+                   . $pos->name . ' in '
+                   . (self::SIGN_GLYPHS[$pos->signIndex] ?? '') . ' '
+                   . $pos->signName . ' '
+                   . $deg . $retro;
         }
 
         $lines = [];
@@ -663,22 +518,8 @@ class UiDailyReport extends Command
         return $lines;
     }
 
-    private function moonPhase(float $elongation): array
-    {
-        foreach (self::MOON_PHASES as [$from, $to, $emoji, $name]) {
-            if ($elongation >= $from && $elongation < $to) {
-                return [$emoji, $name];
-            }
-        }
-        return ['🌑', 'New Moon'];
-    }
-
     // ── Bi-wheel placeholder ─────────────────────────────────────────────
 
-    /**
-     * Static ASCII placeholder for the natal + transit bi-wheel.
-     * Outer ring = transits, inner ring = natal; rendered as SVG in the real UI.
-     */
     private function wheelLines(): array
     {
         return [
@@ -741,7 +582,14 @@ class UiDailyReport extends Command
         return $str . str_repeat(' ', $width - $len);
     }
 
-    /** Word-wrap $text to $width, return array of lines. */
+    private function ratingDisplay(int $rating, int $maxRating): string
+    {
+        if ($rating === 0) {
+            return __('ui.rating_wait') . '  ';
+        }
+        return str_repeat('★', $rating) . str_repeat('☆', $maxRating - $rating) . '  ';
+    }
+
     private function wrap(string $text, int $width): array
     {
         $text  = preg_replace('/\s+/', ' ', trim($text)) ?? $text;

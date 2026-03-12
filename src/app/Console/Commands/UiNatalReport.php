@@ -102,7 +102,7 @@ class UiNatalReport extends Command
         $this->put($this->divider());
 
         // ── Natal wheel (centered placeholder) ───────────────────────────
-        $this->put($this->row($this->center('НАТАЛНА КАРТА')));
+        $this->put($this->row($this->center('NATAL CHART')));
         foreach ($this->wheelLines() as $line) {
             $this->put($this->row($this->center($line)));
         }

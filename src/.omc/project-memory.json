@@ -240,8 +240,146 @@
   "hotPaths": [
     {
       "path": "app/Console/Commands/UiMonthlyReport.php",
-      "accessCount": 19,
-      "lastAccessed": 1773264450872,
+      "accessCount": 29,
+      "lastAccessed": 1773311073446,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/Horoscope/DailyHoroscopeService.php",
+      "accessCount": 17,
+      "lastAccessed": 1773311421317,
+      "type": "directory"
+    },
+    {
+      "path": "app/Services/Horoscope/WeekdayHoroscopeService.php",
+      "accessCount": 17,
+      "lastAccessed": 1773311421864,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/UiDailyReport.php",
+      "accessCount": 12,
+      "lastAccessed": 1773311070142,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/UiWeeklyReport.php",
+      "accessCount": 8,
+      "lastAccessed": 1773310936640,
+      "type": "directory"
+    },
+    {
+      "path": "app/Services/Horoscope/Shared/LunationDetector.php",
+      "accessCount": 8,
+      "lastAccessed": 1773311394735,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/Horoscope/Shared/AreasOfLifeScorer.php",
+      "accessCount": 7,
+      "lastAccessed": 1773311114584,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/Horoscope/MonthlyHoroscopeService.php",
+      "accessCount": 5,
+      "lastAccessed": 1773310178307,
+      "type": "directory"
+    },
+    {
+      "path": "app/Console/Commands/UiWeekday.php",
+      "accessCount": 5,
+      "lastAccessed": 1773311073807,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/Horoscope/WeeklyHoroscopeService.php",
+      "accessCount": 3,
+      "lastAccessed": 1773310149435,
+      "type": "directory"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/AreaOfLifeDTO.php",
+      "accessCount": 2,
+      "lastAccessed": 1773309896602,
+      "type": "file"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/LunationDTO.php",
+      "accessCount": 2,
+      "lastAccessed": 1773309906801,
+      "type": "file"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/MoonDataDTO.php",
+      "accessCount": 2,
+      "lastAccessed": 1773309915867,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/Horoscope/Shared/KeyDatesBuilder.php",
+      "accessCount": 2,
+      "lastAccessed": 1773310002540,
+      "type": "file"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/WeekdayDTO.php",
+      "accessCount": 2,
+      "lastAccessed": 1773310630073,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/UiNatalReport.php",
+      "accessCount": 2,
+      "lastAccessed": 1773310713660,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands",
+      "accessCount": 1,
+      "lastAccessed": 1773309441880,
+      "type": "directory"
+    },
+    {
+      "path": "app/Services/Horoscope",
+      "accessCount": 1,
+      "lastAccessed": 1773309473571,
+      "type": "directory"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/DailyHoroscopeDTO.php",
+      "accessCount": 1,
+      "lastAccessed": 1773309511864,
+      "type": "file"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/DayRulerDTO.php",
+      "accessCount": 1,
+      "lastAccessed": 1773309515705,
+      "type": "file"
+    },
+    {
+      "path": "lang/en/areas.php",
+      "accessCount": 1,
+      "lastAccessed": 1773311081787,
+      "type": "file"
+    },
+    {
+      "path": "lang/en/lunar.php",
+      "accessCount": 1,
+      "lastAccessed": 1773311083842,
+      "type": "file"
+    },
+    {
+      "path": "lang/en/weekdays.php",
+      "accessCount": 1,
+      "lastAccessed": 1773311099160,
+      "type": "file"
+    },
+    {
+      "path": "lang/en/ui.php",
+      "accessCount": 1,
+      "lastAccessed": 1773311102917,
       "type": "file"
     }
   ],

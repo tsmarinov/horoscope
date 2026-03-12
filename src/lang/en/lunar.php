@@ -1,0 +1,17 @@
+<?php
+return [
+    'phases' => [
+        'new_moon'        => 'New Moon',
+        'waxing_crescent' => 'Waxing Crescent',
+        'first_quarter'   => 'First Quarter',
+        'waxing_gibbous'  => 'Waxing Gibbous',
+        'full_moon'       => 'Full Moon',
+        'waning_gibbous'  => 'Waning Gibbous',
+        'last_quarter'    => 'Last Quarter',
+        'waning_crescent' => 'Waning Crescent',
+    ],
+    'lunations' => [
+        'new_moon'  => 'New Moon',
+        'full_moon' => 'Full Moon',
+    ],
+];
