@@ -90,7 +90,7 @@ class WeeklyHoroscopeService
                 return $a['asp']['orb'] <=> $b['asp']['orb'];
             });
 
-            $top7 = array_slice($bestByKey, 0, 7);
+            $top15 = array_slice($bestByKey, 0, 15);
             $transitNatalAspects = array_map(
                 fn ($item) => new TransitAspectDTO(
                     transitBody: $item['asp']['transit_body'],
@@ -101,7 +101,7 @@ class WeeklyHoroscopeService
                     orb:         $item['asp']['orb'],
                     peakDate:    $item['date'],
                 ),
-                $top7,
+                $top15,
             );
         }
 

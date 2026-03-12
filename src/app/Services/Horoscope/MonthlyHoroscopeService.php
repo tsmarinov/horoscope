@@ -80,8 +80,9 @@ class MonthlyHoroscopeService
             ])->values()->all();
 
             foreach ($this->calculator->transitToNatal($dayTransit, $natalPlanets) as $asp) {
-                // Focus on natal personal planets (Sun-Mars)
-                if (! in_array($asp['natal_body'], self::PERSONAL_BODIES, true)) {
+                // Personal natal bodies always included; outer natal bodies only for slow transiting planets
+                $isSlowTransit = $asp['transit_body'] >= 5;
+                if (! $isSlowTransit && ! in_array($asp['natal_body'], self::PERSONAL_BODIES, true)) {
                     continue;
                 }
                 $k = $asp['transit_body'] . '_' . $asp['aspect'] . '_' . $asp['natal_body'];

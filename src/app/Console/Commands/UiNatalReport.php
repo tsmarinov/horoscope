@@ -98,7 +98,12 @@ class UiNatalReport extends Command
         $this->put($this->row(
             $this->spread('  ☽ NATAL CHART REPORT', '')
         ));
-        $this->put($this->row('  ' . $this->subjectLine($subject)));
+        $name     = $subject->name ?? $subject->user?->name ?? 'Anonymous Guest';
+        $born     = 'Born ' . $subject->getBirthDate()
+                  . ($subject->getBirthTime() ? '  ·  ' . $subject->getBirthTime() : '');
+        $cityName = $subject->getBirthCity()?->name ?? '—';
+        $this->put($this->row($this->spread("  {$name}", "{$born}  ")));
+        $this->put($this->row("  {$cityName}"));
         $this->put($this->divider());
 
         // ── Natal wheel (centered placeholder) ───────────────────────────
@@ -382,7 +387,9 @@ class UiNatalReport extends Command
             $sg    = self::SIGN_GLYPHS[$p['sign']] ?? '';
             $house = $p['house'] ? ' H' . $p['house'] : '';
             $retro = ($p['is_retrograde'] ?? false) ? ' Rx' : '';
-            $col[] = $glyph . ' ' . $name . ' in ' . $sg . ' ' . $sign . $house . $retro;
+            $deg   = (int) ($p['degree'] ?? 0);
+            $min   = (int) round((($p['degree'] ?? 0) - $deg) * 60);
+            $col[] = $glyph . ' ' . $name . ' ' . $deg . "\u{00B0}" . sprintf('%02d', $min) . "' " . $sg . ' ' . $sign . $house . $retro;
         }
 
         // Two columns

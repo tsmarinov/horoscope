@@ -493,13 +493,11 @@ class UiDailyReport extends Command
     {
         $col = [];
         foreach ($dto->positions as $pos) {
-            $deg   = number_format($pos->degreeInSign, 1) . '°';
             $retro = $pos->isRetrograde ? ' Rx' : '';
             $col[] = (self::BODY_GLYPHS[$pos->body] ?? '?') . ' '
                    . $pos->name . ' in '
                    . (self::SIGN_GLYPHS[$pos->signIndex] ?? '') . ' '
-                   . $pos->signName . ' '
-                   . $deg . $retro;
+                   . $pos->signName . $retro;
         }
 
         $lines = [];

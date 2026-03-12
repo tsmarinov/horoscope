@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Carbon\Carbon|null $birth_date
  * @property string|null      $birth_time
  * @property int|null         $birth_city_id
+ * @property int|null         $solar_return_city_id
  */
 class Profile extends Model implements HoroscopeSubject
 {
@@ -33,6 +34,7 @@ class Profile extends Model implements HoroscopeSubject
         'birth_date',
         'birth_time',
         'birth_city_id',
+        'solar_return_city_id',
     ];
 
     protected function casts(): array
@@ -58,6 +60,11 @@ class Profile extends Model implements HoroscopeSubject
     public function birthCity(): BelongsTo
     {
         return $this->belongsTo(City::class, 'birth_city_id');
+    }
+
+    public function solarReturnCity(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'solar_return_city_id');
     }
 
     public function natalChart(): HasOne
