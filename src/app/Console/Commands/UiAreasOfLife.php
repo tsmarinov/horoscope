@@ -18,9 +18,9 @@ use Illuminate\Console\Command;
  * produces the raw per-day data to verify correctness.
  *
  * Usage:
- *   php artisan horoscope:ui-areas-of-life {profile}
- *   php artisan horoscope:ui-areas-of-life {profile} --date=2026-03-01
- *   php artisan horoscope:ui-areas-of-life {profile} --date=2026-03-01 --view=week
+ *   php artisan horoscope:ui-areas-of-life {--profile=}
+ *   php artisan horoscope:ui-areas-of-life {--profile=} --date=2026-03-01
+ *   php artisan horoscope:ui-areas-of-life {--profile=} --date=2026-03-01 --view=week
  */
 class UiAreasOfLife extends Command
 {
@@ -28,7 +28,7 @@ class UiAreasOfLife extends Command
     private const IW = 74;
 
     protected $signature = 'horoscope:ui-areas-of-life
-                            {profile   : Profile ID}
+                            {--profile= : Profile ID}
                             {--view=month : month|week}
                             {--date=      : Any date in period (YYYY-MM-DD, default today)}';
 
@@ -38,7 +38,7 @@ class UiAreasOfLife extends Command
         AspectCalculator  $calculator,
         AreasOfLifeScorer $scorer,
     ): int {
-        $profileId = (int) $this->argument('profile');
+        $profileId = (int) $this->option('profile');
         $view      = $this->option('view') ?: 'month';
         $dateStr   = $this->option('date') ?: now()->toDateString();
         $anchor    = Carbon::parse($dateStr);

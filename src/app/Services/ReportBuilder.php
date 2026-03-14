@@ -659,11 +659,43 @@ class ReportBuilder
         }
 
         foreach ($chart->aspects ?? [] as $a) {
-            $b1    = PlanetaryPosition::BODY_NAMES[$a['body_a']] ?? $a['body_a'];
-            $b2    = PlanetaryPosition::BODY_NAMES[$a['body_b']] ?? $a['body_b'];
-            $type  = $a['aspect'] ?? '';
-            $orb   = round($a['orb'], 2);
+            $b1      = PlanetaryPosition::BODY_NAMES[$a['body_a']] ?? $a['body_a'];
+            $b2      = PlanetaryPosition::BODY_NAMES[$a['body_b']] ?? $a['body_b'];
+            $type    = $a['aspect'] ?? '';
+            $orb     = round($a['orb'], 2);
             $lines[] = "{$b1} {$type} {$b2} (orb: {$orb}°)";
+        }
+
+        // Element distribution (body 0-9 only)
+        $signElements = [
+            0 => 'Fire', 1 => 'Earth', 2 => 'Air',   3 => 'Water',
+            4 => 'Fire', 5 => 'Earth', 6 => 'Air',   7 => 'Water',
+            8 => 'Fire', 9 => 'Earth', 10 => 'Air',  11 => 'Water',
+        ];
+        $elGroups = ['Fire' => [], 'Earth' => [], 'Air' => [], 'Water' => []];
+        foreach ($chart->planets ?? [] as $p) {
+            if ($p['body'] > 9) {
+                continue;
+            }
+            $el = $signElements[$p['sign']] ?? null;
+            if ($el) {
+                $elGroups[$el][] = PlanetaryPosition::BODY_NAMES[$p['body']] ?? $p['body'];
+            }
+        }
+        $elLines = [];
+        foreach ($elGroups as $el => $names) {
+            $count = count($names);
+            if ($count === 0) {
+                $elLines[] = "Missing {$el} (0 planets)";
+            } elseif ($count === 1) {
+                $elLines[] = "Singleton {$el}: {$names[0]} only";
+            } else {
+                $elLines[] = "{$el}: {$count} planets (" . implode(', ', $names) . ')';
+            }
+        }
+        if ($elLines) {
+            $lines[] = '';
+            $lines[] = 'Element distribution: ' . implode(' | ', $elLines);
         }
 
         return implode("\n", $lines);
@@ -673,7 +705,7 @@ class ReportBuilder
     {
         $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
 
-        return "You are a professional astrologer writing insightful, warm, and empowering natal chart interpretations. {$langNote} Always use HTML formatting: <strong> for key qualities and themes, <em> for planet and sign names. Return only valid JSON as instructed.";
+        return "You are a behavioural analyst writing natal chart interpretations as honest psychological profiles. {$langNote} Always use HTML formatting: <strong> for key qualities and themes, <em> for planet and sign names. Return only valid JSON as instructed.";
     }
 
     private function parseJsonResponse(string $raw): array

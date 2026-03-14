@@ -343,10 +343,10 @@ class SolarReturnService
     private function buildQuarters(int $year, array $natalPlanets, array $filteredLunations): array
     {
         $quarterLabels = [
-            1 => "Q1 \u{00B7} Jan\u{2013}Mar",
-            2 => "Q2 \u{00B7} Apr\u{2013}Jun",
-            3 => "Q3 \u{00B7} Jul\u{2013}Sep",
-            4 => "Q4 \u{00B7} Oct\u{2013}Dec",
+            1 => __('ui.quarters.q1'),
+            2 => __('ui.quarters.q2'),
+            3 => __('ui.quarters.q3'),
+            4 => __('ui.quarters.q4'),
         ];
 
         $slowBodies = [

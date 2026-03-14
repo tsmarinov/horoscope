@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"php artisan horoscope:ui-monthly 1 --date=2026-03-01 2>&1\",\"timeout\":60000,\"description\":\"Run monthly horoscope for profile 1, March 2026\"}",
-  "error": "Exit code 1\n\n   UnexpectedValueException \n\n  The stream or file \"/var/www/horo/web/src/storage/logs/laravel.log\" could not be opened in append mode: Failed to open stream: Permission denied\nThe exception occurred while attempting to log: could not find driver (Connection: mysql, Host: horo_mysql, Port: 3306, Database: horo, SQL: select * from `profiles` where `profiles`.`id` = 1 limit 1)\nContext: {\"exception\":{\"errorInfo\":null,\"connectionName\":\"mysql\",\"readWriteType\":\"write\"}}\n\n  at vendor/monol...",
-  "timestamp": "2026-03-11T20:04:47.406Z",
+  "tool_input_preview": "{\"command\":\"docker exec horo_php php artisan horoscope:ui-synastry --profile-a=1 --profile-b=2 --type=general 2>&1\",\"timeout\":30000}",
+  "error": "Exit code 1\nOne or both profiles not found.",
+  "timestamp": "2026-03-13T21:06:34.442Z",
   "retry_count": 1
 }

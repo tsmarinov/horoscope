@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\ReportMode;
 use App\Models\PlanetaryPosition;
 use App\Models\Profile;
+use App\Models\TextBlock;
 use App\Services\ReportBuilder;
 use Illuminate\Console\Command;
 
@@ -25,10 +26,11 @@ use Illuminate\Console\Command;
 class UiNatalReport extends Command
 {
     protected $signature = 'horoscope:ui-natal-report
-                            {profile? : Profile ID (default: 1)}
+                            {--profile=? : Profile ID (default: 1)}
                             {--demo=  : Demo profile slug}
                             {--birth-date= : Anonymous guest birth date (YYYY-MM-DD)}
-                            {--mode=organic : Report mode: organic / simplified / ai_l1 / ai_l1_haiku}
+                            {--simplified  : Show simplified texts (uses _short sections)}
+                            {--ai          : Generate AI portrait (ai_l1; combine with --simplified for ai_l1_haiku)}
                             {--lang=en : Language code}
                             {--generate : Generate report if not cached (may call AI and cost money)}';
 
@@ -62,6 +64,16 @@ class UiNatalReport extends Command
         'semi_sextile'     => '∠', 'mutual_reception' => '⇌',
     ];
 
+    private const SIGN_ELEMENTS = [
+        0 => 'fire',  1 => 'earth', 2 => 'air',   3 => 'water',
+        4 => 'fire',  5 => 'earth', 6 => 'air',   7 => 'water',
+        8 => 'fire',  9 => 'earth', 10 => 'air',  11 => 'water',
+    ];
+
+    private const ELEMENT_LABELS = [
+        'fire' => 'Fire', 'earth' => 'Earth', 'air' => 'Air', 'water' => 'Water',
+    ];
+
     // ── Entry point ──────────────────────────────────────────────────────
 
     public function handle(ReportBuilder $builder): int
@@ -74,7 +86,12 @@ class UiNatalReport extends Command
             return self::FAILURE;
         }
 
-        $mode     = ReportMode::from($this->option('mode'));
+        $mode = match(true) {
+            $this->option('ai') && $this->option('simplified') => ReportMode::AiL1Haiku,
+            $this->option('ai')                                 => ReportMode::AiL1,
+            $this->option('simplified')                         => ReportMode::Simplified,
+            default                                             => ReportMode::Organic,
+        };
         $language = $this->option('lang');
 
         $isAiMode = $mode->isAi();
@@ -164,6 +181,7 @@ class UiNatalReport extends Command
             }
             $this->put($this->row(''));
         }
+        $this->renderSingletonSection($chart->planets ?? [], $mode === ReportMode::Simplified);
 
         // ── House Lords (pre-generated) ───────────────────────────────────
         if (count($houseLordPreSections) > 0) {
@@ -307,7 +325,7 @@ class UiNatalReport extends Command
 
     private function resolveSubject(): ?Profile
     {
-        if ($id = $this->argument('profile')) {
+        if ($id = $this->option('profile')) {
             return Profile::find($id);
         }
 
@@ -449,6 +467,51 @@ class UiNatalReport extends Command
     }
 
     // ── Box-drawing helpers ──────────────────────────────────────────────
+
+    // ── Singleton / Missing element ──────────────────────────────────────
+
+    private function renderSingletonSection(array $planets, bool $simplified = false): void
+    {
+        // Count planets per element — only bodies 0–9 (Sun–Pluto)
+        $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
+        foreach ($planets as $p) {
+            $body = (int) ($p['body'] ?? -1);
+            if ($body < 0 || $body > 9) continue;
+            $el = self::SIGN_ELEMENTS[(int) ($p['sign'] ?? 0)] ?? null;
+            if ($el) $elements[$el][] = $p;
+        }
+
+        $section = $simplified ? 'singleton_short' : 'singleton';
+
+        foreach ($elements as $element => $list) {
+            $count = count($list);
+            if ($count !== 0 && $count !== 1) continue;
+
+            $label = self::ELEMENT_LABELS[$element];
+
+            if ($count === 1) {
+                $body   = (int) $list[0]['body'];
+                $pGlyph = self::BODY_GLYPHS[$body] ?? '';
+                $pName  = PlanetaryPosition::BODY_NAMES[$body] ?? '';
+                $header = "  \u{2605}  Singleton: {$pGlyph} {$pName} ({$label})";
+                $key    = 'singleton_' . $element;
+            } else {
+                $header = "  \u{25CB}  Missing element: {$label}";
+                $key    = 'missing_' . $element;
+            }
+
+            $this->put($this->divider());
+            $this->put($this->row($header));
+            $block = TextBlock::pick($key, $section, 1);
+            if ($block) {
+                $this->put($this->row(''));
+                foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {
+                    $this->put($this->row('    ' . $line));
+                }
+            }
+            $this->put($this->row(''));
+        }
+    }
 
     private function top(): string
     {

@@ -70,7 +70,7 @@ class UiWeeklyReport extends Command
     ];
 
     protected $signature = 'horoscope:ui-weekly
-                            {profile : Profile ID}
+                            {--profile= : Profile ID}
                             {--date=       : Any date within the week (YYYY-MM-DD, default: today)}
                             {--simplified  : Show 1-sentence simplified texts (uses _short sections)}
                             {--ai          : Generate synthesis intro with Claude (AI L1)}';
@@ -82,7 +82,7 @@ class UiWeeklyReport extends Command
         $date       = $this->option('date') ?: now()->toDateString();
         $simplified = $this->option('simplified');
 
-        $profile = Profile::find($this->argument('profile'));
+        $profile = Profile::find($this->option('profile'));
         if ($profile === null) {
             $this->error('Profile not found.');
             return self::FAILURE;
@@ -154,18 +154,30 @@ class UiWeeklyReport extends Command
                     break;
                 }
             }
-            $synthesis = $this->generateSynthesis(
-                $assembledTexts,
-                $natalPlanets,
-                $monday,
-                $sunday,
-                $moonSignName,
-                $simplified,
-                $profile->id,
+            /** @var \App\Services\Ai\HoroscopeSynthesisService $synthesisService */
+            $synthesisService = app(\App\Services\Ai\HoroscopeSynthesisService::class);
+            $aiResponse = $synthesisService->weekly(
+                assembledTexts: $assembledTexts,
+                natalPlanets:   $natalPlanets,
+                monday:         $monday,
+                sunday:         $sunday,
+                moonSignName:   $moonSignName,
+                simplified:     $simplified,
+                profileId:      $profile->id,
             );
-            if ($synthesis) {
+            if ($aiResponse) {
+                $wasCached = $aiResponse->inputTokens === 0;
+                if ($wasCached) {
+                    $this->line("  <fg=gray>[AI synthesis: cached]</>");
+                } else {
+                    $cost = number_format($aiResponse->costUsd, 5);
+                    $this->line("  <fg=gray>[AI synthesis: {$aiResponse->inputTokens} in / {$aiResponse->outputTokens} out / \${$cost}]</>");
+                }
+                $synthesis = $aiResponse->text;
+            }
+            if ($synthesis ?? null) {
                 $this->put($this->divider());
-                $this->put($this->row($this->spread('  ✦  WEEK OVERVIEW', 'AI  ')));
+                $this->put($this->row($this->spread('  ✦  ' . __('ui.weekly.ai_overview'), 'AI  ')));
                 $this->put($this->row(''));
                 foreach (preg_split('/\n{2,}/', trim($synthesis)) as $para) {
                     foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
@@ -247,7 +259,7 @@ class UiWeeklyReport extends Command
         // ── Key dates ────────────────────────────────────────────────────
         if (! empty($dto->keyDates)) {
             $this->put($this->divider());
-            $this->put($this->row($this->spread('  📅  KEY DATES', '')));
+            $this->put($this->row($this->spread('  📅  ' . __('ui.keydates.title'), '')));
             $this->put($this->row(''));
             foreach ($dto->keyDates as $kd) {
                 $dateStr = Carbon::parse($kd->date)->format('D j M');
@@ -283,101 +295,6 @@ class UiWeeklyReport extends Command
         $this->newLine();
 
         return self::SUCCESS;
-    }
-
-    // ── AI synthesis ─────────────────────────────────────────────────────
-
-    private function generateSynthesis(
-        array $assembledTexts,
-        array $natalPlanets,
-        Carbon $monday,
-        Carbon $sunday,
-        string $moonSignName,
-        bool $simplified = false,
-        int $profileId = 0,
-    ): ?string {
-        $cacheKey = 'weekly_' . $profileId . '_' . $monday->toDateString() . ($simplified ? '_short' : '');
-        $cached   = TextBlock::where('key', $cacheKey)
-            ->where('section', 'ai_synthesis')
-            ->where('language', 'en')
-            ->first();
-
-        if ($cached) {
-            $this->line("  <fg=gray>[AI synthesis: cached]</>");
-            return $cached->text;
-        }
-
-        /** @var \App\Contracts\AiProvider $ai */
-        $ai = app(\App\Contracts\AiProvider::class);
-
-        $natalLines = [];
-        foreach ($natalPlanets as $np) {
-            if (! in_array($np['body'] ?? -1, [0, 1])) {
-                continue;
-            }
-            $name = PlanetaryPosition::BODY_NAMES[$np['body']] ?? '';
-            $sign = PlanetaryPosition::SIGN_NAMES[$np['sign']] ?? '';
-            $natalLines[] = "natal {$name} in {$sign}";
-        }
-
-        $prompt  = "Week: {$monday->format('j F')} – {$sunday->format('j F Y')}\n";
-        $prompt .= "Moon sign at week start: {$moonSignName}\n";
-        if ($natalLines) {
-            $prompt .= "Natal context: " . implode(', ', $natalLines) . "\n";
-        }
-        if ($assembledTexts) {
-            $prompt .= "\nThe following pre-generated descriptions will be shown to the person below this intro:\n\n";
-            $prompt .= implode("\n\n", $assembledTexts);
-        }
-        $prompt .= $simplified
-            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short weekly horoscope intro that captures the key theme of the week."
-            : "\n\nWrite exactly 2 paragraphs as a weekly horoscope intro that synthesizes and introduces what follows.";
-
-        $paragraphRule = $simplified
-            ? '- 1 paragraph only — 2–3 sentences total'
-            : "- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
-
-        $system = "You are writing a personalized weekly horoscope intro for a single person.\n\n"
-            . "Style rules:\n"
-            . "- Write like a psychologist giving honest feedback — not an astrologer\n"
-            . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
-            . "{$paragraphRule}\n"
-            . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
-            . ($simplified ? "- Cut all filler: no \"The good news is\", \"This week is about\", \"At the same time\" — every sentence states a fact or concrete action\n" : '')
-            . "- Plain everyday words only — no abstract concepts, no spiritual or psychological jargon\n"
-            . "- Describe what the person actually notices or does in real situations — concrete behaviour only\n"
-            . ($simplified ? '' : "- First paragraph: the overall theme of the week based on the sky\n- Second paragraph: the personal angle — what these transits activate for this specific person\n")
-            . "- Do NOT start with \"This week...\", \"This is...\", or \"With [planet]...\"\n"
-            . "- Forbidden words: journey, path, soul, essence, portal, gateway, threshold, healing, wounds, dance, dissolves, energy, forces\n"
-            . "- No metaphors. No poetic language.\n"
-            . "- No HTML — plain text only";
-
-        try {
-            $response = $ai->generate($prompt, $system, maxTokens: 500);
-            $cost     = number_format($response->costUsd, 5);
-            $this->line("  <fg=gray>[AI synthesis: {$response->inputTokens} in / {$response->outputTokens} out / \${$cost}]</>");
-
-            if ($profileId > 0) {
-                $now = now();
-                TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => 'en', 'variant' => 1],
-                    [
-                        'text'       => $response->text,
-                        'tone'       => 'neutral',
-                        'tokens_in'  => $response->inputTokens,
-                        'tokens_out' => $response->outputTokens,
-                        'cost_usd'   => $response->costUsd,
-                        'updated_at' => $now,
-                        'created_at' => $now,
-                    ]
-                );
-            }
-
-            return $response->text;
-        } catch (\Exception $e) {
-            $this->warn('AI synthesis failed: ' . $e->getMessage());
-            return null;
-        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

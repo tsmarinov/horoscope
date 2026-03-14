@@ -16,7 +16,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int|null         $user_id
  * @property int|null         $guest_id
  * @property bool             $is_demo
- * @property string|null      $name
+ * @property string           $first_name
+ * @property string|null      $last_name
+ * @property-read string      $name       First + last name (computed)
  * @property string|null      $slug
  * @property \Carbon\Carbon|null $birth_date
  * @property string|null      $birth_time
@@ -29,7 +31,8 @@ class Profile extends Model implements HoroscopeSubject
         'user_id',
         'guest_id',
         'is_demo',
-        'name',
+        'first_name',
+        'last_name',
         'slug',
         'birth_date',
         'birth_time',
@@ -43,6 +46,13 @@ class Profile extends Model implements HoroscopeSubject
             'is_demo'    => 'boolean',
             'birth_date' => 'date',
         ];
+    }
+
+    // ── Computed attributes ───────────────────────────────────────────────
+
+    public function getNameAttribute(): string
+    {
+        return trim($this->first_name . ($this->last_name ? ' ' . $this->last_name : ''));
     }
 
     // ── Relations ────────────────────────────────────────────────────────

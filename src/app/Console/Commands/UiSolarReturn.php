@@ -23,7 +23,7 @@ use Illuminate\Console\Command;
 class UiSolarReturn extends Command
 {
     protected $signature = 'horoscope:ui-solar
-                            {profile : Profile ID}
+                            {--profile= : Profile ID}
                             {year?   : Year (default: current year)}
                             {--city=       : City ID for solar return location (overrides profile solar return city)}
                             {--simplified  : Show 1-sentence simplified texts (uses _short sections)}
@@ -66,6 +66,16 @@ class UiSolarReturn extends Command
         'waning_crescent' => '🌘',
     ];
 
+    private const SIGN_ELEMENTS = [
+        0 => 'fire',  1 => 'earth', 2 => 'air',   3 => 'water',
+        4 => 'fire',  5 => 'earth', 6 => 'air',   7 => 'water',
+        8 => 'fire',  9 => 'earth', 10 => 'air',  11 => 'water',
+    ];
+
+    private const ELEMENT_LABELS = [
+        'fire' => 'Fire', 'earth' => 'Earth', 'air' => 'Air', 'water' => 'Water',
+    ];
+
     // Traditional sign rulers (sign index => body index)
     private const SIGN_RULERS = [
         0  => 4, // Aries -> Mars
@@ -89,7 +99,7 @@ class UiSolarReturn extends Command
         $year       = (int) ($this->argument('year') ?: now()->year);
         $simplified = (bool) $this->option('simplified');
 
-        $profile = Profile::with(['birthCity', 'solarReturnCity'])->find($this->argument('profile'));
+        $profile = Profile::with(['birthCity', 'solarReturnCity'])->find($this->option('profile'));
         if ($profile === null) {
             $this->error('Profile not found.');
             return self::FAILURE;
@@ -150,18 +160,6 @@ class UiSolarReturn extends Command
         $this->put($this->row($subLine));
         $this->put($this->divider());
 
-        // ── Pre-collect texts for AI synthesis ───────────────────────────
-        $assembledTexts = [];
-        foreach (array_slice($dto->solarNatalAspects, 0, 6) as $asp) {
-            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
-            $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-            $section = $simplified ? 'transit_natal_short' : 'transit_natal';
-            $block   = TextBlock::pick($key, $section, 1);
-            if ($block) {
-                $assembledTexts[] = "[{$asp->transitName} {$aspWord} natal {$asp->natalName}]\n" . trim(strip_tags($block->text));
-            }
-        }
-
         // ── Bi-wheel placeholder ─────────────────────────────────────────
         $this->put($this->row($this->center("NATAL + SOLAR RETURN BI-WHEEL \u{00B7} {$year}")));
         foreach ($this->wheelLines() as $line) {
@@ -176,16 +174,29 @@ class UiSolarReturn extends Command
 
         // ── AI Synthesis (under planet table) ────────────────────────────
         if ($this->option('ai')) {
-            $synthesis = $this->generateSynthesis(
-                $dto,
-                $assembledTexts,
-                $year,
-                $simplified,
-                $profile->id,
+            /** @var \App\Services\Ai\HoroscopeSynthesisService $synthesisService */
+            $synthesisService = app(\App\Services\Ai\HoroscopeSynthesisService::class);
+            $aiResponse = $synthesisService->solar(
+                dto:        $dto,
+                natalPlanets: $natalPlanets,
+                natalHouses:  $natalHouses,
+                year:         $year,
+                simplified:   $simplified,
+                profileId:    $profile->id,
             );
-            if ($synthesis) {
+            if ($aiResponse) {
+                $wasCached = $aiResponse->inputTokens === 0;
+                if ($wasCached) {
+                    $this->line("  <fg=gray>[AI synthesis: cached]</>");
+                } else {
+                    $cost = number_format($aiResponse->costUsd, 5);
+                    $this->line("  <fg=gray>[AI synthesis: {$aiResponse->inputTokens} in / {$aiResponse->outputTokens} out / \${$cost}]</>");
+                }
+                $synthesis = $aiResponse->text;
+            }
+            if ($synthesis ?? null) {
                 $this->put($this->divider());
-                $this->put($this->row($this->spread("  \u{2726}  YEARLY OVERVIEW", 'AI  ')));
+                $this->put($this->row($this->spread("  \u{2726}  " . __('ui.solar.ai_overview'), 'AI  ')));
                 $this->put($this->row(''));
                 foreach (preg_split('/\n{2,}/', trim($synthesis)) as $para) {
                     foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
@@ -252,7 +263,7 @@ class UiSolarReturn extends Command
         usort($angularHits, fn ($a, $b) => $a['orb'] <=> $b['orb']);
 
         // ── Solar Return Factors ─────────────────────────────────────────
-        $this->put($this->row("  \u{25C6}  SOLAR RETURN FACTORS"));
+        $this->put($this->row("  \u{25C6}  " . __('ui.solar.factors')));
         $this->put($this->row(''));
 
         // 1. Angular activations
@@ -318,14 +329,14 @@ class UiSolarReturn extends Command
         $psGlyph = self::SIGN_GLYPHS[$dto->progressedSun['sign'] ?? 0] ?? '';
         $psHouseStr = $psHouse ? " \u{00B7} H{$psHouse}" : '';
 
-        $this->put($this->row("  \u{2015}\u{2015} PROGRESSIONS"));
+        $this->put($this->row("  \u{2015}\u{2015} " . __('ui.solar.progressions')));
         $this->put($this->row("  \u{1F319} Prog Moon {$pmGlyph} {$pmSign}{$pmHouseStr}"));
         $this->put($this->row("  \u{2609} Prog Sun  {$psGlyph} {$psSign}{$psHouseStr}"));
         $this->put($this->row(''));
 
         // 5. Solar Arc Directions
         if (! empty($dto->solarArcDirections)) {
-            $this->put($this->row("  \u{2015}\u{2015} SOLAR ARC DIRECTIONS"));
+            $this->put($this->row("  \u{2015}\u{2015} " . __('ui.solar.arc_directions')));
             foreach ($dto->solarArcDirections as $dir) {
                 $dGlyph   = self::BODY_GLYPHS[$dir->directedBody] ?? '?';
                 $tGlyph   = self::BODY_GLYPHS[$dir->natalTargetBody] ?? '?';
@@ -338,7 +349,7 @@ class UiSolarReturn extends Command
 
         // ── Eclipses & Lunations ─────────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row("  \u{1F311}  ECLIPSES & LUNATIONS \u{00B7} {$year}"));
+        $this->put($this->row("  \u{1F311}  " . __('ui.solar.lunations_title') . " \u{00B7} {$year}"));
         $this->put($this->row(''));
 
         if (empty($dto->lunations)) {
@@ -367,7 +378,7 @@ class UiSolarReturn extends Command
 
         // ── Key Transits by Quarter ──────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row("  \u{1F4C5}  KEY TRANSITS BY QUARTER"));
+        $this->put($this->row("  \u{1F4C5}  " . __('ui.solar.key_transits')));
         $this->put($this->row(''));
 
         foreach ($dto->quarters as $q) {
@@ -591,7 +602,51 @@ class UiSolarReturn extends Command
             }
         }
 
+        $this->renderSolarSingletonSection($dto->solarPlanets, $simplified);
+
         $this->put($this->row(''));
+    }
+
+    // ── Singleton / Missing element (solar planets) ───────────────────────
+
+    private function renderSolarSingletonSection(array $solarPlanets, bool $simplified = false): void
+    {
+        // Count solar planets per element — only bodies 0–9 (Sun–Pluto)
+        $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
+        foreach ($solarPlanets as $sp) {
+            if ($sp->body < 0 || $sp->body > 9) continue;
+            $el = self::SIGN_ELEMENTS[$sp->signIndex] ?? null;
+            if ($el) $elements[$el][] = $sp;
+        }
+
+        $section = $simplified ? 'singleton_short' : 'singleton';
+
+        foreach ($elements as $element => $list) {
+            $count = count($list);
+            if ($count !== 0 && $count !== 1) continue;
+
+            $label = self::ELEMENT_LABELS[$element];
+
+            if ($count === 1) {
+                $pGlyph = self::BODY_GLYPHS[$list[0]->body] ?? '';
+                $pName  = $list[0]->name;
+                $header = "  \u{2605}  " . __('ui.solar.singleton') . ": {$pGlyph} {$pName} ({$label})";
+                $key    = 'singleton_' . $element;
+            } else {
+                $header = "  \u{25CB}  " . __('ui.solar.missing_element') . ": {$label}";
+                $key    = 'missing_' . $element;
+            }
+
+            $this->put($this->row(''));
+            $this->put($this->row($header));
+            $block = TextBlock::pick($key, $section, 1);
+            if ($block) {
+                $this->put($this->row(''));
+                foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {
+                    $this->put($this->row('    ' . $line));
+                }
+            }
+        }
     }
 
     /**
@@ -719,112 +774,5 @@ class UiSolarReturn extends Command
         $this->line($line);
     }
 
-    // ── AI synthesis ─────────────────────────────────────────────────────
 
-    private function generateSynthesis(
-        SolarReturnDTO $dto,
-        array $assembledTexts,
-        int $year,
-        bool $simplified = false,
-        int $profileId = 0,
-        string $language = 'en',
-    ): ?string {
-        $cacheKey = 'solar_' . $profileId . '_' . $year . ($simplified ? '_short' : '');
-        $cached   = TextBlock::where('key', $cacheKey)
-            ->where('section', 'ai_synthesis')
-            ->where('language', $language)
-            ->first();
-
-        if ($cached) {
-            $this->line("  <fg=gray>[AI synthesis: cached]</>");
-            return $cached->text;
-        }
-
-        /** @var \App\Contracts\AiProvider $ai */
-        $ai = app(\App\Contracts\AiProvider::class);
-
-        // Build context lines
-        $ascGlyph = self::SIGN_GLYPHS[$dto->solarAscSignIndex] ?? '';
-        $pmSign   = $dto->progressedMoon['signName'] ?? '';
-        $psSign   = $dto->progressedSun['signName'] ?? '';
-        $pmHouse  = $dto->progressedMoon['houseIndex'] ?? null;
-        $psHouse  = $dto->progressedSun['houseIndex'] ?? null;
-
-        $prompt  = "Solar Return Year: {$year}\n";
-        $prompt .= "Solar ASC: {$dto->solarAscSignName}\n";
-        $prompt .= "Progressed Moon: {$pmSign}" . ($pmHouse ? " H{$pmHouse}" : '') . "\n";
-        $prompt .= "Progressed Sun: {$psSign}" . ($psHouse ? " H{$psHouse}" : '') . "\n";
-
-        if (! empty($dto->solarArcDirections)) {
-            $arcLines = [];
-            foreach (array_slice($dto->solarArcDirections, 0, 3) as $dir) {
-                $aspWord = __('ui.aspects.' . $dir->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $dir->aspect));
-                $arcLines[] = "Solar Arc {$dir->directedName} {$aspWord} natal {$dir->natalTargetName}";
-            }
-            $prompt .= "Solar Arc: " . implode('; ', $arcLines) . "\n";
-        }
-
-        if ($assembledTexts) {
-            $prompt .= "\nKey solar return factors with pre-generated descriptions:\n\n";
-            $prompt .= implode("\n\n", $assembledTexts);
-        }
-
-        if ($simplified) {
-            $prompt       .= "\n\nWrite exactly 1 paragraph of 5 short sentences as a compact yearly horoscope overview.";
-            $paragraphRule = "- 1 paragraph only — exactly 5 sentences, max 12 words each";
-            $maxTokens     = 200;
-        } else {
-            $prompt       .= "\n\nWrite exactly 5 paragraphs as a yearly horoscope portrait synthesizing what follows.";
-            $paragraphRule = "- Exactly 5 paragraphs separated by blank lines — no headers, no bullets\n"
-                . "- Paragraphs 1-4: 4-5 sentences each\n"
-                . "- Paragraph 5: 6-8 sentences — a synthesis pulling the whole year together";
-            $maxTokens     = 900;
-        }
-
-        $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
-        $system   = "{$langNote}\n\nYou are writing a personalized yearly horoscope intro for a single person.\n\n"
-            . "Style rules:\n"
-            . "- Write like a psychologist giving honest feedback — not an astrologer\n"
-            . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
-            . "{$paragraphRule}\n"
-            . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
-            . "- Plain everyday words only — no spiritual or psychological jargon\n"
-            . "- Describe what the person actually notices or does in real life — concrete behaviour only\n"
-            . "- Paragraph 1: overall tone of the year (Solar ASC + dispositor)\n"
-            . "- Paragraph 2: main aspects — key opportunities or tensions\n"
-            . "- Paragraph 3: inner development (Progressed Moon + Sun)\n"
-            . "- Paragraph 4: Solar Arc directions — concrete shifts or turning points\n"
-            . "- Paragraph 5: synthesis — what kind of year this is as a whole\n"
-            . "- Do NOT start with \"This year...\", \"This is...\", or \"With [planet]...\"\n"
-            . "- Forbidden words: journey, path, soul, essence, portal, gateway, threshold, healing, wounds, dance, dissolves, energy, forces\n"
-            . "- No metaphors. No poetic language.\n"
-            . "- No HTML — plain text only";
-
-        try {
-            $response = $ai->generate($prompt, $system, maxTokens: $maxTokens);
-            $cost     = number_format($response->costUsd, 5);
-            $this->line("  <fg=gray>[AI synthesis: {$response->inputTokens} in / {$response->outputTokens} out / \${$cost}]</>");
-
-            if ($profileId > 0) {
-                $now = now();
-                TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
-                    [
-                        'text'       => $response->text,
-                        'tone'       => 'neutral',
-                        'tokens_in'  => $response->inputTokens,
-                        'tokens_out' => $response->outputTokens,
-                        'cost_usd'   => $response->costUsd,
-                        'updated_at' => $now,
-                        'created_at' => $now,
-                    ]
-                );
-            }
-
-            return $response->text;
-        } catch (\Exception $e) {
-            $this->warn('AI synthesis failed: ' . $e->getMessage());
-            return null;
-        }
-    }
 }

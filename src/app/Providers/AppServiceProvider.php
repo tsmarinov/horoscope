@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(AiProvider::class, function () {
             $provider = config('astrology.ai.provider', 'claude');
-            $model    = config('astrology.ai.model', 'claude-sonnet-4-6');
+            $model    = config('astrology.ai.model', 'claude-haiku-4-5-20251001');
 
             return match ($provider) {
                 'claude' => new ClaudeProvider(
@@ -30,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
                 ),
                 default  => throw new \InvalidArgumentException("Unknown AI provider: {$provider}"),
             };
+        });
+
+        $this->app->singleton(\App\Services\Ai\HoroscopeSynthesisService::class, function ($app) {
+            return new \App\Services\Ai\HoroscopeSynthesisService(
+                ai: $app->make(\App\Contracts\AiProvider::class),
+            );
         });
 
         $this->app->singleton(ReportBuilder::class, function ($app) {

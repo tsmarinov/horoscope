@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 class UiWeekday extends Command
 {
     protected $signature = 'horoscope:ui-weekday
-                            {profile? : Profile ID (optional, for personalized clothing tip)}
+                            {--profile=? : Profile ID (optional, for personalized clothing tip)}
                             {--date= : Date to highlight as "today" (YYYY-MM-DD, default: today)}';
 
     protected $description = 'Render the Days of the Week reference page in pseudo-browser console UI';
@@ -40,7 +40,7 @@ class UiWeekday extends Command
         $date = $this->option('date') ?? Carbon::today()->toDateString();
 
         $profile = null;
-        if ($profileId = $this->argument('profile')) {
+        if ($profileId = $this->option('profile')) {
             $profile = Profile::find($profileId);
             if (! $profile) {
                 $this->error("Profile #{$profileId} not found.");

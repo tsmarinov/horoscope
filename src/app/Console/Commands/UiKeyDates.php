@@ -27,7 +27,7 @@ class UiKeyDates extends Command
     private const PERSONAL_BODIES = [0, 1, 2, 3, 4];
 
     protected $signature = 'horoscope:ui-keydates
-                            {profile : Profile ID}
+                            {--profile= : Profile ID}
                             {--view=month : week|month|year}
                             {--date=      : Any date in period (YYYY-MM-DD, default today)}';
 
@@ -38,7 +38,7 @@ class UiKeyDates extends Command
         LunationDetector $lunationDetector,
         KeyDatesBuilder  $keyDatesBuilder,
     ): int {
-        $profileId = (int) $this->argument('profile');
+        $profileId = (int) $this->option('profile');
         $view      = $this->option('view') ?: 'month';
         $dateStr   = $this->option('date') ?: now()->toDateString();
 
@@ -85,7 +85,7 @@ class UiKeyDates extends Command
 
         $this->put($this->top());
         $this->put($this->row($this->spread(
-            '  📅  KEY DATES · ' . $periodLabel,
+            '  📅  ' . __('ui.keydates.title') . ' · ' . $periodLabel,
             ''
         )));
         $this->put($this->divider());

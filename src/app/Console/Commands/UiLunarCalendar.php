@@ -30,9 +30,9 @@ use Illuminate\Console\Command;
 class UiLunarCalendar extends Command
 {
     protected $signature = 'horoscope:ui-lunar-calendar
-                            {profile? : Profile ID (optional, for personalized lunation card)}
+                            {--profile=? : Profile ID (optional, for personalized lunation card)}
                             {--month= : Month to show (YYYY-MM, default: current month)}
-                            {--mode=organic : Report mode: organic / simplified}';
+                            {--simplified  : Show 1-sentence simplified texts (uses _short sections)}';
 
     protected $description = 'Render a lunar calendar in pseudo-browser console UI';
 
@@ -80,7 +80,7 @@ class UiLunarCalendar extends Command
     public function handle(): int
     {
         $monthStr  = $this->option('month') ?: now()->format('Y-m');
-        $short     = $this->option('mode') === 'simplified';
+        $short     = (bool) $this->option('simplified');
         $daySection = $short ? 'lunar_day_short' : 'lunar_day';
         $tagSection = $short ? 'lunation_sign_short' : 'lunation_sign';
 
@@ -93,7 +93,7 @@ class UiLunarCalendar extends Command
         $end   = $start->copy()->endOfMonth();
         $today = now()->toDateString();
 
-        $profileId = $this->argument('profile');
+        $profileId = $this->option('profile');
         $profile   = $profileId ? Profile::find($profileId) : null;
 
         // ── Load Sun + Moon positions for the whole month ─────────────────
