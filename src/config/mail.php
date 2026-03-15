@@ -3,6 +3,12 @@
 return [
 
     /*
+    | Set MAIL_ENABLED=true in .env to activate real email sending.
+    | When false, notifications are silently skipped (no log, no send).
+    */
+    'enabled' => env('MAIL_ENABLED', false),
+
+    /*
     |--------------------------------------------------------------------------
     | Default Mailer
     |--------------------------------------------------------------------------

@@ -15,7 +15,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'pending_email',
         'password',
+        'accepts_marketing',
     ];
 
     protected $hidden = [
@@ -26,8 +28,10 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'email_verified_at'  => 'datetime',
+            'email_confirmed_at' => 'datetime',
+            'password'           => 'hashed',
+            'accepts_marketing'  => 'boolean',
         ];
     }
 

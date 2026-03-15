@@ -1,5 +1,82 @@
 <?php
 return [
+
+    // ── Home page ──────────────────────────────────────────────────────────
+    'home' => [
+        'hero_title' => 'Your stars, decoded',
+        'hero_sub'   => 'Personal astrology for every day of your life.',
+        'cta_free'   => 'Free preview — create an account for your personal chart',
+        'nav_label'  => 'Home',
+        'cards' => [
+            'daily' => [
+                'title' => 'Daily Horoscope',
+                'glyph' => '☉',
+                'desc'  => 'A transit-based reading personalised to your birth chart. See which planets are active today, which areas of life they touch, and the exact tone they bring — supportive, tense, or quietly transformative. Includes an Areas of Life snapshot and a one-line focus for the day.',
+                'cta'   => 'Read today',
+            ],
+            'weekly' => [
+                'title' => 'Weekly Forecast',
+                'glyph' => '🌙',
+                'desc'  => 'Your full week mapped to your natal chart: key transits, the best days for action, and the days to slow down. Includes a day-by-day breakdown, Areas of Life ratings, and highlights for any lunations or retrograde shifts happening mid-week.',
+                'cta'   => 'View this week',
+            ],
+            'monthly' => [
+                'title' => 'Monthly Overview',
+                'glyph' => '📅',
+                'desc'  => 'A full-month picture anchored to your natal chart. Highlights key dates, new and full moons, and Areas of Life scores across love, career, health, finance, and more. See where the month builds, where it tests, and where it opens doors.',
+                'cta'   => 'View this month',
+            ],
+            'solar' => [
+                'title' => 'Solar Return',
+                'glyph' => '✦',
+                'desc'  => 'Your personal new year chart, cast the exact moment the Sun returns to its natal degree. Reveals the dominant themes, key planets, and house activations that shape the entire year ahead. The city you\'re in at that moment shifts the chart — location matters.',
+                'cta'   => 'View solar return',
+            ],
+            'natal' => [
+                'title' => 'Natal Chart',
+                'glyph' => '♈',
+                'desc'  => 'Your complete birth chart with every planet, sign, house, and aspect decoded. Goes beyond sun-sign astrology to show the full picture: your psychological drives, relational patterns, vocational strengths, and the deeper story your chart is telling.',
+                'cta'   => 'View birth chart',
+            ],
+            'synastry' => [
+                'title' => 'Synastry',
+                'glyph' => '♾',
+                'desc'  => 'Overlay two birth charts to map the exact connections between two people. See where you harmonise naturally, where friction is built in, and which aspects carry the most weight. Works for any bond — romantic partners, close friends, family, or collaborators.',
+                'cta'   => 'Compare charts',
+            ],
+            'lunar' => [
+                'title' => 'Lunar Calendar',
+                'glyph' => '🌑',
+                'desc'  => 'Every new moon, full moon, and void-of-course window for the year, mapped to your natal houses. Know which life area each lunation activates, when to set intentions, when to release, and when the Moon goes quiet and decisions are better delayed.',
+                'cta'   => 'Open calendar',
+            ],
+            'retrograde' => [
+                'title' => 'Retrograde Calendar',
+                'glyph' => '℞',
+                'desc'  => 'Every planetary retrograde for the year with exact pre-shadow, station retrograde, station direct, and post-shadow dates. See which natal house each retrograde crosses in your chart and what it\'s asking you to revisit, reconsider, or release.',
+                'cta'   => 'View retrogrades',
+            ],
+            'weekday' => [
+                'title' => 'Day of the Week',
+                'glyph' => '🗓',
+                'desc'  => 'Each day of the week is ruled by a planet — and that rulership shapes the energy available. See today\'s ruling planet, its colour, gem, and number, plus what kinds of actions, decisions, and intentions align best with the day\'s current.',
+                'cta'   => 'See today\'s day',
+            ],
+            'transits' => [
+                'title' => 'Transits',
+                'glyph' => '⟳',
+                'desc'  => 'A live overlay of current planetary positions onto your natal chart. See every active aspect in real time — which planets are forming conjunctions, trines, squares, and oppositions to your natal points right now.',
+                'cta'   => 'View transits',
+            ],
+            'planets' => [
+                'title' => 'Planet Positions',
+                'glyph' => '🪐',
+                'desc'  => 'Current positions of all planets — sign, degree, house in your chart, and retrograde status. A clean at-a-glance table of where everything stands in the sky today, updated in real time.',
+                'cta'   => 'View positions',
+            ],
+        ],
+    ],
+
     'rating_wait'      => '⚠ wait',
     'retrograde'       => 'Retrograde',
     'retrograde_short' => 'Rx',

@@ -1,3 +1,6 @@
+/* ── Fonts (must precede @import 'tailwindcss') ─────────────────────────── */
+@import url('https://fonts.bunny.net/css?family=cinzel:400,600,700|inter:400,500,600&display=swap');
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -5,7 +8,373 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* ── Theme CSS variables ───────────────────────────────────────────────── */
+
+/* Light (default) */
+:root {
+    --theme-bg:      #f0edf5;
+    --theme-card:    #ffffff;
+    --theme-raised:  #ede8f5;
+    --theme-border:  #c8c0d8;
+    --theme-text:    #0f0e14;
+    --theme-muted:   #6b6880;
+    --theme-divider: #d8d0e8;
+}
+
+/* Dark */
+[data-theme="dark"] {
+    --theme-bg:      #0a0a0f;
+    --theme-card:    #13131f;
+    --theme-raised:  #1a1a2e;
+    --theme-border:  #252535;
+    --theme-text:    #f0eee8;
+    --theme-muted:   #8a8a9a;
+    --theme-divider: #1e1e30;
+}
+
+/* System preference fallback when no data-theme is set */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --theme-bg:      #0a0a0f;
+        --theme-card:    #13131f;
+        --theme-raised:  #1a1a2e;
+        --theme-border:  #252535;
+        --theme-text:    #f0eee8;
+        --theme-muted:   #8a8a9a;
+        --theme-divider: #1e1e30;
+    }
+}
+
+/* ── Tailwind v4 theme tokens ──────────────────────────────────────────── */
+@theme inline {
+    --font-display: 'Cinzel', serif;
+    --font-body:    'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* Accent (fixed across both themes) */
+    --color-accent:        #6a329f;
+    --color-accent-light:  #9b5fd4;
+    --color-accent-dark:   #4a1f75;
+    --color-accent-subtle: #1e0f33;
+    --color-accent-tint:   #f3e8ff;
+
+    /* Semantic tokens → resolve at runtime via CSS vars */
+    --color-page:    var(--theme-bg);
+    --color-surface: var(--theme-card);
+    --color-raised:  var(--theme-raised);
+    --color-edge:    var(--theme-border);
+    --color-ink:     var(--theme-text);
+    --color-muted:   var(--theme-muted);
+    --color-divider: var(--theme-divider);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+body {
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Logo ──────────────────────────────────────────────────────────────── */
+.logo-text {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--theme-text);
+    text-decoration: none;
+}
+.logo-accent { color: #6a329f; }
+
+/* ── Card ──────────────────────────────────────────────────────────────── */
+.card {
+    background-color: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Chip / Badge ──────────────────────────────────────────────────────── */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background-color: var(--theme-raised);
+    border: 1px solid var(--theme-border);
+    color: var(--theme-muted);
+    font-size: 0.72rem;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.chip.chip-accent {
+    background-color: #1e0f33;
+    border-color: #4a1f75;
+    color: #9b5fd4;
+}
+[data-theme="light"] .chip.chip-accent {
+    background-color: #f3e8ff;
+    border-color: #c9a0e8;
+    color: #6a329f;
+}
+
+/* ── Star rating ───────────────────────────────────────────────────────── */
+.stars       { color: #6a329f; font-size: 0.8rem; letter-spacing: -1px; }
+.stars .empty { color: var(--theme-border); }
+
+/* ── Section label ─────────────────────────────────────────────────────── */
+.section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--theme-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+/* ── Divider ───────────────────────────────────────────────────────────── */
+.divider {
+    border: none;
+    border-top: 1px solid var(--theme-divider);
+    margin: 1rem 0;
+}
+
+/* ── Navbar ────────────────────────────────────────────────────────────── */
+.navbar {
+    background-color: var(--theme-card);
+    border-bottom: 1px solid var(--theme-border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+}
+.navbar-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 3.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ── Icon button ───────────────────────────────────────────────────────── */
+.icon-btn {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.4rem;
+    color: var(--theme-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.15s, background-color 0.15s;
+    flex-shrink: 0;
+}
+.icon-btn:hover {
+    background-color: var(--theme-raised);
+    color: var(--theme-text);
+}
+
+/* ── Drawer (mobile menu) ──────────────────────────────────────────────── */
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+}
+.drawer {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 16.5rem;
+    background-color: var(--theme-card);
+    border-left: 1px solid var(--theme-border);
+    z-index: 50;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+.drawer-logo {
+    padding: 0 0.5rem 1.25rem;
+    border-bottom: 1px solid var(--theme-divider);
+    margin-bottom: 0.5rem;
+}
+.drawer-section {
+    font-size: 0.63rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--theme-muted);
+    padding: 0.85rem 0.5rem 0.25rem;
+}
+.drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    border-radius: 0.4rem;
+    font-size: 0.88rem;
+    color: var(--theme-text);
+    text-decoration: none;
+    transition: background-color 0.12s;
+}
+.drawer-item:hover,
+.drawer-item.active {
+    background-color: var(--theme-raised);
+    color: #6a329f;
+}
+.drawer-item .di-icon {
+    font-size: 1rem;
+    width: 1.4rem;
+    text-align: center;
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+/* ── Main content wrapper ──────────────────────────────────────────────── */
+.page-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+}
+
+/* ── Narrow wrap — for single-column pages (daily, natal, etc.) ────────── */
+.page-wrap-narrow {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+}
+
+/* ── Chart table ────────────────────────────────────────────────────────── */
+.ct { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.ct th { padding: 0.4rem 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--theme-muted); letter-spacing: 0.04em; border-bottom: 1px solid var(--theme-border); }
+.ct th:first-child { padding-left: 1rem; text-align: left; }
+.ct th:last-child  { padding-right: 0.5rem; }
+.ct td { padding: 0.55rem 0.25rem; border-bottom: 1px solid var(--theme-border); color: var(--theme-text); white-space: nowrap; }
+.ct td:first-child { padding-left: 0.5rem; }
+.ct td:last-child  { padding-right: 1rem; }
+.ct td.ct-num  { text-align: right; font-variant-numeric: tabular-nums; color: var(--theme-muted); font-size: 0.8rem; }
+.ct td.ct-ctr  { text-align: center; }
+.ct td.ct-muted { color: var(--theme-muted); }
+.ct td.ct-house { text-align: center; color: var(--theme-muted); }
+.ct td.ct-rx-on  { text-align: center; font-size: 0.75rem; color: #dc2626; }
+.ct td.ct-rx-off { text-align: center; font-size: 0.75rem; color: var(--theme-border); }
+
+/* ── Tier lock ─────────────────────────────────────────────────────────── */
+.tier-lock {
+    font-size: 0.8rem;
+    color: var(--theme-muted);
+    opacity: 0.7;
+    padding: 0.5rem 0;
+}
+
+/* ── Twemoji — sizing only; filter applied via JS (applyEmojiFilter) ────── */
+img.emoji {
+    height: 1em;
+    width:  1em;
+    margin: 0 0.05em 0 0.1em;
+    vertical-align: -0.1em;
+    display: inline;
+}
+
+/* ── Home card art — brighter on dark theme ────────────────────────────── */
+[data-theme="dark"] .hcard-art svg {
+    filter: brightness(2.2) saturate(0.85);
+}
+[data-theme="dark"] .hcard-art {
+    background: linear-gradient(150deg, rgba(106,50,159,0.22) 0%, rgba(106,50,159,0.08) 100%) !important;
+}
+
+/* ── Navbar desktop-only controls ─────────────────────────────────────── */
+.navbar-desktop { display: none; }
+@media (min-width: 640px) { .navbar-desktop { display: flex; align-items: center; gap: 0.5rem; } }
+
+/* ── Profile dropdown ──────────────────────────────────────────────────── */
+.profile-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.4rem);
+    min-width: 13rem;
+    background-color: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 60;
+    overflow: hidden;
+    transform-origin: top right;
+}
+.pd-header {
+    padding: 0.6rem 0.85rem;
+}
+.pd-hello {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pd-email {
+    font-size: 0.72rem;
+    color: var(--theme-muted);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.1rem;
+}
+.pd-divider {
+    border-top: 1px solid var(--theme-divider);
+}
+.pd-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.83rem;
+    color: var(--theme-text);
+    text-decoration: none;
+    transition: background-color 0.1s;
+    white-space: nowrap;
+}
+.pd-item:hover {
+    background-color: var(--theme-raised);
+    color: #6a329f;
+}
+.pd-icon {
+    font-size: 0.95rem;
+    width: 1.2rem;
+    text-align: center;
+    opacity: 0.75;
+    flex-shrink: 0;
+}
+
+/* ── Small phone tweaks (≤ 400px) ─────────────────────────────────────── */
+@media (max-width: 400px) {
+    .page-wrap        { padding: 1.25rem 0.6rem 3rem; }
+    .page-wrap-narrow { padding: 0.75rem 0.6rem 2rem; }
+    .card { padding: 0.75rem; }
+    .ct td, .ct th { font-size: 0.75rem; }
+    .ct td:first-child, .ct th:first-child { padding-left: 0.35rem; }
+    .ct td:last-child,  .ct th:last-child  { padding-right: 0.35rem; }
+    .section-label { font-size: 0.68rem; }
+}
+
+/* ── Smooth theme transitions ──────────────────────────────────────────── */
+*, *::before, *::after {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }

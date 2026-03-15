@@ -246,15 +246,105 @@
   },
   "hotPaths": [
     {
-      "path": "",
-      "accessCount": 7,
-      "lastAccessed": 1773570015395,
-      "type": "directory"
+      "path": "resources/css/app.css",
+      "accessCount": 44,
+      "lastAccessed": 1773616343797,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/layouts/app.blade.php",
+      "accessCount": 33,
+      "lastAccessed": 1773615032869,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/profile/index.blade.php",
+      "accessCount": 21,
+      "lastAccessed": 1773615156249,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/home.blade.php",
+      "accessCount": 20,
+      "lastAccessed": 1773614617823,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/natal/show.blade.php",
+      "accessCount": 16,
+      "lastAccessed": 1773616508173,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/stellar-profiles/index.blade.php",
+      "accessCount": 14,
+      "lastAccessed": 1773615151136,
+      "type": "file"
+    },
+    {
+      "path": "routes/web.php",
+      "accessCount": 13,
+      "lastAccessed": 1773611251123,
+      "type": "file"
+    },
+    {
+      "path": "resources/js/app.js",
+      "accessCount": 11,
+      "lastAccessed": 1773610612066,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/AuthController.php",
+      "accessCount": 9,
+      "lastAccessed": 1773608602456,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/ProfileController.php",
+      "accessCount": 9,
+      "lastAccessed": 1773610429358,
+      "type": "file"
     },
     {
       "path": "app/Models/Profile.php",
+      "accessCount": 9,
+      "lastAccessed": 1773611778132,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 8,
+      "lastAccessed": 1773608544483,
+      "type": "directory"
+    },
+    {
+      "path": "lang/en/ui.php",
+      "accessCount": 7,
+      "lastAccessed": 1773605433056,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/StellarProfileController.php",
       "accessCount": 6,
-      "lastAccessed": 1773570096404,
+      "lastAccessed": 1773611284363,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/stellar-profiles/_form.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1773611516133,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/auth/register.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1773615166523,
+      "type": "file"
+    },
+    {
+      "path": ".env",
+      "accessCount": 5,
+      "lastAccessed": 1773606917578,
       "type": "file"
     },
     {
@@ -264,15 +354,93 @@
       "type": "file"
     },
     {
+      "path": "app/Models/User.php",
+      "accessCount": 4,
+      "lastAccessed": 1773608578312,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/auth/login.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773615161385,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/static/terms.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773615171639,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/static/privacy.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773615176741,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/HomeController.php",
+      "accessCount": 3,
+      "lastAccessed": 1773605398754,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_250000_add_uuid_to_profiles.php",
+      "accessCount": 3,
+      "lastAccessed": 1773611807474,
+      "type": "file"
+    },
+    {
       "path": "database/seeders/TestUserSeeder.php",
       "accessCount": 2,
       "lastAccessed": 1773570082823,
       "type": "file"
     },
     {
+      "path": "resources/views/welcome.blade.php",
+      "accessCount": 2,
+      "lastAccessed": 1773600718117,
+      "type": "file"
+    },
+    {
+      "path": "bootstrap/app.php",
+      "accessCount": 2,
+      "lastAccessed": 1773601102437,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/EmailController.php",
+      "accessCount": 2,
+      "lastAccessed": 1773606505148,
+      "type": "file"
+    },
+    {
+      "path": "config/mail.php",
+      "accessCount": 2,
+      "lastAccessed": 1773606523481,
+      "type": "file"
+    },
+    {
+      "path": "app/Models/DeletedAccount.php",
+      "accessCount": 2,
+      "lastAccessed": 1773608583403,
+      "type": "file"
+    },
+    {
       "path": "app/Enums/Gender.php",
-      "accessCount": 1,
-      "lastAccessed": 1773569679879,
+      "accessCount": 2,
+      "lastAccessed": 1773609535925,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_240000_drop_unique_user_id_on_profiles.php",
+      "accessCount": 2,
+      "lastAccessed": 1773609776207,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/AspectCalculator.php",
+      "accessCount": 2,
+      "lastAccessed": 1773611176271,
       "type": "file"
     },
     {
@@ -280,6 +448,102 @@
       "accessCount": 1,
       "lastAccessed": 1773570012017,
       "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_200000_add_email_confirmed_at_to_users_table.php",
+      "accessCount": 1,
+      "lastAccessed": 1773604961792,
+      "type": "file"
+    },
+    {
+      "path": "app/Notifications/ConfirmEmailNotification.php",
+      "accessCount": 1,
+      "lastAccessed": 1773604965968,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_210000_add_accepts_marketing_to_users_table.php",
+      "accessCount": 1,
+      "lastAccessed": 1773606336751,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/StaticController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773606337723,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_220000_create_deleted_accounts_table.php",
+      "accessCount": 1,
+      "lastAccessed": 1773607189115,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_15_230000_expand_deleted_accounts_and_add_pending_email.php",
+      "accessCount": 1,
+      "lastAccessed": 1773608557349,
+      "type": "file"
+    },
+    {
+      "path": "app/Notifications/ConfirmEmailChangeNotification.php",
+      "accessCount": 1,
+      "lastAccessed": 1773608561362,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/EmailChangeController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773608568188,
+      "type": "file"
+    },
+    {
+      "path": "app/Models/City.php",
+      "accessCount": 1,
+      "lastAccessed": 1773609541643,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/CitySearchController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773609654231,
+      "type": "file"
+    },
+    {
+      "path": "app/Facades/AspectCalculator.php",
+      "accessCount": 1,
+      "lastAccessed": 1773611113505,
+      "type": "file"
+    },
+    {
+      "path": "app/Models/NatalChart.php",
+      "accessCount": 1,
+      "lastAccessed": 1773611113693,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/UiNatalReport.php",
+      "accessCount": 1,
+      "lastAccessed": 1773611156690,
+      "type": "file"
+    },
+    {
+      "path": "database/migrations/2026_03_04_200002_create_natal_charts_table.php",
+      "accessCount": 1,
+      "lastAccessed": 1773611219695,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/NatalController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773611236604,
+      "type": "file"
+    },
+    {
+      "path": "resources/views",
+      "accessCount": 1,
+      "lastAccessed": 1773612919176,
+      "type": "directory"
     }
   ],
   "userDirectives": []
