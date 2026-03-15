@@ -40,12 +40,14 @@ class UiWeekday extends Command
         $date = $this->option('date') ?? Carbon::today()->toDateString();
 
         $profile = null;
+        $gender  = null;
         if ($profileId = $this->option('profile')) {
             $profile = Profile::find($profileId);
             if (! $profile) {
                 $this->error("Profile #{$profileId} not found.");
                 return self::FAILURE;
             }
+            $gender = TextBlock::resolveGender($profile->gender?->value ?? null);
         }
 
         $dto = $service->build($profile, $date);
@@ -79,10 +81,7 @@ class UiWeekday extends Command
 
             // Personalised clothing tip (today only)
             if ($day->clothingTipKey !== null) {
-                $block = TextBlock::where('key', $day->clothingTipKey)
-                    ->where('section', 'weekday_clothing')
-                    ->where('language', 'en')
-                    ->first();
+                $block = TextBlock::pick($day->clothingTipKey, 'weekday_clothing', 1, 'en', $gender);
 
                 $this->put('');
                 $signNames   = \App\Models\PlanetaryPosition::SIGN_NAMES;

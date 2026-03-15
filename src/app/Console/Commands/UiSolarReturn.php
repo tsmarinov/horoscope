@@ -115,6 +115,8 @@ class UiSolarReturn extends Command
             $profile->setRelation('solarReturnCity', $overrideCity);
         }
 
+        $gender = TextBlock::resolveGender($profile->gender?->value ?? null);
+
         $birthCityName  = $profile->birthCity?->name ?? '—';
         $solarCity      = $profile->solarReturnCity ?? $profile->birthCity;
         $solarCityName  = $solarCity?->name ?? $birthCityName;
@@ -183,6 +185,7 @@ class UiSolarReturn extends Command
                 year:         $year,
                 simplified:   $simplified,
                 profileId:    $profile->id,
+                gender:       $gender,
             );
             if ($aiResponse) {
                 $wasCached = $aiResponse->inputTokens === 0;
@@ -196,7 +199,7 @@ class UiSolarReturn extends Command
             }
             if ($synthesis ?? null) {
                 $this->put($this->divider());
-                $this->put($this->row($this->spread("  \u{2726}  " . __('ui.solar.ai_overview'), 'AI  ')));
+                $this->put($this->row($this->spread("  \u{2726}  " . ui_trans('solar.ai_overview', $gender), 'AI  ')));
                 $this->put($this->row(''));
                 foreach (preg_split('/\n{2,}/', trim($synthesis)) as $para) {
                     foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
@@ -209,7 +212,10 @@ class UiSolarReturn extends Command
 
         // ── Solar ASC analysis ────────────────────────────────────────────
         if (! empty($natalHouses)) {
-            $this->renderSolarAscAnalysis($dto, $natalHouses, $simplified);
+            $this->renderSolarAscAnalysis($dto, $natalHouses, $simplified, $gender);
+        } else {
+            $this->put($this->row('  🔒 Solar ASC analysis — add birth time & place to unlock'));
+            $this->put($this->row(''));
         }
 
         $this->put($this->divider());
@@ -263,7 +269,7 @@ class UiSolarReturn extends Command
         usort($angularHits, fn ($a, $b) => $a['orb'] <=> $b['orb']);
 
         // ── Solar Return Factors ─────────────────────────────────────────
-        $this->put($this->row("  \u{25C6}  " . __('ui.solar.factors')));
+        $this->put($this->row("  \u{25C6}  " . ui_trans('solar.factors', $gender)));
         $this->put($this->row(''));
 
         // 1. Angular activations
@@ -295,7 +301,7 @@ class UiSolarReturn extends Command
             $tGlyph   = self::BODY_GLYPHS[$asp->transitBody] ?? '?';
             $nGlyph   = self::BODY_GLYPHS[$asp->natalBody] ?? '?';
             $aspGlyph = self::ASPECT_GLYPHS[$asp->aspect] ?? "\u{00B7}";
-            $aspWord  = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+            $aspWord  = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
 
             // Solar house ruler annotation
             $ruledHouses = $solarRuledHouses[$asp->transitBody] ?? [];
@@ -306,7 +312,7 @@ class UiSolarReturn extends Command
 
             $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $section = $simplified ? 'transit_natal_short' : 'transit_natal';
-            $block   = TextBlock::pick($key, $section, 1);
+            $block   = TextBlock::pick($key, $section, 1, 'en', $gender);
             $text    = $block ? trim(strip_tags($block->text)) : null;
 
             if ($text) {
@@ -329,19 +335,19 @@ class UiSolarReturn extends Command
         $psGlyph = self::SIGN_GLYPHS[$dto->progressedSun['sign'] ?? 0] ?? '';
         $psHouseStr = $psHouse ? " \u{00B7} H{$psHouse}" : '';
 
-        $this->put($this->row("  \u{2015}\u{2015} " . __('ui.solar.progressions')));
+        $this->put($this->row("  \u{2015}\u{2015} " . ui_trans('solar.progressions', $gender)));
         $this->put($this->row("  \u{1F319} Prog Moon {$pmGlyph} {$pmSign}{$pmHouseStr}"));
         $this->put($this->row("  \u{2609} Prog Sun  {$psGlyph} {$psSign}{$psHouseStr}"));
         $this->put($this->row(''));
 
         // 5. Solar Arc Directions
         if (! empty($dto->solarArcDirections)) {
-            $this->put($this->row("  \u{2015}\u{2015} " . __('ui.solar.arc_directions')));
+            $this->put($this->row("  \u{2015}\u{2015} " . ui_trans('solar.arc_directions', $gender)));
             foreach ($dto->solarArcDirections as $dir) {
                 $dGlyph   = self::BODY_GLYPHS[$dir->directedBody] ?? '?';
                 $tGlyph   = self::BODY_GLYPHS[$dir->natalTargetBody] ?? '?';
                 $aspGlyph = self::ASPECT_GLYPHS[$dir->aspect] ?? "\u{00B7}";
-                $aspWord  = __('ui.aspects.' . $dir->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $dir->aspect));
+                $aspWord  = ui_trans('aspects.' . $dir->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $dir->aspect));
                 $this->put($this->row("  {$dGlyph} {$dir->directedName}  {$aspGlyph} {$aspWord}  {$tGlyph} natal {$dir->natalTargetName}"));
             }
             $this->put($this->row(''));
@@ -349,7 +355,7 @@ class UiSolarReturn extends Command
 
         // ── Eclipses & Lunations ─────────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row("  \u{1F311}  " . __('ui.solar.lunations_title') . " \u{00B7} {$year}"));
+        $this->put($this->row("  \u{1F311}  " . ui_trans('solar.lunations_title', $gender) . " \u{00B7} {$year}"));
         $this->put($this->row(''));
 
         if (empty($dto->lunations)) {
@@ -378,7 +384,7 @@ class UiSolarReturn extends Command
 
         // ── Key Transits by Quarter ──────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row("  \u{1F4C5}  " . __('ui.solar.key_transits')));
+        $this->put($this->row("  \u{1F4C5}  " . ui_trans('solar.key_transits', $gender)));
         $this->put($this->row(''));
 
         foreach ($dto->quarters as $q) {
@@ -403,7 +409,7 @@ class UiSolarReturn extends Command
                 fn ($rx) => (self::BODY_GLYPHS[$rx->body] ?? '') . 'Rx',
                 $dto->retrogrades,
             ))
-            : __('ui.no_rx');
+            : ui_trans('no_rx', $gender);
         $factorCount = count($dto->solarNatalAspects) + count($dto->solarArcDirections);
         $footer = "  solar  \u{00B7}  {$year}  \u{00B7}  {$dto->cityName}  \u{00B7}  {$factorCount} factors  \u{00B7}  {$rxLabel}";
         // If footer is too long, drop city name
@@ -551,7 +557,7 @@ class UiSolarReturn extends Command
     /**
      * Show: Solar ASC in which natal house + dispositor in which natal house/sign.
      */
-    private function renderSolarAscAnalysis(SolarReturnDTO $dto, array $natalHouses, bool $simplified = false): void
+    private function renderSolarAscAnalysis(SolarReturnDTO $dto, array $natalHouses, bool $simplified = false, ?string $gender = null): void
     {
         $this->put($this->divider());
         $this->put($this->row("  \u{25C6}  SOLAR ASC ANALYSIS"));
@@ -563,7 +569,7 @@ class UiSolarReturn extends Command
         $this->put($this->row("  Solar ASC {$ascGlyph} {$dto->solarAscSignName} \u{2192} natal H{$solarAscNatalHouse}"));
 
         $ascSection = $simplified ? 'solar_asc_house_short' : 'solar_asc_house';
-        $block = TextBlock::pick("solar_asc_natal_house_{$solarAscNatalHouse}", $ascSection, 1);
+        $block = TextBlock::pick("solar_asc_natal_house_{$solarAscNatalHouse}", $ascSection, 1, 'en', $gender);
         if ($block) {
             $this->put($this->row(''));
             foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {
@@ -593,7 +599,7 @@ class UiSolarReturn extends Command
             $this->put($this->row("  Dispositor {$rulerGlyph} {$rulerName} \u{2192} {$dSignGlyph} {$dispSolar->signName} \u{00B7} natal H{$dispNatalHouse}"));
 
             $dispSection = $simplified ? 'solar_dispositor_house_short' : 'solar_dispositor_house';
-            $block2 = TextBlock::pick("solar_dispositor_natal_house_{$dispNatalHouse}", $dispSection, 1);
+            $block2 = TextBlock::pick("solar_dispositor_natal_house_{$dispNatalHouse}", $dispSection, 1, 'en', $gender);
             if ($block2) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block2->text)), self::IW - 4) as $line) {
@@ -602,14 +608,14 @@ class UiSolarReturn extends Command
             }
         }
 
-        $this->renderSolarSingletonSection($dto->solarPlanets, $simplified);
+        $this->renderSolarSingletonSection($dto->solarPlanets, $simplified, $gender);
 
         $this->put($this->row(''));
     }
 
     // ── Singleton / Missing element (solar planets) ───────────────────────
 
-    private function renderSolarSingletonSection(array $solarPlanets, bool $simplified = false): void
+    private function renderSolarSingletonSection(array $solarPlanets, bool $simplified = false, ?string $gender = null): void
     {
         // Count solar planets per element — only bodies 0–9 (Sun–Pluto)
         $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
@@ -630,16 +636,16 @@ class UiSolarReturn extends Command
             if ($count === 1) {
                 $pGlyph = self::BODY_GLYPHS[$list[0]->body] ?? '';
                 $pName  = $list[0]->name;
-                $header = "  \u{2605}  " . __('ui.solar.singleton') . ": {$pGlyph} {$pName} ({$label})";
+                $header = "  \u{2605}  " . ui_trans('solar.singleton', $gender) . ": {$pGlyph} {$pName} ({$label})";
                 $key    = 'singleton_' . $element;
             } else {
-                $header = "  \u{25CB}  " . __('ui.solar.missing_element') . ": {$label}";
+                $header = "  \u{25CB}  " . ui_trans('solar.missing_element', $gender) . ": {$label}";
                 $key    = 'missing_' . $element;
             }
 
             $this->put($this->row(''));
             $this->put($this->row($header));
-            $block = TextBlock::pick($key, $section, 1);
+            $block = TextBlock::pick($key, $section, 1, 'en', $gender);
             if ($block) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {

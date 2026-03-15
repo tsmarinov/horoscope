@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1773439129887,
+  "lastScanned": 1773567870393,
   "projectRoot": "/var/www/horo/web/src",
   "techStack": {
     "languages": [
@@ -64,7 +64,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 1,
-      "lastAccessed": 1773439129877,
+      "lastAccessed": 1773567870386,
       "keyFiles": [
         "AGENTS.md"
       ]
@@ -73,7 +73,7 @@
       "path": "bootstrap",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1773439129878,
+      "lastAccessed": 1773567870387,
       "keyFiles": [
         "app.php",
         "providers.php"
@@ -83,7 +83,7 @@
       "path": "config",
       "purpose": "Configuration files",
       "fileCount": 11,
-      "lastAccessed": 1773439129881,
+      "lastAccessed": 1773567870390,
       "keyFiles": [
         "app.php",
         "astrology.php",
@@ -96,7 +96,7 @@
       "path": "database",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773439129882,
+      "lastAccessed": 1773567870390,
       "keyFiles": [
         "AGENTS.md",
         "database.sqlite"
@@ -106,7 +106,7 @@
       "path": "documents",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "console-commands.md",
         "implementation-status.md"
@@ -116,14 +116,14 @@
       "path": "lang",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": []
     },
     "public": {
       "path": "public",
       "purpose": "Public files",
       "fileCount": 4,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "favicon.ico",
         "index.php",
@@ -134,14 +134,14 @@
       "path": "resources",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": []
     },
     "routes": {
       "path": "routes",
       "purpose": "Route handlers",
       "fileCount": 3,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "AGENTS.md",
         "console.php",
@@ -152,7 +152,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 2,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "generate_ephemeris.py",
         "planetary_positions.csv"
@@ -162,14 +162,14 @@
       "path": "storage",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": []
     },
     "tests": {
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 1,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "TestCase.php"
       ]
@@ -178,7 +178,7 @@
       "path": "vendor",
       "purpose": "Third-party code",
       "fileCount": 1,
-      "lastAccessed": 1773439129883,
+      "lastAccessed": 1773567870391,
       "keyFiles": [
         "autoload.php"
       ]
@@ -187,7 +187,7 @@
       "path": "app/Models",
       "purpose": "Data models",
       "fileCount": 12,
-      "lastAccessed": 1773439129884,
+      "lastAccessed": 1773567870392,
       "keyFiles": [
         "AiText.php",
         "City.php",
@@ -198,7 +198,7 @@
       "path": "app/Services",
       "purpose": "Business logic services",
       "fileCount": 8,
-      "lastAccessed": 1773439129884,
+      "lastAccessed": 1773567870392,
       "keyFiles": [
         "AspectCalculator.php",
         "HouseCalculator.php",
@@ -208,8 +208,8 @@
     "database/migrations": {
       "path": "database/migrations",
       "purpose": "Database migrations",
-      "fileCount": 17,
-      "lastAccessed": 1773439129885,
+      "fileCount": 19,
+      "lastAccessed": 1773567870392,
       "keyFiles": [
         "0001_01_01_000000_create_users_table.php",
         "0001_01_01_000001_create_cache_table.php",
@@ -220,7 +220,7 @@
       "path": "resources/views",
       "purpose": "View templates",
       "fileCount": 1,
-      "lastAccessed": 1773439129886,
+      "lastAccessed": 1773567870392,
       "keyFiles": [
         "welcome.blade.php"
       ]
@@ -229,14 +229,14 @@
       "path": "storage/app",
       "purpose": "Application code",
       "fileCount": 1,
-      "lastAccessed": 1773439129886,
+      "lastAccessed": 1773567870392,
       "keyFiles": []
     },
     "vendor/bin": {
       "path": "vendor/bin",
       "purpose": "Executable scripts",
       "fileCount": 9,
-      "lastAccessed": 1773439129887,
+      "lastAccessed": 1773567870393,
       "keyFiles": [
         "carbon",
         "patch-type-declarations",
@@ -246,21 +246,39 @@
   },
   "hotPaths": [
     {
-      "path": "app/Console/Commands/UiSynastry.php",
-      "accessCount": 15,
-      "lastAccessed": 1773439734192,
+      "path": "",
+      "accessCount": 7,
+      "lastAccessed": 1773570015395,
+      "type": "directory"
+    },
+    {
+      "path": "app/Models/Profile.php",
+      "accessCount": 6,
+      "lastAccessed": 1773570096404,
       "type": "file"
     },
     {
-      "path": "lang/en/ui.php",
-      "accessCount": 3,
-      "lastAccessed": 1773439685020,
+      "path": "database/migrations/2026_03_15_000001_add_gender_to_profiles_table.php",
+      "accessCount": 4,
+      "lastAccessed": 1773570217755,
       "type": "file"
     },
     {
-      "path": "app/Services/SynastryScorer.php",
+      "path": "database/seeders/TestUserSeeder.php",
       "accessCount": 2,
-      "lastAccessed": 1773439673401,
+      "lastAccessed": 1773570082823,
+      "type": "file"
+    },
+    {
+      "path": "app/Enums/Gender.php",
+      "accessCount": 1,
+      "lastAccessed": 1773569679879,
+      "type": "file"
+    },
+    {
+      "path": "database/seeders/DatabaseSeeder.php",
+      "accessCount": 1,
+      "lastAccessed": 1773570012017,
       "type": "file"
     }
   ],

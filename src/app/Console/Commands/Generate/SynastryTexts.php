@@ -29,7 +29,8 @@ class SynastryTexts extends Command
                             {--from-key= : Start from a specific block key (resume)}
                             {--key= : Generate only this specific block key}
                             {--dry-run : Show prompt and response without saving}
-                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
+                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}
+                            {--gender= : Gender variant (male, female, or omit for neutral)}';
 
     protected $description = 'Generate synastry cross-chart aspect text blocks';
 
@@ -53,6 +54,7 @@ class SynastryTexts extends Command
         $model    = $this->option('model');
         $onlyKey  = $this->option('key');
         $fromKey  = $this->option('from-key');
+        $gender   = $this->option('gender') ?: null;
         $section  = 'synastry_aspect';
 
         $client = new AnthropicClient(apiKey: config('services.anthropic.key'));
@@ -95,6 +97,7 @@ class SynastryTexts extends Command
                 $existing = TextBlock::where('key', $key)
                     ->where('section', $section)
                     ->where('language', 'en')
+                    ->where('gender', $gender)
                     ->count();
 
                 if ($existing >= $variants) {
@@ -146,6 +149,7 @@ class SynastryTexts extends Command
                             'section'  => $section,
                             'language' => 'en',
                             'variant'  => $block['variant'],
+                            'gender'   => $gender,
                         ],
                         array_merge([
                             'text' => $block['text'],

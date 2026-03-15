@@ -8,15 +8,15 @@ class AreasOfLifeScorer
 {
     // ── Life categories — house indices (0-based: H1=0 ... H12=11) ────────
     public const CATEGORIES = [
-        ['slug' => 'love',            'name' => 'Love',            'houses' => [4, 6]],
+        ['slug' => 'love',            'name' => 'Love',            'houses' => [4]],
         ['slug' => 'home',            'name' => 'Home',            'houses' => [3]],
         ['slug' => 'creativity',      'name' => 'Creativity',      'houses' => [4]],
         ['slug' => 'spirituality',    'name' => 'Spirituality',    'houses' => [8, 11]],
         ['slug' => 'health',          'name' => 'Health',          'houses' => [5, 0]],
         ['slug' => 'finance',         'name' => 'Finance',         'houses' => [1, 7]],
         ['slug' => 'travel',          'name' => 'Travel',          'houses' => [8, 2]],
-        ['slug' => 'career',          'name' => 'Career',          'houses' => [9]],
-        ['slug' => 'personal_growth', 'name' => 'Personal Growth', 'houses' => [0]],
+        ['slug' => 'career',          'name' => 'Career',          'houses' => [9, 5]],
+        ['slug' => 'personal_growth', 'name' => 'Personal Growth', 'houses' => [0, 9, 10]],
         ['slug' => 'communication',   'name' => 'Communication',   'houses' => [2]],
         ['slug' => 'contracts',       'name' => 'Contracts',       'houses' => [6, 2]],
     ];

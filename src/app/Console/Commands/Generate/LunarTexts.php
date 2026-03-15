@@ -21,7 +21,8 @@ class LunarTexts extends Command
                             {--key= : Generate only this specific block key}
                             {--dry-run : Show prompt and response without saving}
                             {--short : Generate 1-sentence simplified variants (_short sections)}
-                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
+                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}
+                            {--gender= : Gender variant (male, female, or omit for neutral)}';
 
     protected $description = 'Generate lunar calendar text blocks (moon-in-sign + lunation house)';
 
@@ -56,6 +57,7 @@ class LunarTexts extends Command
         $model    = $this->option('model');
         $onlyKey  = $this->option('key');
         $fromKey  = $this->option('from-key');
+        $gender   = $this->option('gender') ?: null;
 
         if (! in_array($type, ['lunar_day', 'lunation_house', 'lunation_sign'])) {
             $this->error("Unknown type: {$type}. Use lunar_day, lunation_house, or lunation_sign.");
@@ -101,6 +103,7 @@ class LunarTexts extends Command
                 $existing = TextBlock::where('key', $key)
                     ->where('section', $section)
                     ->where('language', 'en')
+                    ->where('gender', $gender)
                     ->count();
 
                 if ($existing >= $variants) {
@@ -155,6 +158,7 @@ class LunarTexts extends Command
                             'section'  => $type,
                             'language' => 'en',
                             'variant'  => $block['variant'],
+                            'gender'   => $gender,
                         ],
                         array_merge([
                             'text' => $block['text'],

@@ -15,7 +15,8 @@ class NatalHouseLordsTexts extends Command
                             {--dry-run : Show prompt and response without saving}
                             {--short : Generate 1-sentence simplified variants (_short sections)}
                             {--batch=10 : Number of keys per API call (set 1 to disable batching)}
-                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}';
+                            {--model=claude-haiku-4-5-20251001 : Anthropic model to use}
+                            {--gender= : Gender variant (male, female, or omit for neutral)}';
 
     protected $description = 'Generate natal house lord placement text blocks (house cusp sign + lord in sign + house)';
 
@@ -56,6 +57,7 @@ class NatalHouseLordsTexts extends Command
         $model    = $this->option('model');
         $onlyKey  = $this->option('key');
         $fromKey  = $this->option('from-key');
+        $gender   = $this->option('gender') ?: null;
 
         $client    = new AnthropicClient(apiKey: config('services.anthropic.key'));
         $batchSize = $onlyKey ? 1 : max(1, (int) $this->option('batch'));
@@ -97,6 +99,7 @@ class NatalHouseLordsTexts extends Command
                 $found = TextBlock::whereIn('key', $chunk)
                     ->where('section', $section)
                     ->where('language', 'en')
+                    ->where('gender', $gender)
                     ->pluck('key')
                     ->toArray();
                 $existingKeys = array_merge($existingKeys, $found);
@@ -158,7 +161,7 @@ class NatalHouseLordsTexts extends Command
                     }
                     foreach ($blocks as $block) {
                         TextBlock::updateOrCreate(
-                            ['key' => $key, 'section' => $section, 'language' => 'en', 'variant' => $block['variant']],
+                            ['key' => $key, 'section' => $section, 'language' => 'en', 'variant' => $block['variant'], 'gender' => $gender],
                             array_merge(['text' => $block['text'], 'tone' => $block['tone'] ?? 'neutral'], $perBlock)
                         );
                     }

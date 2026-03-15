@@ -145,7 +145,7 @@ class UiPlanetPositions extends Command
                 $nameA   = PlanetaryPosition::BODY_NAMES[$asp['body_a']] ?? '';
                 $nameB   = PlanetaryPosition::BODY_NAMES[$asp['body_b']] ?? '';
                 $aspG    = self::ASPECT_GLYPHS[$asp['aspect']] ?? "\u{00B7}";
-                $aspWord = __('ui.aspects.' . $asp['aspect'], [], null) ?: ucfirst(str_replace('_', ' ', $asp['aspect']));
+                $aspWord = ui_trans('aspects.' . $asp['aspect']) ?: ucfirst(str_replace('_', ' ', $asp['aspect']));
                 $orb     = number_format($asp['orb'], 1) . "\u{00B0}";
 
                 $chip = "  {$gA} {$nameA}  {$aspG} {$aspWord}  {$gB} {$nameB}  \u{00B7} {$orb}";
@@ -171,7 +171,7 @@ class UiPlanetPositions extends Command
         $rxPlanets = $positions->filter(fn ($p) => $p->is_retrograde)
             ->map(fn ($p) => (self::BODY_GLYPHS[$p->body] ?? '') . 'Rx')
             ->implode(" \u{00B7} ");
-        $rxStr = $rxPlanets ?: __('ui.no_rx');
+        $rxStr = $rxPlanets ?: ui_trans('no_rx');
         $this->put($this->row("  planet-positions  \u{00B7}  {$date}  \u{00B7}  {$rxStr}"));
         $this->put($this->bottom());
         $this->newLine();

@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Gender;
 use App\Models\PlanetaryPosition;
 use App\Models\Profile;
 use App\Models\TextBlock;
 use App\Services\AspectCalculator;
+use App\Services\Horoscope\Shared\AreasOfLifeScorer;
 use App\Services\SynastryCalculator;
 use App\Services\SynastryScorer;
 use Illuminate\Console\Command;
@@ -32,7 +34,9 @@ class UiSynastry extends Command
     protected $signature = 'horoscope:ui-synastry
                             {--profile-a= : Profile ID for person A}
                             {--profile-b= : Profile ID for person B}
-                            {--type=general : Relationship type (general|romantic|business|friends|family|spiritual|communication|emotion|sexual|creative)}';
+                            {--type=general : Relationship type (general|romantic|business|friends|family|spiritual|communication|emotion|sexual|creative)}
+                            {--simplified  : Show shortened texts (uses _short sections)}
+                            {--ai          : Generate synthesis overview with Claude (AI L1)}';
 
     protected $description = 'Render the synastry compatibility view in pseudo-browser console UI';
 
@@ -87,9 +91,14 @@ class UiSynastry extends Command
         SynastryCalculator $synastry,
         SynastryScorer     $scorer,
     ): int {
-        $idA  = $this->option('profile-a');
-        $idB  = $this->option('profile-b');
-        $type = $this->option('type') ?? 'general';
+        $idA        = $this->option('profile-a');
+        $idB        = $this->option('profile-b');
+        $type       = $this->option('type') ?? 'general';
+        $simplified = (bool) $this->option('simplified');
+        $ai         = (bool) $this->option('ai');
+
+        // Section name resolver: when simplified, append _short
+        $sec = fn (string $base): string => $simplified ? $base . '_short' : $base;
 
         if ($idA === null || $idB === null) {
             $this->error('Both --profile-a and --profile-b are required.');
@@ -109,21 +118,26 @@ class UiSynastry extends Command
             return self::FAILURE;
         }
 
+        $genderA = TextBlock::resolveGender($profileA->gender?->value ?? null);
+        $genderB = TextBlock::resolveGender($profileB->gender?->value ?? null);
+
         $chartA = $calculator->calculate($profileA);
         $chartB = $calculator->calculate($profileB);
 
         // A→B aspects (for scoring + display); B→A for reverse direction
         $allAspects = $synastry->calculate($chartA, $chartB);
 
-        // Score all 10 types → one overall star rating per type (avg of sub-categories)
+        // Score all types; general = average of the other 9
         $typeScores = [];
         foreach (SynastryScorer::types() as $t) {
+            if ($t === 'general') continue;
             $cats           = $scorer->score($allAspects, $t);
             $avg            = count($cats) > 0
                 ? array_sum(array_column($cats, 'stars')) / count($cats)
                 : 3;
             $typeScores[$t] = (int) round($avg);
         }
+        $typeScores['general'] = (int) round(array_sum($typeScores) / count($typeScores));
 
         // Split into directional groups, personal planets first
         $sortByPersonal = function (array $a, array $b): int {
@@ -167,14 +181,14 @@ class UiSynastry extends Command
         $this->newLine();
 
         // ── 1. Header ─────────────────────────────────────────────────
-        $typeLabel = self::TYPE_ICONS[$type] . ' ' . __('ui.synastry.types.' . $type);
+        $typeLabel = self::TYPE_ICONS[$type] . ' ' . ui_trans('synastry.types.' . $type);
 
         $this->put($this->top());
         $this->put($this->row($this->spread(
-            '  ♡ ' . __('ui.synastry.title') . ' — ' . $nameA . ' & ' . $nameB,
+            '  ♡ ' . ui_trans('synastry.title') . ' — ' . $nameA . ' & ' . $nameB,
             '[' . $typeLabel . ']  '
         )));
-        $this->put($this->row('  ' . __('ui.synastry.subtitle')));
+        $this->put($this->row('  ' . ui_trans('synastry.subtitle')));
         $this->put($this->divider());
 
         // ── 2. Person chips ───────────────────────────────────────────
@@ -184,12 +198,12 @@ class UiSynastry extends Command
 
         // ── 3. Bi-wheel placeholder ───────────────────────────────────
         $this->put($this->row(''));
-        $this->put($this->row($this->centerStr(__('ui.synastry.biwheel_label'))));
+        $this->put($this->row($this->centerStr(ui_trans('synastry.biwheel_label'))));
         $this->put($this->row(''));
         $this->put($this->divider());
 
         // ── 4. Positions table ────────────────────────────────────────
-        $this->put($this->row('  ' . __('ui.synastry.positions_title')));
+        $this->put($this->row('  ' . ui_trans('synastry.positions_title')));
         $this->put($this->row(''));
 
         $hdrLeft  = '  ' . $this->mbPad('Body', 10) . $this->mbPad('A  ' . $nameA, 24);
@@ -219,13 +233,16 @@ class UiSynastry extends Command
             $label = $this->mbPad('ASC', 10);
             $left  = '  ' . $label . $this->mbPad($ascACellLabel, 24);
             $this->put($this->row($this->spread($left, $ascBCellLabel . '  ')));
+        } else {
+            $label = $this->mbPad('ASC', 10);
+            $this->put($this->row('  ' . $label . '🔒 add birth time & place'));
         }
 
         $this->put($this->row(''));
         $this->put($this->divider());
 
         // ── 5+6. Relationships = type navigation + scores ────────────
-        $this->put($this->row('  ' . __('ui.synastry.categories_title')));
+        $this->put($this->row('  ' . ui_trans('synastry.categories_title')));
         $this->put($this->row(''));
 
         // Horizontal tabs — 2 rows of 5 (10 types total)
@@ -234,7 +251,7 @@ class UiSynastry extends Command
             $tabs = '  ';
             foreach ($row as $t) {
                 $icon  = self::TYPE_ICONS[$t];
-                $label = self::TAB_LABELS[$t] ?? __('ui.synastry.types.' . $t);
+                $label = self::TAB_LABELS[$t] ?? ui_trans('synastry.types.' . $t);
                 $tabs .= $t === $type
                     ? '[' . $icon . ' ' . $label . ']  '
                     : $icon . ' ' . $label . '  ';
@@ -249,15 +266,15 @@ class UiSynastry extends Command
         foreach ($allTypes as $t) {
             $stars = str_repeat('★', $typeScores[$t]) . str_repeat('☆', 5 - $typeScores[$t]);
             $icon  = self::TYPE_ICONS[$t];
-            $label = __('ui.synastry.types.' . $t);
+            $label = ui_trans('synastry.types.' . $t);
             $this->put($this->row($this->spread(
                 '  ' . $icon . '  ' . $label,
                 $stars . '  '
             )));
         }
 
-        // Description for selected type
-        $typeBlock = TextBlock::pick($type, 'synastry_type', 1);
+        // Description for selected type — shared text, null gender
+        $typeBlock = TextBlock::pick($type, $sec('synastry_type'), 1, 'en', null);
         if ($typeBlock) {
             $this->put($this->row(''));
             foreach ($this->wrap(strip_tags($typeBlock->text), self::IW - 4) as $line) {
@@ -267,29 +284,77 @@ class UiSynastry extends Command
         $this->put($this->row(''));
         $this->put($this->divider());
 
-        // ── 7. Intro / Synthesis (same position, two tiers) ──────────
-        $this->put($this->row('  ' . __('ui.synastry.intro_title')));
+        // ── 7. Intro / Synthesis (mutually exclusive) ────────────────
         $sunA     = $planetsA->get(PlanetaryPosition::SUN);
         $sunB     = $planetsB->get(PlanetaryPosition::SUN);
         $introKey = $this->introKey($sunA['sign'] ?? 0, $sunB['sign'] ?? 0);
-        $introBlock = TextBlock::pick($introKey, 'synastry_intro', 1);
-        if ($introBlock) {
-            foreach ($this->wrap(strip_tags($introBlock->text), self::IW - 4) as $line) {
-                $this->put($this->row('  ' . $line));
+
+        if (! $ai) {
+            $this->put($this->row('  ' . ui_trans('synastry.intro_title')));
+            $introBlock = TextBlock::pick($introKey, $sec('synastry_intro'), 1, 'en', null);
+            if ($introBlock) {
+                foreach ($this->wrap(strip_tags($introBlock->text), self::IW - 4) as $line) {
+                    $this->put($this->row('  ' . $line));
+                }
+            } else {
+                $this->put($this->row('  ' . ui_trans('synastry.intro_text_tag')));
+            }
+            $this->put($this->row(''));
+            $this->put($this->row('  ' . str_repeat('─', 40) . ui_trans('synastry.ai_divider')));
+            $this->put($this->row('  ' . ui_trans('synastry.synthesis_title')));
+        } else {
+            $this->put($this->row('  ' . ui_trans('synastry.synthesis_title')));
+        }
+
+        if ($ai) {
+            /** @var \App\Services\Ai\HoroscopeSynthesisService $synthesisService */
+            $synthesisService = app(\App\Services\Ai\HoroscopeSynthesisService::class);
+            $aiResponse = $synthesisService->synastry(
+                nameA:      $firstNameA,
+                planetsA:   $chartA->planets ?? [],
+                nameB:      $firstNameB,
+                planetsB:   $chartB->planets ?? [],
+                type:       $type,
+                typeScores: $typeScores,
+                aspects:    $allAspects,
+                simplified: $simplified,
+                profileIdA: $profileA->id,
+                profileIdB: $profileB->id,
+                language:   'en',
+            );
+            if ($aiResponse) {
+                $first = true;
+                foreach (preg_split('/\n{2,}/', trim($aiResponse->text)) as $para) {
+                    if (! $first) {
+                        $this->put($this->row(''));
+                    }
+                    foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
+                        $this->put($this->row('  ' . $line));
+                    }
+                    $first = false;
+                }
+            } else {
+                $this->put($this->row('  ' . ui_trans('synastry.synthesis_text_tag')));
             }
         } else {
-            $this->put($this->row('  ' . __('ui.synastry.intro_text_tag')));
+            $this->put($this->row('  ' . ui_trans('synastry.synthesis_text_tag')));
         }
-        $this->put($this->row(''));
-        $this->put($this->row('  ' . str_repeat('─', 40) . __('ui.synastry.ai_divider')));
-        $this->put($this->row('  ' . __('ui.synastry.synthesis_title')));
-        $this->put($this->row('  ' . __('ui.synastry.synthesis_text_tag')));
+
         $this->put($this->row(''));
         $this->put($this->divider());
 
+        // ── 7.5. Partner Archetypes (romantic, M+F only) ──────────────
+        $this->renderPartnerArchetypes(
+            $type, $profileA, $profileB,
+            $planetsA, $planetsB,
+            $housesA, $housesB,
+            $hasTier3, $firstNameA, $firstNameB,
+            $sec, $genderA, $genderB,
+        );
+
         // ── 8a. Sun/Moon cross-chart placements (tier 3 only) ─────────
         if ($hasTier3) {
-            $this->put($this->row('  ' . __('ui.synastry.cross_placements_title')));
+            $this->put($this->row('  ' . ui_trans('synastry.cross_placements_title')));
             $this->put($this->row(''));
 
             $bodyKeys = [PlanetaryPosition::SUN => 'sun', PlanetaryPosition::MOON => 'moon'];
@@ -301,11 +366,11 @@ class UiSynastry extends Command
                     $bName = PlanetaryPosition::BODY_NAMES[$bodyId];
                     $sign  = PlanetaryPosition::SIGN_NAMES[$pA['sign']] ?? '?';
                     $hInB  = $housesB ? $this->houseOf($pA['longitude'], $housesB) : '?';
-                    $this->put($this->row('  ' . __('ui.synastry.planet_in_house', [
+                    $this->put($this->row('  ' . ui_trans('synastry.planet_in_house', null, null, [
                         'glyph' => $g, 'name' => $bName, 'label' => 'A',
                         'sign'  => $sign, 'house' => $hInB, 'other' => $nameB,
                     ])));
-                    $phBlock = TextBlock::pick($bodyKeys[$bodyId] . '_house_' . $hInB, 'synastry_planet_house', 1);
+                    $phBlock = TextBlock::pick($bodyKeys[$bodyId] . '_house_' . $hInB, $sec('synastry_planet_house'), 1, 'en', $genderA);
                     if ($phBlock) {
                         $resolved = $this->resolveText(strip_tags($phBlock->text), $firstNameA, $firstNameB);
                         foreach ($this->wrap($resolved, self::IW - 4) as $line) {
@@ -323,11 +388,11 @@ class UiSynastry extends Command
                     $bName = PlanetaryPosition::BODY_NAMES[$bodyId];
                     $sign  = PlanetaryPosition::SIGN_NAMES[$pB['sign']] ?? '?';
                     $hInA  = $housesA ? $this->houseOf($pB['longitude'], $housesA) : '?';
-                    $this->put($this->row('  ' . __('ui.synastry.planet_in_house', [
+                    $this->put($this->row('  ' . ui_trans('synastry.planet_in_house', null, null, [
                         'glyph' => $g, 'name' => $bName, 'label' => 'B',
                         'sign'  => $sign, 'house' => $hInA, 'other' => $nameA,
                     ])));
-                    $phBlock = TextBlock::pick($bodyKeys[$bodyId] . '_house_' . $hInA, 'synastry_planet_house', 1);
+                    $phBlock = TextBlock::pick($bodyKeys[$bodyId] . '_house_' . $hInA, $sec('synastry_planet_house'), 1, 'en', $genderB);
                     if ($phBlock) {
                         $resolved = $this->resolveText(strip_tags($phBlock->text), $firstNameB, $firstNameA);
                         foreach ($this->wrap($resolved, self::IW - 4) as $line) {
@@ -341,7 +406,7 @@ class UiSynastry extends Command
             $this->put($this->divider());
 
             // ── 8b. ASC cross-placements ──────────────────────────────
-            $this->put($this->row('  ' . __('ui.synastry.asc_placements_title')));
+            $this->put($this->row('  ' . ui_trans('synastry.asc_placements_title')));
             $this->put($this->row(''));
 
             $ascALong = $chartA->ascendant;
@@ -351,11 +416,11 @@ class UiSynastry extends Command
             $ascAInB  = $housesB ? $this->houseOf($ascALong, $housesB) : '?';
             $ascBInA  = $housesA ? $this->houseOf($ascBLong, $housesA) : '?';
 
-            $this->put($this->row('  ' . __('ui.synastry.asc_falls_in', [
+            $this->put($this->row('  ' . ui_trans('synastry.asc_falls_in', null, null, [
                 'label' => 'A', 'name' => $nameA, 'sign' => $ascASign,
                 'house' => $ascAInB, 'other' => $nameB,
             ])));
-            $ascABlock = TextBlock::pick('asc_house_' . $ascAInB, 'synastry_asc_house', 1);
+            $ascABlock = TextBlock::pick('asc_house_' . $ascAInB, $sec('synastry_asc_house'), 1, 'en', $genderA);
             if ($ascABlock) {
                 $resolved = $this->resolveText(strip_tags($ascABlock->text), $firstNameA, $firstNameB);
                 foreach ($this->wrap($resolved, self::IW - 4) as $line) {
@@ -364,11 +429,11 @@ class UiSynastry extends Command
             }
             $this->put($this->row(''));
 
-            $this->put($this->row('  ' . __('ui.synastry.asc_falls_in', [
+            $this->put($this->row('  ' . ui_trans('synastry.asc_falls_in', null, null, [
                 'label' => 'B', 'name' => $nameB, 'sign' => $ascBSign,
                 'house' => $ascBInA, 'other' => $nameA,
             ])));
-            $ascBBlock = TextBlock::pick('asc_house_' . $ascBInA, 'synastry_asc_house', 1);
+            $ascBBlock = TextBlock::pick('asc_house_' . $ascBInA, $sec('synastry_asc_house'), 1, 'en', $genderB);
             if ($ascBBlock) {
                 $resolved = $this->resolveText(strip_tags($ascBBlock->text), $firstNameB, $firstNameA);
                 foreach ($this->wrap($resolved, self::IW - 4) as $line) {
@@ -377,19 +442,23 @@ class UiSynastry extends Command
             }
             $this->put($this->row(''));
             $this->put($this->divider());
+        } else {
+            $this->put($this->row('  🔒 Cross-chart placements & ASC — add birth time & place to both profiles'));
+            $this->put($this->row(''));
+            $this->put($this->divider());
         }
 
         // ── 9. Aspects — three directional sections ───────────────────
 
         // 9a. A → B
         $this->put($this->row($this->spread(
-            '  ' . __('ui.synastry.a_to_b', ['name_a' => $nameA, 'name_b' => $nameB]),
+            '  ' . ui_trans('synastry.a_to_b', null, null, ['name_a' => $nameA, 'name_b' => $nameB]),
             '(' . count($aspectsAtoB) . ')  '
         )));
         $this->put($this->row(''));
         foreach ($aspectsAtoB as $asp) {
             $this->put($this->row($this->aspectLine($asp)));
-            $block = TextBlock::pick($this->aspectKey($asp), 'synastry_aspect', 1);
+            $block = TextBlock::pick($this->aspectKey($asp), $sec('synastry_aspect'), 1, 'en', null);
             if ($block) {
                 // :owner = person whose planet has the lower body ID (min body in key)
                 $ownerName = $asp['body_a'] <= $asp['body_b'] ? $firstNameA : $firstNameB;
@@ -402,20 +471,20 @@ class UiSynastry extends Command
             }
         }
         if (empty($aspectsAtoB)) {
-            $this->put($this->row('  ' . __('ui.synastry.no_aspects')));
+            $this->put($this->row('  ' . ui_trans('synastry.no_aspects')));
         }
         $this->put($this->row(''));
         $this->put($this->divider());
 
         // 9b. B → A
         $this->put($this->row($this->spread(
-            '  ' . __('ui.synastry.b_to_a', ['name_a' => $nameA, 'name_b' => $nameB]),
+            '  ' . ui_trans('synastry.b_to_a', null, null, ['name_a' => $nameA, 'name_b' => $nameB]),
             '(' . count($aspectsBtoA) . ')  '
         )));
         $this->put($this->row(''));
         foreach ($aspectsBtoA as $asp) {
             $this->put($this->row($this->aspectLine($asp, 'B', 'A')));
-            $block = TextBlock::pick($this->aspectKey($asp), 'synastry_aspect', 1);
+            $block = TextBlock::pick($this->aspectKey($asp), $sec('synastry_aspect'), 1, 'en', null);
             if ($block) {
                 // body_a is B's planet here; :owner = person with min body ID
                 $ownerName = $asp['body_a'] <= $asp['body_b'] ? $firstNameB : $firstNameA;
@@ -428,7 +497,7 @@ class UiSynastry extends Command
             }
         }
         if (empty($aspectsBtoA)) {
-            $this->put($this->row('  ' . __('ui.synastry.no_aspects')));
+            $this->put($this->row('  ' . ui_trans('synastry.no_aspects')));
         }
         $this->put($this->row(''));
         $this->put($this->divider());
@@ -436,23 +505,24 @@ class UiSynastry extends Command
         // 9c. Symmetric — only pairs that actually form an aspect
         $symmetricWithAspect = array_values(array_filter($symmetricPairs, fn($p) => $p['aspect'] !== null));
         $this->put($this->row($this->spread(
-            '  ' . __('ui.synastry.mutual'),
+            '  ' . ui_trans('synastry.mutual'),
             '(' . count($symmetricWithAspect) . ')  '
         )));
         $this->put($this->row(''));
         foreach ($symmetricWithAspect as $pair) {
             $this->put($this->row($this->symmetricLine($pair)));
             $name  = strtolower(PlanetaryPosition::BODY_NAMES[$pair['body']] ?? '');
-            $block = TextBlock::pick($name . '_' . $pair['aspect'] . '_' . $name, 'synastry_aspect', 1);
+            $block = TextBlock::pick($name . '_' . $pair['aspect'] . '_' . $name, $sec('synastry_aspect'), 1, 'en', null);
             if ($block) {
-                foreach ($this->wrap(strip_tags($block->text), self::IW - 4) as $line) {
+                $resolved = $this->resolveText(strip_tags($block->text), $firstNameA, $firstNameB);
+                foreach ($this->wrap($resolved, self::IW - 4) as $line) {
                     $this->put($this->row('  ' . $line));
                 }
                 $this->put($this->row(''));
             }
         }
         if (empty($symmetricWithAspect)) {
-            $this->put($this->row('  ' . __('ui.synastry.no_mutual_aspects')));
+            $this->put($this->row('  ' . ui_trans('synastry.no_mutual_aspects')));
         }
 
         $this->put($this->row(''));
@@ -698,8 +768,8 @@ class UiSynastry extends Command
     private function resolveText(string $text, string $ownerName, string $otherName): string
     {
         return str_replace(
-            [":owner's", ":other's", ':owner', ':other'],
-            [$ownerName . "'s", $otherName . "'s", $ownerName, $otherName],
+            [":owner's", ":other's", ':owner', ':other', "Owner's", "Other's", 'Owner', 'Other'],
+            [$ownerName . "'s", $otherName . "'s", $ownerName, $otherName, $ownerName . "'s", $otherName . "'s", $ownerName, $otherName],
             $text
         );
     }
@@ -740,5 +810,168 @@ class UiSynastry extends Command
     {
         [$lo, $hi] = $signA <= $signB ? [$signA, $signB] : [$signB, $signA];
         return $this->signKey($lo) . '_' . $this->signKey($hi);
+    }
+
+    // ── Partner Archetypes (romantic · all gender combos except Other) ───
+
+    private function renderPartnerArchetypes(
+        string $type,
+        Profile $profileA, Profile $profileB,
+        \Illuminate\Support\Collection $planetsA, \Illuminate\Support\Collection $planetsB,
+        array $housesA, array $housesB,
+        bool $hasTier3,
+        string $firstNameA, string $firstNameB,
+        \Closure $sec,
+        ?string $genderA = null,
+        ?string $genderB = null,
+    ): void {
+        if ($type !== 'romantic') {
+            return;
+        }
+
+        $enumGenderA = $profileA->gender ?? null;
+        $enumGenderB = $profileB->gender ?? null;
+
+        if ($enumGenderA === null || $enumGenderB === null) return;
+        if ($enumGenderA === Gender::Other || $enumGenderB === Gender::Other) return;
+
+        $sameGender  = ($enumGenderA === $enumGenderB);
+        $showPlanet  = ! $sameGender;
+
+        $maleConfig = [
+            'section' => $sec('synastry_partner_male'),
+            'planets' => [
+                [PlanetaryPosition::VENUS, '♀', 'Venus', 'venus', ui_trans('synastry.male_venus_label')],
+                [PlanetaryPosition::MOON,  '☽', 'Moon',  'moon',  ui_trans('synastry.male_moon_label')],
+            ],
+        ];
+        $femaleConfig = [
+            'section' => $sec('synastry_partner_female'),
+            'planets' => [
+                [PlanetaryPosition::MARS, '♂', 'Mars', 'mars', ui_trans('synastry.female_mars_label')],
+                [PlanetaryPosition::SUN,  '☉', 'Sun',  'sun',  ui_trans('synastry.female_sun_label')],
+            ],
+        ];
+        $maleSameConfig = [
+            'section' => $sec('synastry_partner_male_same'),
+            'planets' => $maleConfig['planets'],
+        ];
+        $femaleSameConfig = [
+            'section' => $sec('synastry_partner_female_same'),
+            'planets' => $femaleConfig['planets'],
+        ];
+
+        if ($sameGender) {
+            $cfg   = $enumGenderA === Gender::Male ? $maleSameConfig : $femaleSameConfig;
+            $sides = [
+                [$planetsA, $housesA, $firstNameA, $cfg, $genderA],
+                [$planetsB, $housesB, $firstNameB, $cfg, $genderB],
+            ];
+        } elseif ($enumGenderA === Gender::Male) {
+            $sides = [
+                [$planetsA, $housesA, $firstNameA, $maleConfig, $genderA],
+                [$planetsB, $housesB, $firstNameB, $femaleConfig, $genderB],
+            ];
+        } else {
+            $sides = [
+                [$planetsB, $housesB, $firstNameB, $maleConfig, $genderB],
+                [$planetsA, $housesA, $firstNameA, $femaleConfig, $genderA],
+            ];
+        }
+
+        $this->put($this->row('  ' . ui_trans('synastry.partner_archetypes_title')));
+        $this->put($this->row(''));
+
+        foreach ($sides as $i => [$planets, $houses, $name, $cfg, $sideGender]) {
+            if ($i > 0) {
+                $this->put($this->divider());
+            }
+
+            $this->put($this->row('  ' . $name));
+            $this->put($this->row(''));
+
+            foreach ($cfg['planets'] as [$bodyId, $glyph, $bName, $key, $label]) {
+                $planet = $planets->get($bodyId);
+                if (! $planet) continue;
+
+                $signName = PlanetaryPosition::SIGN_NAMES[$planet['sign']] ?? '?';
+                $hStr     = ! empty($houses)
+                    ? '  H' . $this->houseOf($planet['longitude'], $houses)
+                    : '';
+                $prefix = $showPlanet ? $glyph . ' ' . $bName . ' in ' : '';
+                $this->put($this->row('  ' . $prefix . $signName . $hStr));
+
+                $block = TextBlock::pick($key . '_' . strtolower($signName), $sec($cfg['section']), 1, 'en', $sideGender);
+                if ($block) {
+                    foreach ($this->wrap(strip_tags($block->text), self::IW - 4) as $line) {
+                        $this->put($this->row('  ' . $line));
+                    }
+                } else {
+                    $this->put($this->row('  [text: ' . $sec($cfg['section']) . ' / ' . $key . '_' . strtolower($signName) . ']'));
+                }
+                $this->put($this->row(''));
+            }
+
+            if ($hasTier3 && ! empty($houses)) {
+                $this->renderSeventhLord($houses, $planets, $sec, $sideGender);
+            } else {
+                $this->put($this->row('  🔒 H7 ruler — add birth time & place for partner type analysis'));
+                $this->put($this->row(''));
+            }
+        }
+
+        $this->put($this->row(''));
+        $this->put($this->divider());
+    }
+
+    private function renderSeventhLord(
+        array $houses,
+        \Illuminate\Support\Collection $planets,
+        \Closure $sec,
+        ?string $gender = null,
+    ): void {
+        // 7th house cusp = index 6 (0-based)
+        $cuspLong    = $houses[6] ?? null;
+        if ($cuspLong === null) return;
+
+        $cuspSignIdx  = (int) floor(fmod($cuspLong + 360, 360) / 30) % 12;
+        $cuspSignName = PlanetaryPosition::SIGN_NAMES[$cuspSignIdx] ?? '?';
+        $lordBodyId   = AreasOfLifeScorer::SIGN_RULERS[$cuspSignIdx] ?? null;
+        if ($lordBodyId === null) return;
+
+        $lordPlanet = $planets->get($lordBodyId);
+        if (! $lordPlanet) return;
+
+        $lordGlyph    = self::BODY_GLYPHS[$lordBodyId] ?? '?';
+        $lordName     = PlanetaryPosition::BODY_NAMES[$lordBodyId] ?? '?';
+        $lordSignName = PlanetaryPosition::SIGN_NAMES[$lordPlanet['sign']] ?? '?';
+        $lordHouse    = $this->houseOf($lordPlanet['longitude'], $houses);
+
+        $this->put($this->row(sprintf(
+            '  %s %s rules H7 (%s cusp)  ·  in %s  H%d  ·  %s',
+            $lordGlyph, $lordName, $cuspSignName,
+            $lordSignName, $lordHouse,
+            ui_trans('synastry.seventh_lord_label')
+        )));
+
+        $signBlock = TextBlock::pick(strtolower($lordSignName), $sec('synastry_seventh_lord_sign'), 1, 'en', $gender);
+        if ($signBlock) {
+            foreach ($this->wrap(strip_tags($signBlock->text), self::IW - 4) as $line) {
+                $this->put($this->row('  ' . $line));
+            }
+        } else {
+            $this->put($this->row('  [text: synastry_seventh_lord_sign / ' . strtolower($lordSignName) . ']'));
+        }
+
+        $houseBlock = TextBlock::pick('h' . $lordHouse, $sec('synastry_seventh_lord_house'), 1, 'en', $gender);
+        if ($houseBlock) {
+            foreach ($this->wrap(strip_tags($houseBlock->text), self::IW - 4) as $line) {
+                $this->put($this->row('  ' . $line));
+            }
+        } else {
+            $this->put($this->row('  [text: synastry_seventh_lord_house / h' . $lordHouse . ']'));
+        }
+
+        $this->put($this->row(''));
     }
 }

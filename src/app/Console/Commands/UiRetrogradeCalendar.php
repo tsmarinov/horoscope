@@ -48,10 +48,10 @@ class UiRetrogradeCalendar extends Command
         // ── Header ───────────────────────────────────────────────────
         $this->put($this->top());
         $this->put($this->row($this->spread(
-            '  ♻ ' . __('ui.retrograde.title'),
+            '  ♻ ' . ui_trans('retrograde.title'),
             '[' . $year . ']  '
         )));
-        $this->put($this->row('  ' . __('ui.retrograde.subtitle')));
+        $this->put($this->row('  ' . ui_trans('retrograde.subtitle')));
         $this->put($this->divider());
 
         // ── Year navigation ──────────────────────────────────────────
@@ -61,11 +61,11 @@ class UiRetrogradeCalendar extends Command
 
         // ── ACTIVE NOW ───────────────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row('  ' . __('ui.retrograde.active_now')));
+        $this->put($this->row('  ' . ui_trans('retrograde.active_now')));
         $this->put($this->row(''));
 
         if (empty($data['active'])) {
-            $this->put($this->row('  ' . __('ui.retrograde.active_none')));
+            $this->put($this->row('  ' . ui_trans('retrograde.active_none')));
         } else {
             foreach ($data['active'] as $item) {
                 $rxEndFmt = $this->fmtDate($item['rx_end']);
@@ -79,7 +79,7 @@ class UiRetrogradeCalendar extends Command
 
         // ── INNER PLANETS ────────────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row('  ' . __('ui.retrograde.section_inner')));
+        $this->put($this->row('  ' . ui_trans('retrograde.section_inner')));
         $this->put($this->row(''));
 
         foreach ($data['inner'] as $pd) {
@@ -88,7 +88,7 @@ class UiRetrogradeCalendar extends Command
 
         // ── OUTER PLANETS ────────────────────────────────────────────
         $this->put($this->divider());
-        $this->put($this->row('  ' . __('ui.retrograde.section_outer')));
+        $this->put($this->row('  ' . ui_trans('retrograde.section_outer')));
         $this->put($this->row(''));
 
         foreach ($data['outer'] as $pd) {
@@ -98,12 +98,12 @@ class UiRetrogradeCalendar extends Command
         // ── Legend / footer ──────────────────────────────────────────
         $this->put($this->divider());
         $this->put($this->row(
-            '  ' . __('ui.retrograde.legend_today')
-            . '   ' . __('ui.retrograde.legend_rx')
-            . '   ' . __('ui.retrograde.legend_station')
+            '  ' . ui_trans('retrograde.legend_today')
+            . '   ' . ui_trans('retrograde.legend_rx')
+            . '   ' . ui_trans('retrograde.legend_station')
         ));
         $this->put($this->row(''));
-        foreach ($this->wrap(__('ui.retrograde.station_note'), self::IW - 2) as $line) {
+        foreach ($this->wrap(ui_trans('retrograde.station_note'), self::IW - 2) as $line) {
             $this->put($this->row('  ' . $line));
         }
         $this->put($this->row(''));
@@ -124,9 +124,9 @@ class UiRetrogradeCalendar extends Command
         if ($pd['has_rx']) {
             $countLabel = $pd['period_count'] . 'x Rx';
         } else {
-            $countLabel = __('ui.retrograde.no_rx', ['year' => $year]);
+            $countLabel = ui_trans('retrograde.no_rx', null, null, ['year' => $year]);
         }
-        $theme = __('ui.retrograde.planet_theme.' . $key, [], null) ?? '';
+        $theme = ui_trans('retrograde.planet_theme.' . $key) ?? '';
 
         $this->put($this->row($this->spread(
             '  ' . $pd['glyph'] . ' ' . $name . ($theme ? '  ·  ' . $theme : ''),
@@ -142,7 +142,7 @@ class UiRetrogradeCalendar extends Command
         }
 
         // Planet description
-        $desc = __('ui.retrograde.planet_desc.' . $key, [], null) ?? '';
+        $desc = ui_trans('retrograde.planet_desc.' . $key) ?? '';
         if ($desc !== '') {
             $this->put($this->row(''));
             foreach ($this->wrap($desc, self::IW - 4) as $line) {
@@ -170,8 +170,8 @@ class UiRetrogradeCalendar extends Command
         $this->put($this->row($dateLine));
 
         // SR / SD line
-        $stationLine = '    ' . __('ui.retrograde.sr') . ' ' . $srFmt
-                     . '   ' . __('ui.retrograde.sd') . ' ' . $sdFmt;
+        $stationLine = '    ' . ui_trans('retrograde.sr') . ' ' . $srFmt
+                     . '   ' . ui_trans('retrograde.sd') . ' ' . $sdFmt;
         $this->put($this->row($stationLine));
 
         // ASCII timeline bar

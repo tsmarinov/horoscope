@@ -89,6 +89,8 @@ class UiMonthlyReport extends Command
             return self::FAILURE;
         }
 
+        $gender = TextBlock::resolveGender($profile->gender?->value ?? null);
+
         try {
             $dto = $service->build($profile, $date);
         } catch (\RuntimeException $e) {
@@ -129,9 +131,8 @@ class UiMonthlyReport extends Command
 
         // ── AI synthesis ─────────────────────────────────────────────────
         if ($this->option('ai')) {
-            $assembledTexts = $this->collectTexts($dto, $simplified);
-            $natalPlanets   = $profile->natalChart?->planets ?? [];
-            $moonSignName   = '';
+            $natalPlanets = $profile->natalChart?->planets ?? [];
+            $moonSignName = '';
             foreach ($dto->positions as $pos) {
                 if ($pos->body === PlanetaryPosition::MOON) {
                     $moonSignName = $pos->signName;
@@ -141,13 +142,16 @@ class UiMonthlyReport extends Command
             /** @var \App\Services\Ai\HoroscopeSynthesisService $synthesisService */
             $synthesisService = app(\App\Services\Ai\HoroscopeSynthesisService::class);
             $aiResponse = $synthesisService->monthly(
-                assembledTexts: $assembledTexts,
-                natalPlanets:   $natalPlanets,
-                monthStart:     $monthStart,
-                monthEnd:       $monthEnd,
-                moonSignName:   $moonSignName,
-                simplified:     $simplified,
-                profileId:      $profile->id,
+                transitNatalAspects: $dto->transitNatalAspects,
+                retrogrades:         $dto->retrogrades,
+                areasOfLife:         $dto->areasOfLife,
+                natalPlanets:        $natalPlanets,
+                monthStart:          $monthStart,
+                monthEnd:            $monthEnd,
+                moonSignName:        $moonSignName,
+                simplified:          $simplified,
+                profileId:           $profile->id,
+                gender:              $gender,
             );
             if ($aiResponse) {
                 $wasCached = $aiResponse->inputTokens === 0;
@@ -161,7 +165,7 @@ class UiMonthlyReport extends Command
             }
             if ($synthesis ?? null) {
                 $this->put($this->divider());
-                $this->put($this->row($this->spread('  ✦  ' . __('ui.monthly.ai_overview'), 'AI  ')));
+                $this->put($this->row($this->spread('  ✦  ' . ui_trans('monthly.ai_overview', $gender), 'AI  ')));
                 $this->put($this->row(''));
                 foreach (preg_split('/\n{2,}/', trim($synthesis)) as $para) {
                     foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
@@ -181,9 +185,9 @@ class UiMonthlyReport extends Command
                 $tGlyph   = self::BODY_GLYPHS[$asp->transitBody] ?? '?';
                 $nGlyph   = self::BODY_GLYPHS[$asp->natalBody] ?? '?';
                 $aGlyph   = self::ASPECT_GLYPHS[$asp->aspect] ?? $asp->aspect;
-                $aLabel   = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+                $aLabel   = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
                 $key      = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-                $block    = TextBlock::pick($key, $simplified ? 'transit_natal_short' : 'transit_natal', 1);
+                $block    = TextBlock::pick($key, $simplified ? 'transit_natal_short' : 'transit_natal', 1, 'en', $gender);
 
                 // Fast planets: show peak day; slow: no day label
                 $dayLabel = ($asp->transitBody < 5 && $asp->peakDate)
@@ -208,10 +212,10 @@ class UiMonthlyReport extends Command
                 $bodyGlyph = self::BODY_GLYPHS[$rx->body] ?? '';
                 $signGlyph = self::SIGN_GLYPHS[$rx->signIndex] ?? '';
                 $rxKey     = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-                $block     = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1);
+                $block     = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1, 'en', $gender);
 
                 $this->put($this->row(''));
-                $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . __('ui.retrograde') . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
+                $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender) . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
 
                 if ($block) {
                     $this->put($this->row(''));
@@ -255,7 +259,7 @@ class UiMonthlyReport extends Command
 
                 // Sign text
                 $lunSignKey   = strtolower(str_replace(' ', '_', $lun->type)) . '_in_' . strtolower($lun->signName);
-                $lunSignBlock = TextBlock::pick($lunSignKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 1);
+                $lunSignBlock = TextBlock::pick($lunSignKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 1, 'en', $gender);
                 if ($lunSignBlock) {
                     $this->put($this->row(''));
                     foreach ($this->wrap(trim(strip_tags($lunSignBlock->text)), self::IW - 4) as $line) {
@@ -267,7 +271,7 @@ class UiMonthlyReport extends Command
                 if ($lun->house) {
                     $houseKey     = strtolower(str_replace(' ', '_', $lun->type)) . '_house_' . $lun->house;
                     $houseSection = $simplified ? 'lunation_house_short' : 'lunation_house';
-                    $houseBlock   = TextBlock::pick($houseKey, $houseSection, 1);
+                    $houseBlock   = TextBlock::pick($houseKey, $houseSection, 1, 'en', $gender);
                     if ($houseBlock) {
                         $this->put($this->row(''));
                         $this->put($this->row('  H' . $lun->house . ' — ' . $this->houseName($lun->house)));
@@ -285,7 +289,7 @@ class UiMonthlyReport extends Command
         // ── Key dates ────────────────────────────────────────────────────
         if (! empty($dto->keyDates)) {
             $this->put($this->divider());
-            $this->put($this->row($this->spread('  📅  ' . __('ui.keydates.title'), '')));
+            $this->put($this->row($this->spread('  📅  ' . ui_trans('keydates.title', $gender), '')));
             $this->put($this->row(''));
             foreach ($dto->keyDates as $kd) {
                 $dateStr = Carbon::parse($kd->date)->format('D j M');
@@ -340,32 +344,6 @@ class UiMonthlyReport extends Command
             11 => 'Community & Goals',
             12 => 'Inner Life & Solitude',
         ][$house] ?? '';
-    }
-
-    // ── Collect TextBlock texts for AI synthesis ─────────────────────────
-
-    private function collectTexts(MonthlyHoroscopeDTO $dto, bool $simplified): array
-    {
-        $texts = [];
-
-        foreach ($dto->transitNatalAspects as $asp) {
-            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
-            $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-            $block   = TextBlock::pick($key, $simplified ? 'transit_natal_short' : 'transit_natal', 1);
-            if ($block) {
-                $texts[] = "[Transit {$asp->transitName} {$aspWord} natal {$asp->natalName}]\n" . trim(strip_tags($block->text));
-            }
-        }
-
-        foreach ($dto->retrogrades as $rx) {
-            $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-            $block = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1);
-            if ($block) {
-                $texts[] = "[{$rx->name} " . __('ui.retrograde') . " in {$rx->signName}]\n" . trim(strip_tags($block->text));
-            }
-        }
-
-        return $texts;
     }
 
     // ── Transit display helpers ──────────────────────────────────────────
@@ -472,7 +450,7 @@ class UiMonthlyReport extends Command
     private function ratingDisplay(int $rating, int $maxRating): string
     {
         if ($rating === 0) {
-            return __('ui.rating_wait') . '  ';
+            return ui_trans('rating_wait') . '  ';
         }
         return str_repeat('★', $rating) . str_repeat('☆', $maxRating - $rating) . '  ';
     }

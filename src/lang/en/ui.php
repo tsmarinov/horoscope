@@ -101,6 +101,14 @@ return [
 
         'synthesis_placeholder' => '[text blocks not generated yet]',
 
+        'partner_archetypes_title' => 'PARTNER ARCHETYPES',
+        'male_venus_label'         => 'attraction to women',
+        'male_moon_label'          => 'the woman he would choose',
+        'female_mars_label'        => 'attraction to men',
+        'female_sun_label'         => 'the man she would choose',
+        'seventh_lord_label'       => 'H7 ruler — partner type',
+        'partner_text_tag'         => '[text: partner archetype · sign]',
+
         'types' => [
             'general'       => 'General',
             'romantic'      => 'Romantic',

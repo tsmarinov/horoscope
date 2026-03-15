@@ -17,5 +17,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(TestUserSeeder::class);
         $this->call(WeekdayTextsSeeder::class);
+        $this->call(SynastryTypeSeeder::class);
+        $this->call(SynastryIntroSeeder::class);
+        $this->call(SynastryPlanetHouseSeeder::class);
+        $this->call(SynastryAscHouseSeeder::class);
+        $this->call(SynastryShortTextsSeeder::class);
     }
 }

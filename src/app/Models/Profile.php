@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\HoroscopeSubject;
+use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property bool             $is_demo
  * @property string           $first_name
  * @property string|null      $last_name
+ * @property Gender            $gender
  * @property-read string      $name       First + last name (computed)
  * @property string|null      $slug
  * @property \Carbon\Carbon|null $birth_date
@@ -38,6 +40,7 @@ class Profile extends Model implements HoroscopeSubject
         'birth_time',
         'birth_city_id',
         'solar_return_city_id',
+        'gender',
     ];
 
     protected function casts(): array
@@ -45,6 +48,7 @@ class Profile extends Model implements HoroscopeSubject
         return [
             'is_demo'    => 'boolean',
             'birth_date' => 'date',
+            'gender'     => Gender::class,
         ];
     }
 

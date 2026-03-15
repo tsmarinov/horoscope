@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use App\DataTransfer\Horoscope\DailyHoroscopeDTO;
-use App\DataTransfer\Horoscope\TransitAspectDTO;
-use App\DataTransfer\Horoscope\TransitTransitDTO;
 use App\Models\PlanetaryPosition;
 use App\Models\Profile;
 use App\Models\TextBlock;
@@ -103,6 +101,8 @@ class UiDailyReport extends Command
             return self::FAILURE;
         }
 
+        $gender = TextBlock::resolveGender($profile->gender?->value ?? null);
+
         try {
             $dto = $service->build($profile, $date);
         } catch (\RuntimeException $e) {
@@ -139,47 +139,23 @@ class UiDailyReport extends Command
             $this->put($this->row($line));
         }
 
-        // ── Collect TextBlock texts for AI L1 synthesis ──────────────────
-        $assembledTexts = [];
-
-        foreach ($dto->transitNatalAspects as $asp) {
-            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
-            $key   = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-            $block = TextBlock::pick($key, 'transit_natal', 1);
-            if ($block) {
-                $assembledTexts[] = "[Transit {$asp->transitName} {$aspWord} natal {$asp->natalName}]\n" . trim(strip_tags($block->text));
-            }
-        }
-        foreach ($dto->retrogrades as $rx) {
-            $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-            $block = TextBlock::pick($rxKey, 'retrograde', 1);
-            if ($block) {
-                $assembledTexts[] = "[{$rx->name} " . __('ui.retrograde') . " in {$rx->signName}]\n" . trim(strip_tags($block->text));
-            }
-        }
-        foreach ($dto->transitTransitAspects as $asp) {
-            $aspWord = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
-            $key   = strtolower($asp->nameA) . '_' . $asp->aspect . '_' . strtolower($asp->nameB);
-            $block = TextBlock::pick($key, 'transit', 1);
-            if ($block) {
-                $assembledTexts[] = "[{$asp->nameA} {$aspWord} {$asp->nameB}]\n" . trim(strip_tags($block->text));
-            }
-        }
-
         // ── Synthesis (AI L1) ────────────────────────────────────────────
         if ($this->option('ai')) {
             $natalPlanets = $profile->natalChart?->planets ?? [];
             /** @var \App\Services\Ai\HoroscopeSynthesisService $synthesisService */
             $synthesisService = app(\App\Services\Ai\HoroscopeSynthesisService::class);
             $aiResponse = $synthesisService->daily(
-                assembledTexts: $assembledTexts,
-                natalPlanets:   $natalPlanets,
-                date:           $carbon,
-                moonSignName:   $dto->moon->signName,
-                moonPhaseName:  $dto->moon->phaseName,
-                lunarDay:       $dto->moon->lunarDay,
-                simplified:     $simplified,
-                profileId:      $profile->id,
+                transitNatalAspects: $dto->transitNatalAspects,
+                retrogrades:         $dto->retrogrades,
+                areasOfLife:         $dto->areasOfLife,
+                natalPlanets:        $natalPlanets,
+                date:                $carbon,
+                moonSignName:        $dto->moon->signName,
+                moonPhaseName:       $dto->moon->phaseName,
+                lunarDay:            $dto->moon->lunarDay,
+                simplified:          $simplified,
+                profileId:           $profile->id,
+                gender:              $gender,
             );
             if ($aiResponse) {
                 $wasCached = $aiResponse->inputTokens === 0;
@@ -193,7 +169,7 @@ class UiDailyReport extends Command
             }
             if ($synthesis ?? null) {
                 $this->put($this->divider());
-                $this->put($this->row($this->spread('  ✦  ' . __('ui.daily.ai_overview'), 'AI  ')));
+                $this->put($this->row($this->spread('  ✦  ' . ui_trans('daily.ai_overview', $gender), 'AI  ')));
                 $this->put($this->row(''));
                 foreach (preg_split('/\n{2,}/', trim($synthesis)) as $para) {
                     foreach ($this->wrap(trim($para), self::IW - 4) as $line) {
@@ -213,12 +189,12 @@ class UiDailyReport extends Command
             $tGlyph   = self::BODY_GLYPHS[$asp->transitBody] ?? '?';
             $nGlyph   = self::BODY_GLYPHS[$asp->natalBody] ?? '?';
             $aspGlyph = self::ASPECT_GLYPHS[$asp->aspect] ?? '·';
-            $aspWord  = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+            $aspWord  = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
 
             $chip    = $tGlyph . ' ' . $asp->transitName . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $nGlyph . ' natal ' . $asp->natalName;
             $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $section = $simplified ? 'transit_natal_short' : 'transit_natal';
-            $block   = TextBlock::pick($key, $section, 1);
+            $block   = TextBlock::pick($key, $section, 1, 'en', $gender);
             $text    = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -233,12 +209,12 @@ class UiDailyReport extends Command
 
         // 2. Retrograde planets
         foreach ($dto->retrogrades as $rx) {
-            $chip = (self::BODY_GLYPHS[$rx->body] ?? '?') . ' ' . $rx->name . ' ' . __('ui.retrograde')
+            $chip = (self::BODY_GLYPHS[$rx->body] ?? '?') . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender)
                   . '  ·  in '
                   . (self::SIGN_GLYPHS[$rx->signIndex] ?? '') . ' ' . $rx->signName;
 
             $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-            $block = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1);
+            $block = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1, 'en', $gender);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -256,11 +232,11 @@ class UiDailyReport extends Command
             $glyphA   = self::BODY_GLYPHS[$asp->bodyA] ?? '?';
             $glyphB   = self::BODY_GLYPHS[$asp->bodyB] ?? '?';
             $aspGlyph = self::ASPECT_GLYPHS[$asp->aspect] ?? '·';
-            $aspWord  = __('ui.aspects.' . $asp->aspect, [], null) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
+            $aspWord  = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
 
             $chip  = $glyphA . ' ' . $asp->nameA . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $glyphB . ' ' . $asp->nameB;
             $key   = strtolower($asp->nameA) . '_' . $asp->aspect . '_' . strtolower($asp->nameB);
-            $block = TextBlock::pick($key, $simplified ? 'transit_short' : 'transit', 1);
+            $block = TextBlock::pick($key, $simplified ? 'transit_short' : 'transit', 1, 'en', $gender);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -296,7 +272,7 @@ class UiDailyReport extends Command
             . '  ·  Day ' . $dto->moon->lunarDay . ' / 30  ·  ' . $dto->moon->phaseName
         ));
         $lunarKey   = 'moon_in_' . strtolower($dto->moon->signName);
-        $lunarBlock = TextBlock::pick($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 1);
+        $lunarBlock = TextBlock::pick($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 1, 'en', $gender);
         $lunarText  = $lunarBlock ? trim(strip_tags($lunarBlock->text)) : null;
         if ($lunarText) {
             foreach ($this->wrap($lunarText, self::IW - 4) as $line) {
@@ -312,6 +288,7 @@ class UiDailyReport extends Command
         $tipBlock = TextBlock::where('key', $tipKey)
             ->where('section', $simplified ? 'daily_tip_short' : 'daily_tip')
             ->where('language', 'en')
+            ->where('gender', $gender)
             ->first();
         $this->put($this->divider());
         $this->put($this->row($this->spread('  💡  TIP OF THE DAY', 'Moon in ' . $dto->moon->signName . '  ')));
@@ -357,6 +334,7 @@ class UiDailyReport extends Command
             $block = TextBlock::where('key', $clothingKey)
                 ->where('section', $simplified ? 'weekday_clothing_short' : 'weekday_clothing')
                 ->where('language', 'en')
+                ->where('gender', $gender)
                 ->first();
             if ($block) {
                 $this->put($this->row(''));
@@ -499,7 +477,7 @@ class UiDailyReport extends Command
     private function ratingDisplay(int $rating, int $maxRating): string
     {
         if ($rating === 0) {
-            return __('ui.rating_wait') . '  ';
+            return ui_trans('rating_wait') . '  ';
         }
         return str_repeat('★', $rating) . str_repeat('☆', $maxRating - $rating) . '  ';
     }

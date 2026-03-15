@@ -113,7 +113,8 @@ class ReportBuilder
         }
 
         // House Lords (pre-generated)
-        foreach ($this->houseLordSections($chart, $isSimplified, $language) as $section) {
+        $gender = TextBlock::resolveGender($subject->gender?->value ?? null);
+        foreach ($this->houseLordSections($chart, $isSimplified, $language, $gender) as $section) {
             $sections[] = $section;
         }
 
@@ -384,7 +385,8 @@ class ReportBuilder
         string           $language,
         bool             $simplified,
     ): ?TextBlock {
-        $totalVariants = TextBlock::forKey($key, $section, $language)->count();
+        $gender        = TextBlock::resolveGender($subject->gender?->value ?? null);
+        $totalVariants = TextBlock::forKey($key, $section, $language, $gender)->count();
 
         if ($totalVariants === 0) {
             return null;
@@ -393,7 +395,7 @@ class ReportBuilder
         // Simplified mode always uses variant 1 — text is condensed and definitive,
         // so rotation across variants makes no sense. One concise text per key is enough.
         if ($simplified) {
-            return TextBlock::pick($key, $section, 1, $language);
+            return TextBlock::pick($key, $section, 1, $language, $gender);
         }
 
         $subjectId = $subject->exists ? $subject->id : 'guest';
@@ -404,7 +406,7 @@ class ReportBuilder
             $totalVariants,
         );
 
-        return TextBlock::pick($key, $section, $variant, $language);
+        return TextBlock::pick($key, $section, $variant, $language, $gender);
     }
 
     private function aspectKey(array $aspect): string
@@ -525,7 +527,7 @@ class ReportBuilder
      * Load pre-generated house lord text blocks for houses 1-12.
      * Key format: house_{house}_cusp_{cusp_sign}_lord_in_{lord_sign}_house_{lord_house}
      */
-    private function houseLordSections(NatalChart $chart, bool $isSimplified, string $language): array
+    private function houseLordSections(NatalChart $chart, bool $isSimplified, string $language, ?string $gender = null): array
     {
         if ($chart->ascendant === null) {
             return [];
@@ -561,7 +563,7 @@ class ReportBuilder
             }
 
             $key   = "house_{$house}_cusp_{$cuspSign}_lord_in_{$lordSign}_house_{$lordHouse}";
-            $block = TextBlock::pick($key, $section, 1, $language);
+            $block = TextBlock::pick($key, $section, 1, $language, $gender);
 
             if ($block === null) {
                 continue;

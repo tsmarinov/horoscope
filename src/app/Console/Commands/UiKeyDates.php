@@ -49,6 +49,7 @@ class UiKeyDates extends Command
             return self::FAILURE;
         }
 
+        $gender       = TextBlock::resolveGender($profile->gender?->value ?? null);
         $natalPlanets = $profile->natalChart?->planets ?? [];
 
         if (empty($natalPlanets)) {
@@ -85,13 +86,13 @@ class UiKeyDates extends Command
 
         $this->put($this->top());
         $this->put($this->row($this->spread(
-            '  📅  ' . __('ui.keydates.title') . ' · ' . $periodLabel,
+            '  📅  ' . ui_trans('keydates.title', $gender) . ' · ' . $periodLabel,
             ''
         )));
         $this->put($this->divider());
 
         if ($view === 'year') {
-            $this->renderYear($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets);
+            $this->renderYear($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets, $gender);
         } elseif ($view === 'week') {
             $keyDates = $this->buildWeek($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets);
             if (empty($keyDates)) {
@@ -102,7 +103,7 @@ class UiKeyDates extends Command
                 $this->put($this->row(''));
                 foreach ($keyDates as $kd) {
                     $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                    $this->renderKeyDateText($kd->textKey, $kd->section);
+                    $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
                 }
                 $this->put($this->row(''));
             }
@@ -114,7 +115,7 @@ class UiKeyDates extends Command
                 $this->put($this->row('  No significant key dates found for this period.'));
                 $this->put($this->row(''));
             } else {
-                $this->renderGroupedByIsoWeek($keyDates, $periodStart, $periodEnd);
+                $this->renderGroupedByIsoWeek($keyDates, $periodStart, $periodEnd, $gender);
             }
         }
 
@@ -278,6 +279,7 @@ class UiKeyDates extends Command
         LunationDetector $lunationDetector,
         KeyDatesBuilder  $keyDatesBuilder,
         array            $natalPlanets,
+        ?string          $gender = null,
     ): void {
         $anyFound = false;
 
@@ -294,7 +296,7 @@ class UiKeyDates extends Command
             $this->put($this->row('  ' . $monthStart->format('F Y')));
             foreach ($keyDates as $kd) {
                 $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                $this->renderKeyDateText($kd->textKey, $kd->section);
+                $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
             }
         }
 
@@ -311,7 +313,7 @@ class UiKeyDates extends Command
      *
      * @param \App\DataTransfer\Horoscope\KeyDateDTO[] $keyDates
      */
-    private function renderGroupedByIsoWeek(array $keyDates, Carbon $periodStart, Carbon $periodEnd): void
+    private function renderGroupedByIsoWeek(array $keyDates, Carbon $periodStart, Carbon $periodEnd, ?string $gender = null): void
     {
         $byWeek = [];
         foreach ($keyDates as $kd) {
@@ -330,7 +332,7 @@ class UiKeyDates extends Command
             $this->put($this->row('  ' . $weekLabel));
             foreach ($weekKeyDates as $kd) {
                 $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                $this->renderKeyDateText($kd->textKey, $kd->section);
+                $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
             }
         }
 
@@ -357,12 +359,12 @@ class UiKeyDates extends Command
         return $line;
     }
 
-    private function renderKeyDateText(?string $textKey, string $section): void
+    private function renderKeyDateText(?string $textKey, string $section, ?string $gender = null): void
     {
         if (! $textKey) {
             return;
         }
-        $block = TextBlock::pick($textKey, $section, 1);
+        $block = TextBlock::pick($textKey, $section, 1, 'en', $gender);
         if (! $block) {
             return;
         }

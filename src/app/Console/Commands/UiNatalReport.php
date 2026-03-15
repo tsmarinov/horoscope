@@ -181,7 +181,8 @@ class UiNatalReport extends Command
             }
             $this->put($this->row(''));
         }
-        $this->renderSingletonSection($chart->planets ?? [], $mode === ReportMode::Simplified);
+        $gender = TextBlock::resolveGender($subject->gender?->value ?? null);
+        $this->renderSingletonSection($chart->planets ?? [], $mode === ReportMode::Simplified, $gender);
 
         // ── House Lords (pre-generated) ───────────────────────────────────
         if (count($houseLordPreSections) > 0) {
@@ -215,6 +216,10 @@ class UiNatalReport extends Command
                     }
                 }
             }
+            $this->put($this->row(''));
+        } elseif (empty($chart->houses)) {
+            $this->put($this->divider());
+            $this->put($this->row('  🔒 House Lords — add birth time & place to unlock'));
             $this->put($this->row(''));
         }
 
@@ -470,7 +475,7 @@ class UiNatalReport extends Command
 
     // ── Singleton / Missing element ──────────────────────────────────────
 
-    private function renderSingletonSection(array $planets, bool $simplified = false): void
+    private function renderSingletonSection(array $planets, bool $simplified = false, ?string $gender = null): void
     {
         // Count planets per element — only bodies 0–9 (Sun–Pluto)
         $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
@@ -502,7 +507,7 @@ class UiNatalReport extends Command
 
             $this->put($this->divider());
             $this->put($this->row($header));
-            $block = TextBlock::pick($key, $section, 1);
+            $block = TextBlock::pick($key, $section, 1, 'en', $gender);
             if ($block) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {

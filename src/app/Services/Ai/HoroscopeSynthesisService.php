@@ -18,7 +18,9 @@ class HoroscopeSynthesisService
     // ── Public methods ────────────────────────────────────────────────────
 
     public function daily(
-        array $assembledTexts,
+        array $transitNatalAspects,
+        array $retrogrades,
+        array $areasOfLife,
         array $natalPlanets,
         Carbon $date,
         string $moonSignName,
@@ -27,11 +29,13 @@ class HoroscopeSynthesisService
         bool $simplified = false,
         int $profileId = 0,
         string $language = 'en',
+        ?string $gender = null,
     ): ?AiResponse {
-        $cacheKey = 'daily_' . $profileId . '_' . $date->toDateString() . ($simplified ? '_short' : '');
+        $cacheKey = 'daily_' . $profileId . '_' . $date->toDateString() . ($simplified ? '_short' : '') . ($gender ? '_' . $gender : '');
         $cached   = TextBlock::where('key', $cacheKey)
             ->where('section', 'ai_synthesis')
             ->where('language', 'en')
+            ->where('gender', $gender)
             ->first();
 
         if ($cached) {
@@ -53,20 +57,40 @@ class HoroscopeSynthesisService
         if ($natalLines) {
             $prompt .= "Natal context: " . implode(', ', $natalLines) . "\n";
         }
-        if ($assembledTexts) {
-            $prompt .= "\nThe following pre-generated descriptions will be shown to the person below this intro:\n\n";
-            $prompt .= implode("\n\n", $assembledTexts);
+        if ($transitNatalAspects) {
+            $prompt .= "\nActive transits:\n";
+            foreach ($transitNatalAspects as $asp) {
+                $aspLabel = ucfirst(str_replace('_', ' ', $asp->aspect));
+                $prompt  .= "  Transit {$asp->transitName} {$aspLabel} natal {$asp->natalName}\n";
+            }
         }
+
+        if ($retrogrades) {
+            $rxNames = array_map(fn ($rx) => "{$rx->name} Rx in {$rx->signName}", $retrogrades);
+            $prompt .= "\nRetrogrades: " . implode(', ', $rxNames) . "\n";
+        }
+
+        if ($areasOfLife) {
+            $prompt .= "\nAreas of life:\n";
+            foreach ($areasOfLife as $area) {
+                $stars   = $area->rating === 0
+                    ? '⚠ wait'
+                    : str_repeat('★', $area->rating) . str_repeat('☆', $area->maxRating - $area->rating);
+                $prompt .= "  {$area->name}: {$stars}\n";
+            }
+        }
+
         $prompt .= $simplified
-            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short daily horoscope intro that captures the key tone of the day."
-            : "\n\nWrite exactly 2 paragraphs as a daily horoscope intro that synthesizes and introduces what follows.";
+            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short daily horoscope intro based on this astrological data."
+            : "\n\nWrite exactly 2 paragraphs as a daily horoscope intro based on this astrological data.";
 
         $paragraphRule = $simplified
             ? '- 1 paragraph only — 2–3 sentences total'
             : "- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
 
         $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
-        $system = "{$langNote}\n\nYou are writing a personalized daily horoscope intro for a single person.\n\n"
+        $genderNote = ($gender && $language !== 'en') ? "\nAddress the person using " . ($gender === 'female' ? 'feminine' : 'masculine') . " grammatical forms in the target language." : '';
+        $system = "{$langNote}{$genderNote}\n\nYou are writing a personalized daily horoscope intro for a single person.\n\n"
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
@@ -87,7 +111,7 @@ class HoroscopeSynthesisService
             if ($profileId > 0) {
                 $now = now();
                 TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1, 'gender' => $gender],
                     [
                         'text'       => $response->text,
                         'tone'       => 'neutral',
@@ -108,7 +132,9 @@ class HoroscopeSynthesisService
     }
 
     public function weekly(
-        array $assembledTexts,
+        array $transitNatalAspects,
+        array $retrogrades,
+        array $areasOfLife,
         array $natalPlanets,
         Carbon $monday,
         Carbon $sunday,
@@ -116,11 +142,13 @@ class HoroscopeSynthesisService
         bool $simplified = false,
         int $profileId = 0,
         string $language = 'en',
+        ?string $gender = null,
     ): ?AiResponse {
-        $cacheKey = 'weekly_' . $profileId . '_' . $monday->toDateString() . ($simplified ? '_short' : '');
+        $cacheKey = 'weekly_' . $profileId . '_' . $monday->toDateString() . ($simplified ? '_short' : '') . ($gender ? '_' . $gender : '');
         $cached   = TextBlock::where('key', $cacheKey)
             ->where('section', 'ai_synthesis')
             ->where('language', 'en')
+            ->where('gender', $gender)
             ->first();
 
         if ($cached) {
@@ -142,19 +170,40 @@ class HoroscopeSynthesisService
         if ($natalLines) {
             $prompt .= "Natal context: " . implode(', ', $natalLines) . "\n";
         }
-        if ($assembledTexts) {
-            $prompt .= "\nThe following pre-generated descriptions will be shown to the person below this intro:\n\n";
-            $prompt .= implode("\n\n", $assembledTexts);
+        if ($transitNatalAspects) {
+            $prompt .= "\nActive transits:\n";
+            foreach ($transitNatalAspects as $asp) {
+                $aspLabel = ucfirst(str_replace('_', ' ', $asp->aspect));
+                $prompt  .= "  Transit {$asp->transitName} {$aspLabel} natal {$asp->natalName}\n";
+            }
         }
+
+        if ($retrogrades) {
+            $rxNames = array_map(fn ($rx) => "{$rx->name} Rx in {$rx->signName}", $retrogrades);
+            $prompt .= "\nRetrogrades: " . implode(', ', $rxNames) . "\n";
+        }
+
+        if ($areasOfLife) {
+            $prompt .= "\nAreas of life:\n";
+            foreach ($areasOfLife as $area) {
+                $stars   = $area->rating === 0
+                    ? '⚠ wait'
+                    : str_repeat('★', $area->rating) . str_repeat('☆', $area->maxRating - $area->rating);
+                $prompt .= "  {$area->name}: {$stars}\n";
+            }
+        }
+
         $prompt .= $simplified
-            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short weekly horoscope intro that captures the key theme of the week."
-            : "\n\nWrite exactly 2 paragraphs as a weekly horoscope intro that synthesizes and introduces what follows.";
+            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short weekly horoscope intro based on this astrological data."
+            : "\n\nWrite exactly 2 paragraphs as a weekly horoscope intro based on this astrological data.";
 
         $paragraphRule = $simplified
             ? '- 1 paragraph only — 2–3 sentences total'
             : "- Exactly 2 paragraphs separated by a blank line — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
 
-        $system = "You are writing a personalized weekly horoscope intro for a single person.\n\n"
+        $langNoteW = $language !== 'en' ? "Write in language code: {$language}.\n" : '';
+        $genderNoteW = ($gender && $language !== 'en') ? "Address the person using " . ($gender === 'female' ? 'feminine' : 'masculine') . " grammatical forms in the target language.\n" : '';
+        $system = "{$langNoteW}{$genderNoteW}You are writing a personalized weekly horoscope intro for a single person.\n\n"
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
@@ -175,7 +224,7 @@ class HoroscopeSynthesisService
             if ($profileId > 0) {
                 $now = now();
                 TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1, 'gender' => $gender],
                     [
                         'text'       => $response->text,
                         'tone'       => 'neutral',
@@ -196,7 +245,9 @@ class HoroscopeSynthesisService
     }
 
     public function monthly(
-        array $assembledTexts,
+        array $transitNatalAspects,
+        array $retrogrades,
+        array $areasOfLife,
         array $natalPlanets,
         Carbon $monthStart,
         Carbon $monthEnd,
@@ -204,11 +255,13 @@ class HoroscopeSynthesisService
         bool $simplified = false,
         int $profileId = 0,
         string $language = 'en',
+        ?string $gender = null,
     ): ?AiResponse {
-        $cacheKey = 'monthly_' . $profileId . '_' . $monthStart->format('Y-m') . ($simplified ? '_short' : '');
+        $cacheKey = 'monthly_' . $profileId . '_' . $monthStart->format('Y-m') . ($simplified ? '_short' : '') . ($gender ? '_' . $gender : '');
         $cached   = TextBlock::where('key', $cacheKey)
             ->where('section', 'ai_synthesis')
             ->where('language', 'en')
+            ->where('gender', $gender)
             ->first();
 
         if ($cached) {
@@ -230,20 +283,40 @@ class HoroscopeSynthesisService
         if ($natalLines) {
             $prompt .= "Natal context: " . implode(', ', $natalLines) . "\n";
         }
-        if ($assembledTexts) {
-            $prompt .= "\nThe following pre-generated descriptions will be shown to the person below this intro:\n\n";
-            $prompt .= implode("\n\n", $assembledTexts);
+        if ($transitNatalAspects) {
+            $prompt .= "\nActive transits:\n";
+            foreach ($transitNatalAspects as $asp) {
+                $aspLabel = ucfirst(str_replace('_', ' ', $asp->aspect));
+                $prompt  .= "  Transit {$asp->transitName} {$aspLabel} natal {$asp->natalName}\n";
+            }
         }
+
+        if ($retrogrades) {
+            $rxNames = array_map(fn ($rx) => "{$rx->name} Rx in {$rx->signName}", $retrogrades);
+            $prompt .= "\nRetrogrades: " . implode(', ', $rxNames) . "\n";
+        }
+
+        if ($areasOfLife) {
+            $prompt .= "\nAreas of life:\n";
+            foreach ($areasOfLife as $area) {
+                $stars   = $area->rating === 0
+                    ? '⚠ wait'
+                    : str_repeat('★', $area->rating) . str_repeat('☆', $area->maxRating - $area->rating);
+                $prompt .= "  {$area->name}: {$stars}\n";
+            }
+        }
+
         $prompt .= $simplified
-            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short monthly horoscope intro capturing the key theme."
-            : "\n\nWrite exactly 3 paragraphs as a monthly horoscope intro that synthesizes and introduces what follows.";
+            ? "\n\nWrite exactly 1 paragraph (2–3 sentences) as a short monthly horoscope intro based on this astrological data."
+            : "\n\nWrite exactly 3 paragraphs as a monthly horoscope intro based on this astrological data.";
 
         $paragraphRule = $simplified
             ? '- 1 paragraph only — 2–3 sentences total'
             : "- Exactly 3 paragraphs separated by blank lines — no headers, no bullets, no lists\n- Each paragraph: 3–4 sentences";
 
         $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
-        $system = "{$langNote}\n\nYou are writing a personalized monthly horoscope intro for a single person.\n\n"
+        $genderNoteM = ($gender && $language !== 'en') ? "\nAddress the person using " . ($gender === 'female' ? 'feminine' : 'masculine') . " grammatical forms in the target language." : '';
+        $system = "{$langNote}{$genderNoteM}\n\nYou are writing a personalized monthly horoscope intro for a single person.\n\n"
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
@@ -264,7 +337,7 @@ class HoroscopeSynthesisService
             if ($profileId > 0) {
                 $now = now();
                 TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1, 'gender' => $gender],
                     [
                         'text'       => $response->text,
                         'tone'       => 'neutral',
@@ -292,11 +365,13 @@ class HoroscopeSynthesisService
         bool $simplified = false,
         int $profileId = 0,
         string $language = 'en',
+        ?string $gender = null,
     ): ?AiResponse {
-        $cacheKey = 'solar_' . $profileId . '_' . $year . ($simplified ? '_short' : '');
+        $cacheKey = 'solar_' . $profileId . '_' . $year . ($simplified ? '_short' : '') . ($gender ? '_' . $gender : '');
         $cached   = TextBlock::where('key', $cacheKey)
             ->where('section', 'ai_synthesis')
             ->where('language', $language)
+            ->where('gender', $gender)
             ->first();
 
         if ($cached) {
@@ -433,7 +508,8 @@ class HoroscopeSynthesisService
         }
 
         $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
-        $system   = "{$langNote}\n\n"
+        $genderNoteS = ($gender && $language !== 'en') ? "\nAddress the person using " . ($gender === 'female' ? 'feminine' : 'masculine') . " grammatical forms in the target language." : '';
+        $system   = "{$langNote}{$genderNoteS}\n\n"
             . "You are writing a personalized yearly horoscope portrait for a single person.\n"
             . "You receive the full solar return chart: planets, aspects, lunations, progressions.\n"
             . "Your job is to synthesize this data into a cohesive portrait — draw conclusions, do not list facts.\n\n"
@@ -455,7 +531,7 @@ class HoroscopeSynthesisService
             if ($profileId > 0) {
                 $now = now();
                 TextBlock::updateOrCreate(
-                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1],
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1, 'gender' => $gender],
                     [
                         'text'       => $response->text,
                         'tone'       => 'neutral',
@@ -471,6 +547,150 @@ class HoroscopeSynthesisService
             return $response;
         } catch (\Exception $e) {
             \Log::warning('AI synthesis failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function synastry(
+        string $nameA,
+        array $planetsA,
+        string $nameB,
+        array $planetsB,
+        string $type,
+        array $typeScores,
+        array $aspects,
+        bool $simplified = false,
+        int $profileIdA = 0,
+        int $profileIdB = 0,
+        string $language = 'en',
+    ): ?AiResponse {
+        $idMin    = min($profileIdA, $profileIdB);
+        $idMax    = max($profileIdA, $profileIdB);
+        $cacheKey = 'synastry_' . $idMin . '_' . $idMax . '_' . $type . ($simplified ? '_short' : '');
+
+        $cached = TextBlock::where('key', $cacheKey)
+            ->where('section', 'ai_synthesis')
+            ->where('language', $language)
+            ->whereNull('gender')
+            ->first();
+
+        if ($cached) {
+            return new AiResponse(text: $cached->text, inputTokens: 0, outputTokens: 0, costUsd: 0.0);
+        }
+
+        // Build prompt
+        $typeLabel = ucfirst($type);
+        $prompt    = "Relationship type: {$typeLabel}\n\n";
+
+        // Person A planets
+        $prompt .= "=== {$nameA} ===\n";
+        foreach ($planetsA as $p) {
+            $body = (int) ($p['body'] ?? -1);
+            if ($body > 9) continue;
+            $name = PlanetaryPosition::BODY_NAMES[$body] ?? '';
+            $sign = PlanetaryPosition::SIGN_NAMES[$p['sign'] ?? 0] ?? '';
+            $rx   = ! empty($p['is_retrograde']) ? ' Rx' : '';
+            $prompt .= "  {$name} in {$sign}{$rx}\n";
+        }
+        $prompt .= "\n";
+
+        // Person B planets
+        $prompt .= "=== {$nameB} ===\n";
+        foreach ($planetsB as $p) {
+            $body = (int) ($p['body'] ?? -1);
+            if ($body > 9) continue;
+            $name = PlanetaryPosition::BODY_NAMES[$body] ?? '';
+            $sign = PlanetaryPosition::SIGN_NAMES[$p['sign'] ?? 0] ?? '';
+            $rx   = ! empty($p['is_retrograde']) ? ' Rx' : '';
+            $prompt .= "  {$name} in {$sign}{$rx}\n";
+        }
+        $prompt .= "\n";
+
+        // Top cross-aspects (personal planets first, max 12)
+        $topAspects = array_filter($aspects, fn ($a) => ($a['body_a'] ?? 99) <= 6 && ($a['body_b'] ?? 99) <= 6);
+        usort($topAspects, fn ($a, $b) => ($a['orb'] ?? 99) <=> ($b['orb'] ?? 99));
+        $topAspects = array_slice(array_values($topAspects), 0, 12);
+
+        if ($topAspects) {
+            $prompt .= "=== KEY CROSS-ASPECTS ===\n";
+            foreach ($topAspects as $asp) {
+                $bodyAName = PlanetaryPosition::BODY_NAMES[$asp['body_a'] ?? -1] ?? '?';
+                $bodyBName = PlanetaryPosition::BODY_NAMES[$asp['body_b'] ?? -1] ?? '?';
+                $aspWord   = ucfirst(str_replace('_', ' ', $asp['aspect'] ?? ''));
+                $orb       = number_format($asp['orb'] ?? 0, 1);
+                $prompt   .= "  {$nameA} {$bodyAName} {$aspWord} {$nameB} {$bodyBName}  {$orb}°\n";
+            }
+            $prompt .= "\n";
+        }
+
+        // Compatibility scores
+        $prompt .= "=== COMPATIBILITY SCORES (★ out of 5) ===\n";
+        foreach ($typeScores as $t => $stars) {
+            if ($t === 'general') continue;
+            $prompt .= '  ' . ucfirst($t) . ': ' . str_repeat('★', $stars) . str_repeat('☆', 5 - $stars) . "\n";
+        }
+        $prompt .= "\n";
+
+        if ($simplified) {
+            $prompt       .= "Write exactly 2 paragraphs as a compact synastry overview.";
+            $paragraphRule = "- Exactly 2 paragraphs — 3–4 sentences each";
+            $maxTokens     = 300;
+        } elseif ($type === 'general') {
+            $prompt       .= "Write exactly 6 paragraphs as a full synastry compatibility portrait.";
+            $paragraphRule = "- Exactly 6 paragraphs separated by blank lines — no headers, no bullets\n"
+                . "- Paragraph 1: the overall dynamic and first impression these two create together\n"
+                . "- Paragraph 2: how they communicate and share ideas\n"
+                . "- Paragraph 3: emotional connection and how they handle feelings\n"
+                . "- Paragraph 4: where they genuinely support and strengthen each other\n"
+                . "- Paragraph 5: recurring friction points and what triggers them\n"
+                . "- Paragraph 6: the long-term picture — what makes or breaks this relationship";
+            $maxTokens     = 900;
+        } else {
+            $prompt       .= "Write exactly 4 paragraphs as a synastry compatibility overview focused on the {$type} dimension.";
+            $paragraphRule = "- Exactly 4 paragraphs separated by blank lines — no headers, no bullets\n"
+                . "- Paragraph 1: the overall dynamic between these two people\n"
+                . "- Paragraph 2: what works well in the {$type} dimension specifically\n"
+                . "- Paragraph 3: the friction points and recurring tensions\n"
+                . "- Paragraph 4: practical summary — what needs to happen for this to work";
+            $maxTokens     = 600;
+        }
+
+        $langNote = $language !== 'en' ? "Write in language code: {$language}." : 'Write in English.';
+        $system   = "{$langNote}\n\n"
+            . "You are writing a personalized synastry compatibility overview for two people.\n\n"
+            . "Style rules:\n"
+            . "- Write like a psychologist giving honest feedback — not an astrologer\n"
+            . "- Address both people by name — do not use \"you\"\n"
+            . "{$paragraphRule}\n"
+            . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
+            . "- Plain everyday words only — no spiritual or psychological jargon\n"
+            . "- Describe what these two people actually notice or do together — concrete behaviour only\n"
+            . "- Forbidden words: journey, path, soul, essence, portal, gateway, threshold, healing, wounds, dance, dissolves, energy, forces\n"
+            . "- No metaphors. No poetic language.\n"
+            . "- No HTML — plain text only";
+
+        try {
+            $response = $this->ai->generate($prompt, $system, maxTokens: $maxTokens);
+
+            if ($profileIdA > 0 && $profileIdB > 0) {
+                $now = now();
+                TextBlock::updateOrCreate(
+                    ['key' => $cacheKey, 'section' => 'ai_synthesis', 'language' => $language, 'variant' => 1, 'gender' => null],
+                    [
+                        'text'       => $response->text,
+                        'tone'       => 'neutral',
+                        'tokens_in'  => $response->inputTokens,
+                        'tokens_out' => $response->outputTokens,
+                        'cost_usd'   => $response->costUsd,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+            }
+
+            return $response;
+        } catch (\Exception $e) {
+            \Log::warning('AI synastry synthesis failed: ' . $e->getMessage());
             return null;
         }
     }
