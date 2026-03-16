@@ -157,7 +157,9 @@ class AspectCalculator
         $localDt = Carbon::parse($subject->getBirthDate() . ' ' . $birthTime, $timezone);
         $utcDt   = $localDt->utc();
 
-        return ($utcDt->hour + $utcDt->minute / 60 + $utcDt->second / 3600) / 24;
+        // Planetary positions are stored at noon UT (12:00) — compute offset from noon
+        $utcHours = $utcDt->hour + $utcDt->minute / 60 + $utcDt->second / 3600;
+        return ($utcHours - 12.0) / 24.0;
     }
 
     /**

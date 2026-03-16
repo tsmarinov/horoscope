@@ -9,6 +9,7 @@ use App\Services\AspectCalculator;
 use App\Services\HouseCalculator;
 use App\Services\ReportBuilder;
 use App\Services\VariantPicker;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -52,6 +53,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('layouts.app', function ($view) {
+            $natalNavUrl = url('/natal');
+            if (auth()->check()) {
+                $profile = \App\Models\Profile::where('user_id', auth()->id())->latest()->first();
+                $natalNavUrl = $profile
+                    ? route('natal.show', $profile)
+                    : route('stellar-profiles.index');
+            }
+            $view->with('natalNavUrl', $natalNavUrl);
+        });
     }
 }

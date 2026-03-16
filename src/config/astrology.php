@@ -4,16 +4,16 @@ return [
     'aspects' => [
         'conjunction'  => ['angle' => 0,   'orb' => 3.0],
         'opposition'   => ['angle' => 180, 'orb' => 3.0],
-        'trine'        => ['angle' => 120, 'orb' => 2.0],
+        'trine'        => ['angle' => 120, 'orb' => 3.0],
         'square'       => ['angle' => 90,  'orb' => 3.0],
-        'sextile'      => ['angle' => 60,  'orb' => 2.0],
-        'quincunx'     => ['angle' => 150, 'orb' => 2.0],
-        'semi_sextile' => ['angle' => 30,  'orb' => 1.0],
+        'sextile'      => ['angle' => 60,  'orb' => 3.0],
+        'quincunx'     => ['angle' => 150, 'orb' => 3.0],
+        'semi_sextile' => ['angle' => 30,  'orb' => 3.0],
     ],
 
     // Orb overrides for natal chart and transits
     'sun_orb'  => 5.0, // any aspect involving the Sun
-    'moon_orb' => 4.0, // any aspect involving the Moon
+    'moon_orb' => 5.0, // any aspect involving the Moon
 
     // Orb for directions and progressions (overrides everything, no mutual reception)
     'progression_orb' => 1.0,

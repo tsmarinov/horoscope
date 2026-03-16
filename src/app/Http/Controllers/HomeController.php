@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Profile;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -16,6 +17,14 @@ class HomeController extends Controller
 
     public function index(): View
     {
+        $natalUrl = url('/natal');
+        if (auth()->check()) {
+            $profile  = Profile::where('user_id', auth()->id())->latest()->first();
+            $natalUrl = $profile
+                ? route('natal.show', $profile)
+                : route('stellar-profiles.index');
+        }
+
         $cards = collect(array_keys(__('ui.home.cards')))
             ->map(fn (string $key) => [
                 'key'   => $key,
@@ -23,7 +32,7 @@ class HomeController extends Controller
                 'title' => __("ui.home.cards.{$key}.title"),
                 'desc'  => __("ui.home.cards.{$key}.desc"),
                 'cta'   => __("ui.home.cards.{$key}.cta"),
-                'url'   => url(self::URL_MAP[$key] ?? "/{$key}"),
+                'url'   => $key === 'natal' ? $natalUrl : url(self::URL_MAP[$key] ?? "/{$key}"),
             ]);
 
         return view('home', compact('cards'));

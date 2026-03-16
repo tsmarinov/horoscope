@@ -184,7 +184,7 @@
 
                 {{-- Charts --}}
                 <div class="drawer-section">Charts</div>
-                <a href="{{ url('/natal') }}"    class="drawer-item @yield('nav_natal')">
+                <a href="{{ $natalNavUrl }}" class="drawer-item @yield('nav_natal')">
                     <span class="di-icon">♈</span> Natal Chart
                 </a>
                 <a href="{{ url('/synastry') }}" class="drawer-item @yield('nav_synastry')">
@@ -268,5 +268,6 @@
         </p>
     </footer>
 
+    @stack('scripts')
 </body>
 </html>

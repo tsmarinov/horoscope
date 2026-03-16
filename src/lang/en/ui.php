@@ -237,6 +237,17 @@ return [
             'neptune' => 'Dreams · Spirituality · Illusions',
             'pluto'   => 'Transformation · Power · Rebirth',
         ],
+        'premium' => [
+            'button_show'              => '✦ Show premium content',
+            'button_locked'            => '🔒 Premium content',
+            'dialog_title'             => '✦ Premium content',
+            'dialog_body'              => 'Would you like to generate personalised content for this section?',
+            'dialog_remaining_prefix'  => 'You have',
+            'dialog_remaining_of'      => 'of',
+            'dialog_remaining_suffix'  => 'requests left this month.',
+            'confirm'                  => 'Generate',
+            'cancel'                   => 'Cancel',
+        ],
         'planet_desc' => [
             'mercury' => 'Mercury Retrograde is an invitation to reconsider words, contracts, and plans. Avoid new starts in communication and technology. A good time for revision, review, and completing unfinished work.',
             'venus'   => 'Venus Retrograde turns attention inward to values and relationships. Avoid new romantic commitments or major purchases. A good time to reassess what and who truly matters.',

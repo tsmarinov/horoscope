@@ -59,6 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/stellar-profiles/{stellarProfile}', [StellarProfileController::class, 'destroy'])->name('stellar-profiles.destroy');
 });
 
+// Premium
+Route::middleware('auth')->group(function () {
+    Route::post('/premium/use', [\App\Http\Controllers\PremiumController::class, 'use'])->name('premium.use');
+});
+
 // Email change
 Route::middleware('auth')->group(function () {
     Route::post('/email/change',         [EmailChangeController::class, 'request'])->name('email.change.request');

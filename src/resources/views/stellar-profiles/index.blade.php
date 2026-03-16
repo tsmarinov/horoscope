@@ -96,7 +96,9 @@
             $cityInit = $cityName ? $cityName . ($cityCode ? ' (' . $cityCode . ')' : '') : '';
             $cityId   = $profile->birth_city_id ?? 'null';
         @endphp
-        <div x-data="profileForm('{{ addslashes($cityInit) }}', {{ $cityId }}, {{ request('edit') == $profile->id ? 'true' : 'false' }})" class="card" style="padding:0">
+        <div x-data="profileForm('{{ addslashes($cityInit) }}', {{ $cityId }}, {{ request('edit') == $profile->id ? 'true' : 'false' }})"
+             @open-edit.window="open = ($event.detail.id === {{ $profile->id }})"
+             class="card" style="padding:0">
 
             {{-- Profile summary row --}}
             <div x-show="!open" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.85rem 1rem">
@@ -137,7 +139,7 @@
                        style="font-size:0.78rem;color:#6a329f;font-weight:600;text-decoration:none;padding:0.25rem 0.5rem">
                         Natal →
                     </a>
-                    <button @click="open = true"
+                    <button @click="$dispatch('open-edit', { id: {{ $profile->id }} })"
                             style="background:none;border:none;font-size:0.78rem;color:#6a329f;cursor:pointer;font-weight:600;padding:0.25rem 0.5rem">
                         Edit
                     </button>
