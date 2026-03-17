@@ -211,7 +211,7 @@ class UiLunarCalendar extends Command
                     [$house]  = $houseCalculator->assignHouses($cusps, [$lun['moon_lon']]);
                     $houseOrd = $ordinals[$house] ?? $house;
                     $textKey  = $lunKey . '_house_' . $house;
-                    $block    = TextBlock::pick($textKey, 'lunation_house', 1, 'en', $gender);
+                    $block    = TextBlock::pickForProfile($textKey, 'lunation_house', 'en', $gender, $profile?->id);
                     $text     = $block ? trim(strip_tags($block->text)) : null;
 
                     // Natal planet conjunctions (≤ 5°)
@@ -295,7 +295,7 @@ class UiLunarCalendar extends Command
 
             // Day text — show only on the first day the Moon enters a sign
             if ($day['sign_idx'] !== $prevSignIdx) {
-                $dayBlock = TextBlock::pick('moon_in_' . strtolower($signName), $daySection, 1, 'en', $gender);
+                $dayBlock = TextBlock::pickForProfile('moon_in_' . strtolower($signName), $daySection, 'en', $gender, $profile?->id);
                 if ($dayBlock) {
                     $dayText = trim(strip_tags($dayBlock->text));
                     foreach ($this->wrap($dayText, self::IW - 4) as $line) {
@@ -323,7 +323,7 @@ class UiLunarCalendar extends Command
                 $c        = $lun['carbon'];
                 $signName = PlanetaryPosition::SIGN_NAMES[$lun['sign_idx']] ?? '';
                 $tagKey   = ($lun['new_moon'] ? 'new_moon_in_' : 'full_moon_in_') . strtolower($signName);
-                $tagBlock = TextBlock::pick($tagKey, $tagSection, 1, 'en', $gender);
+                $tagBlock = TextBlock::pickForProfile($tagKey, $tagSection, 'en', $gender, $profile?->id);
                 $tagText  = $tagBlock ? ' — ' . $tagBlock->text : '';
                 $this->put($this->row(
                     '  ' . $icon . '  ' . $c->format('j M') . '  '

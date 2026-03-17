@@ -187,7 +187,7 @@ class UiMonthlyReport extends Command
                 $aGlyph   = self::ASPECT_GLYPHS[$asp->aspect] ?? $asp->aspect;
                 $aLabel   = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
                 $key      = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-                $block    = TextBlock::pick($key, $simplified ? 'transit_natal_short' : 'transit_natal', 1, 'en', $gender);
+                $block    = TextBlock::pickForProfile($key, $simplified ? 'transit_natal_short' : 'transit_natal', 'en', $gender, $profile->id);
 
                 // Fast planets: show peak day; slow: no day label
                 $dayLabel = ($asp->transitBody < 5 && $asp->peakDate)
@@ -212,7 +212,7 @@ class UiMonthlyReport extends Command
                 $bodyGlyph = self::BODY_GLYPHS[$rx->body] ?? '';
                 $signGlyph = self::SIGN_GLYPHS[$rx->signIndex] ?? '';
                 $rxKey     = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-                $block     = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1, 'en', $gender);
+                $block     = TextBlock::pickForProfile($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 'en', $gender, $profile->id);
 
                 $this->put($this->row(''));
                 $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender) . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
@@ -259,7 +259,7 @@ class UiMonthlyReport extends Command
 
                 // Sign text
                 $lunSignKey   = strtolower(str_replace(' ', '_', $lun->type)) . '_in_' . strtolower($lun->signName);
-                $lunSignBlock = TextBlock::pick($lunSignKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 1, 'en', $gender);
+                $lunSignBlock = TextBlock::pickForProfile($lunSignKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 'en', $gender, $profile->id);
                 if ($lunSignBlock) {
                     $this->put($this->row(''));
                     foreach ($this->wrap(trim(strip_tags($lunSignBlock->text)), self::IW - 4) as $line) {
@@ -271,7 +271,7 @@ class UiMonthlyReport extends Command
                 if ($lun->house) {
                     $houseKey     = strtolower(str_replace(' ', '_', $lun->type)) . '_house_' . $lun->house;
                     $houseSection = $simplified ? 'lunation_house_short' : 'lunation_house';
-                    $houseBlock   = TextBlock::pick($houseKey, $houseSection, 1, 'en', $gender);
+                    $houseBlock   = TextBlock::pickForProfile($houseKey, $houseSection, 'en', $gender, $profile->id);
                     if ($houseBlock) {
                         $this->put($this->row(''));
                         $this->put($this->row('  H' . $lun->house . ' — ' . $this->houseName($lun->house)));

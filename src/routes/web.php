@@ -48,7 +48,9 @@ Route::get('/api/cities', [CitySearchController::class, 'search'])->name('api.ci
 
 // Natal chart
 Route::middleware('auth')->group(function () {
-    Route::get('/natal/{profile}', [NatalController::class, 'show'])->name('natal.show');
+    Route::get('/natal/{profile}',         [NatalController::class, 'show'])->name('natal.show');
+    Route::get('/natal/{profile}/pdf',     [NatalController::class, 'pdf'])->name('natal.pdf');
+    Route::post('/natal/{profile}/portrait', [NatalController::class, 'generatePortrait'])->name('natal.portrait');
 });
 
 // Stellar Profiles

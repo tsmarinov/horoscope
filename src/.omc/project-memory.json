@@ -256,8 +256,14 @@
   "hotPaths": [
     {
       "path": "resources/views/natal/show.blade.php",
-      "accessCount": 22,
-      "lastAccessed": 1773704452495,
+      "accessCount": 29,
+      "lastAccessed": 1773791244445,
+      "type": "file"
+    },
+    {
+      "path": "app/Services/ReportBuilder.php",
+      "accessCount": 2,
+      "lastAccessed": 1773790890367,
       "type": "file"
     },
     {

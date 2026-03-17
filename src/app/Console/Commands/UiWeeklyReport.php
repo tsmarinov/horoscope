@@ -186,7 +186,7 @@ class UiWeeklyReport extends Command
                 $aGlyph  = self::ASPECT_GLYPHS[$asp->aspect] ?? $asp->aspect;
                 $aLabel  = ui_trans('aspects.' . $asp->aspect, $gender) ?: ucfirst(str_replace('_', ' ', $asp->aspect));
                 $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
-                $block   = TextBlock::pick($key, $simplified ? 'transit_natal_short' : 'transit_natal', 1, 'en', $gender);
+                $block   = TextBlock::pickForProfile($key, $simplified ? 'transit_natal_short' : 'transit_natal', 'en', $gender, $profile->id);
 
                 // Fast planets (body < 5): show peak day label
                 $dayLabel = ($asp->transitBody < 5 && $asp->peakDate)
@@ -209,7 +209,7 @@ class UiWeeklyReport extends Command
                 $bodyGlyph = self::BODY_GLYPHS[$rx->body] ?? '';
                 $signGlyph = self::SIGN_GLYPHS[$rx->signIndex] ?? '';
                 $rxKey     = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-                $block     = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1, 'en', $gender);
+                $block     = TextBlock::pickForProfile($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 'en', $gender, $profile->id);
 
                 $this->put($this->row(''));
                 $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender) . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
@@ -234,7 +234,7 @@ class UiWeeklyReport extends Command
             $this->put($this->row($this->spread('  ' . $lunLabel, $lunDate . '  ')));
             $this->put($this->row(''));
             $lunKey   = strtolower(str_replace(' ', '_', $lun->type)) . '_in_' . strtolower($lun->signName);
-            $lunBlock = TextBlock::pick($lunKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 1, 'en', $gender);
+            $lunBlock = TextBlock::pickForProfile($lunKey, $simplified ? 'lunation_sign_short' : 'lunation_sign', 'en', $gender, $profile->id);
             if ($lunBlock) {
                 foreach ($this->wrap(trim(strip_tags($lunBlock->text)), self::IW - 4) as $line) {
                     $this->put($this->row('    ' . $line));

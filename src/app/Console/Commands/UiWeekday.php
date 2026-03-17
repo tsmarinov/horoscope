@@ -81,7 +81,7 @@ class UiWeekday extends Command
 
             // Personalised clothing tip (today only)
             if ($day->clothingTipKey !== null) {
-                $block = TextBlock::pick($day->clothingTipKey, 'weekday_clothing', 1, 'en', $gender);
+                $block = TextBlock::pickForProfile($day->clothingTipKey, 'weekday_clothing', 'en', $gender, $profile?->id);
 
                 $this->put('');
                 $signNames   = \App\Models\PlanetaryPosition::SIGN_NAMES;

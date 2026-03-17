@@ -42,7 +42,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ReportBuilder::class, function ($app) {
             return new ReportBuilder(
                 aspectCalculator: $app->make(AspectCalculator::class),
-                variantPicker:    $app->make(VariantPicker::class),
                 aiProvider:       $app->make(AiProvider::class),
             );
         });

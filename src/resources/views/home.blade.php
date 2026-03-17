@@ -211,36 +211,6 @@
             </svg>
             @break
 
-            @case('transits')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
-                {{-- Natal wheel (inner) --}}
-                <circle cx="140" cy="55" r="44" stroke="#6a329f" stroke-width="1"    opacity="0.3"/>
-                <circle cx="140" cy="55" r="30" stroke="#6a329f" stroke-width="0.75" opacity="0.22"/>
-                <circle cx="140" cy="55" r="16" stroke="#6a329f" stroke-width="1"    opacity="0.28"/>
-                {{-- Transit ring (outer) --}}
-                <circle cx="140" cy="55" r="58" stroke="#6a329f" stroke-width="1.25" opacity="0.35" stroke-dasharray="4 3"/>
-                {{-- Aspect lines --}}
-                @php
-                    $aspects = [
-                        [0.1,  0.8 ],
-                        [0.45, 1.35],
-                        [0.7,  1.7 ],
-                    ];
-                @endphp
-                @foreach($aspects as $ap)
-                @php
-                    $x1 = round(140 + 44 * cos($ap[0] * M_PI), 1);
-                    $y1 = round(55  + 44 * sin($ap[0] * M_PI), 1);
-                    $x2 = round(140 + 58 * cos($ap[1] * M_PI), 1);
-                    $y2 = round(55  + 58 * sin($ap[1] * M_PI), 1);
-                @endphp
-                <line x1="{{ $x1 }}" y1="{{ $y1 }}" x2="{{ $x2 }}" y2="{{ $y2 }}" stroke="#6a329f" stroke-width="0.75" opacity="0.35" stroke-dasharray="2 2"/>
-                <circle cx="{{ $x1 }}" cy="{{ $y1 }}" r="2.5" fill="#6a329f" opacity="0.5"/>
-                <circle cx="{{ $x2 }}" cy="{{ $y2 }}" r="3"   fill="#6a329f" opacity="0.4"/>
-                @endforeach
-                <circle cx="140" cy="55" r="4" fill="#6a329f" opacity="0.2"/>
-            </svg>
-            @break
 
             @case('planets')
             <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">

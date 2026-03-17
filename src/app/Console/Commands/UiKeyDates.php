@@ -92,7 +92,7 @@ class UiKeyDates extends Command
         $this->put($this->divider());
 
         if ($view === 'year') {
-            $this->renderYear($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets, $gender);
+            $this->renderYear($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets, $gender, $profile->id);
         } elseif ($view === 'week') {
             $keyDates = $this->buildWeek($periodStart, $calculator, $lunationDetector, $keyDatesBuilder, $natalPlanets);
             if (empty($keyDates)) {
@@ -103,7 +103,7 @@ class UiKeyDates extends Command
                 $this->put($this->row(''));
                 foreach ($keyDates as $kd) {
                     $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                    $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
+                    $this->renderKeyDateText($kd->textKey, $kd->section, $gender, $profile->id);
                 }
                 $this->put($this->row(''));
             }
@@ -115,7 +115,7 @@ class UiKeyDates extends Command
                 $this->put($this->row('  No significant key dates found for this period.'));
                 $this->put($this->row(''));
             } else {
-                $this->renderGroupedByIsoWeek($keyDates, $periodStart, $periodEnd, $gender);
+                $this->renderGroupedByIsoWeek($keyDates, $periodStart, $periodEnd, $gender, $profile->id);
             }
         }
 
@@ -280,6 +280,7 @@ class UiKeyDates extends Command
         KeyDatesBuilder  $keyDatesBuilder,
         array            $natalPlanets,
         ?string          $gender = null,
+        ?int             $profileId = null,
     ): void {
         $anyFound = false;
 
@@ -296,7 +297,7 @@ class UiKeyDates extends Command
             $this->put($this->row('  ' . $monthStart->format('F Y')));
             foreach ($keyDates as $kd) {
                 $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
+                $this->renderKeyDateText($kd->textKey, $kd->section, $gender, $profileId);
             }
         }
 
@@ -313,7 +314,7 @@ class UiKeyDates extends Command
      *
      * @param \App\DataTransfer\Horoscope\KeyDateDTO[] $keyDates
      */
-    private function renderGroupedByIsoWeek(array $keyDates, Carbon $periodStart, Carbon $periodEnd, ?string $gender = null): void
+    private function renderGroupedByIsoWeek(array $keyDates, Carbon $periodStart, Carbon $periodEnd, ?string $gender = null, ?int $profileId = null): void
     {
         $byWeek = [];
         foreach ($keyDates as $kd) {
@@ -332,7 +333,7 @@ class UiKeyDates extends Command
             $this->put($this->row('  ' . $weekLabel));
             foreach ($weekKeyDates as $kd) {
                 $this->put($this->row($this->buildDayLine($kd->date, $kd->label, $kd->priority)));
-                $this->renderKeyDateText($kd->textKey, $kd->section, $gender);
+                $this->renderKeyDateText($kd->textKey, $kd->section, $gender, $profileId);
             }
         }
 
@@ -359,12 +360,12 @@ class UiKeyDates extends Command
         return $line;
     }
 
-    private function renderKeyDateText(?string $textKey, string $section, ?string $gender = null): void
+    private function renderKeyDateText(?string $textKey, string $section, ?string $gender = null, ?int $profileId = null): void
     {
         if (! $textKey) {
             return;
         }
-        $block = TextBlock::pick($textKey, $section, 1, 'en', $gender);
+        $block = TextBlock::pickForProfile($textKey, $section, 'en', $gender, $profileId);
         if (! $block) {
             return;
         }

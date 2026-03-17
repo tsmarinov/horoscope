@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1773319915511,
+  "lastScanned": 1773790065266,
   "projectRoot": "/var/www/horo/web",
   "techStack": {
     "languages": [],
@@ -35,7 +35,7 @@
       "path": "backups",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773319915509,
+      "lastAccessed": 1773790065260,
       "keyFiles": [
         "horo_2026-03-10_140344.sql",
         "horo_2026-03-11_101037.sql.gz",
@@ -46,14 +46,14 @@
       "path": "deploy",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773319915509,
+      "lastAccessed": 1773790065262,
       "keyFiles": []
     },
     "nginx": {
       "path": "nginx",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1773319915510,
+      "lastAccessed": 1773790065263,
       "keyFiles": [
         "default.conf"
       ]
@@ -62,7 +62,7 @@
       "path": "php",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1773319915511,
+      "lastAccessed": 1773790065263,
       "keyFiles": [
         "Dockerfile",
         "entrypoint.sh"
@@ -71,8 +71,8 @@
     "src": {
       "path": "src",
       "purpose": "Source code",
-      "fileCount": 14,
-      "lastAccessed": 1773319915511,
+      "fileCount": 18,
+      "lastAccessed": 1773790065263,
       "keyFiles": [
         "AGENTS.md",
         "README.md",
@@ -80,191 +80,32 @@
         "composer.json",
         "composer.lock"
       ]
-    },
-    "src/app": {
-      "path": "src/app",
-      "purpose": "Application code",
-      "fileCount": 1,
-      "lastAccessed": 1773319915511,
-      "keyFiles": [
-        "AGENTS.md"
-      ]
     }
   },
   "hotPaths": [
     {
-      "path": "src/app/Console/Commands/UiSolarReturn.php",
-      "accessCount": 20,
-      "lastAccessed": 1773321830402,
-      "type": "file"
-    },
-    {
-      "path": "src/app/AGENTS.md",
-      "accessCount": 14,
-      "lastAccessed": 1773329424268,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Services/Horoscope/Shared/KeyDatesBuilder.php",
-      "accessCount": 12,
-      "lastAccessed": 1773329235391,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Services/Horoscope/MonthlyHoroscopeService.php",
-      "accessCount": 11,
-      "lastAccessed": 1773329236144,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Services/Horoscope/WeeklyHoroscopeService.php",
+      "path": "src/resources/views/natal/show.blade.php",
       "accessCount": 8,
-      "lastAccessed": 1773329235844,
-      "type": "directory"
-    },
-    {
-      "path": "src",
-      "accessCount": 6,
-      "lastAccessed": 1773332044151,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Services/Horoscope",
-      "accessCount": 4,
-      "lastAccessed": 1773324235886,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Console/Commands/UiPlanetPositions.php",
-      "accessCount": 4,
-      "lastAccessed": 1773327176540,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands/UiKeyDates.php",
-      "accessCount": 4,
-      "lastAccessed": 1773331888204,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Services/AspectCalculator.php",
-      "accessCount": 3,
-      "lastAccessed": 1773329245698,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Services/Horoscope/Shared/AreasOfLifeScorer.php",
-      "accessCount": 3,
-      "lastAccessed": 1773331908738,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands/UiAreasOfLife.php",
-      "accessCount": 3,
-      "lastAccessed": 1773340280386,
-      "type": "file"
-    },
-    {
-      "path": "src/app/DataTransfer/Horoscope",
-      "accessCount": 2,
-      "lastAccessed": 1773320002425,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Console/Commands/UiNatalReport.php",
-      "accessCount": 2,
-      "lastAccessed": 1773321185405,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Services/Horoscope/DailyHoroscopeService.php",
-      "accessCount": 2,
-      "lastAccessed": 1773322413536,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Services/Horoscope/Shared/LunationDetector.php",
-      "accessCount": 2,
-      "lastAccessed": 1773329241016,
-      "type": "file"
-    },
-    {
-      "path": "src/app/DataTransfer/Horoscope/AreaOfLifeDTO.php",
-      "accessCount": 2,
-      "lastAccessed": 1773332048250,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands/UiDailyReport.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321055552,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Enums/ReportMode.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321199430,
+      "lastAccessed": 1773790567041,
       "type": "file"
     },
     {
       "path": "src/app/Services/ReportBuilder.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321200941,
+      "accessCount": 5,
+      "lastAccessed": 1773790414640,
       "type": "directory"
     },
     {
-      "path": "src/lang/en/ui.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321728309,
-      "type": "file"
-    },
-    {
-      "path": "src/lang/en/lunar.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321811429,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands/Generate/TransitTexts.php",
-      "accessCount": 1,
-      "lastAccessed": 1773321982557,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Models/PlanetaryPosition.php",
-      "accessCount": 1,
-      "lastAccessed": 1773327155732,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands/UiMonthlyReport.php",
-      "accessCount": 1,
-      "lastAccessed": 1773327162752,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Models/Profile.php",
-      "accessCount": 1,
-      "lastAccessed": 1773327163612,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Facades/AspectCalculator.php",
-      "accessCount": 1,
-      "lastAccessed": 1773327167222,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Console/Commands",
-      "accessCount": 1,
-      "lastAccessed": 1773327173350,
+      "path": "src/resources/css/app.css",
+      "accessCount": 3,
+      "lastAccessed": 1773790557156,
       "type": "directory"
     },
     {
-      "path": "src/app/DataTransfer/Horoscope/TransitAspectDTO.php",
+      "path": "src/resources",
       "accessCount": 1,
-      "lastAccessed": 1773329244837,
-      "type": "file"
+      "lastAccessed": 1773790472275,
+      "type": "directory"
     }
   ],
   "userDirectives": []

@@ -121,4 +121,48 @@ class TextBlock extends Model
 
         return null;
     }
+
+    /**
+     * Pick a text block for a specific profile using section-level variant assignment.
+     * On first call for a (profile, section) pair, assigns a random variant that exists
+     * in that section and persists it. All subsequent calls for any key in that section
+     * use the same variant, falling back to variant 1 if the key doesn't have that variant.
+     */
+    public static function pickForProfile(
+        string $key,
+        string $section,
+        string $language,
+        ?string $gender,
+        ?int $profileId
+    ): ?self {
+        if ($profileId === null) {
+            return static::pick($key, $section, 1, $language, $gender);
+        }
+
+        $assignment = TextBlockAssignment::firstOrCreate(
+            ['profile_id' => $profileId, 'section' => $section],
+            ['variant' => static::randomVariant($section)]
+        );
+
+        return static::pick($key, $section, $assignment->variant, $language, $gender)
+            ?? static::pick($key, $section, 1, $language, $gender);
+    }
+
+    /**
+     * Pick a random variant number that exists anywhere in the given section.
+     * Returns 1 if no variants found.
+     */
+    private static function randomVariant(string $section): int
+    {
+        $variants = static::where('section', $section)
+            ->distinct()
+            ->pluck('variant')
+            ->toArray();
+
+        if (empty($variants)) {
+            return 1;
+        }
+
+        return $variants[array_rand($variants)];
+    }
 }

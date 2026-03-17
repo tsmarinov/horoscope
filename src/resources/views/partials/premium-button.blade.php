@@ -43,12 +43,20 @@
         }
     }">
 
+    @if($generated ?? false)
+    <button disabled
+            style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:not-allowed;font-family:inherit;opacity:0.45">
+        {{ __('ui.retrograde.premium.button_show') }}
+    </button>
+    @else
     <button @click="open = true"
+            data-premium-btn
             style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid #6a329f;background:none;color:#6a329f;font-size:0.82rem;cursor:pointer;font-family:inherit"
             onmouseover="this.style.background='#6a329f';this.style.color='#fff'"
             onmouseout="this.style.background='none';this.style.color='#6a329f'">
         {{ __('ui.retrograde.premium.button_show') }}
     </button>
+    @endif
 
     {{-- Confirm modal --}}
     <div x-show="open" x-cloak

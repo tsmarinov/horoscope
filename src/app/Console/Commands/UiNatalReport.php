@@ -141,13 +141,17 @@ class UiNatalReport extends Command
         $this->put($this->row('  * Rx = Retrograde (apparent backward motion)'));
 
         // Split into 4 groups (support both full and _short section variants)
-        $ascSections          = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_ascendant')));
-        $posSections          = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_positions')));
-        $houseLordPreSections = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_house_lords')));
-        $aspectSections       = array_values(array_filter($report->sections, fn ($s) =>
+        $ascSections              = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_ascendant')));
+        $posSections              = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_positions')));
+        $houseLordPreSections     = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_house_lords') && !str_starts_with($s->section, 'natal_house_lord_aspects')));
+        $houseLordAspectSections  = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_house_lord_aspects')));
+        $angleAspectSections      = array_values(array_filter($report->sections, fn ($s) => str_starts_with($s->section, 'natal_angles')));
+        $aspectSections           = array_values(array_filter($report->sections, fn ($s) =>
             !str_starts_with($s->section, 'natal_ascendant') &&
             !str_starts_with($s->section, 'natal_positions') &&
-            !str_starts_with($s->section, 'natal_house_lords')
+            !str_starts_with($s->section, 'natal_house_lords') &&
+            !str_starts_with($s->section, 'natal_house_lord_aspects') &&
+            !str_starts_with($s->section, 'natal_angles')
         ));
         $sectionCount    = count($report->sections);
 
@@ -182,7 +186,7 @@ class UiNatalReport extends Command
             $this->put($this->row(''));
         }
         $gender = TextBlock::resolveGender($subject->gender?->value ?? null);
-        $this->renderSingletonSection($chart->planets ?? [], $mode === ReportMode::Simplified, $gender);
+        $this->renderSingletonSection($chart->planets ?? [], $mode === ReportMode::Simplified, $gender, $subject->exists ? $subject->id : null);
 
         // ── House Lords (pre-generated) ───────────────────────────────────
         if (count($houseLordPreSections) > 0) {
@@ -270,6 +274,53 @@ class UiNatalReport extends Command
                 if ($text === '') continue;
                 foreach ($this->wrap($text, self::IW - 4) as $line) {
                     $this->put($this->row('    ' . $line));
+                }
+            }
+            $this->put($this->row(''));
+        }
+
+        // ── House Lord Aspects ────────────────────────────────────────────
+        if (count($houseLordAspectSections) > 0) {
+            $this->put($this->divider());
+            $this->put($this->row($this->spread('  ◎  HOUSE LORD ASPECTS', '')));
+            foreach ($houseLordAspectSections as $section) {
+                $heading = $this->sectionHeading($section->key, $chart->planets ?? []);
+                $toneTag = match ($section->tone) {
+                    'positive' => '▲',
+                    'negative' => '▼',
+                    default    => '◆',
+                };
+                $text = trim(strip_tags($section->text));
+                $this->put($this->row(''));
+                $this->put($this->row('  ' . $toneTag . '  ' . $heading));
+                if ($text !== '') {
+                    foreach ($this->wrap($text, self::IW - 4) as $line) {
+                        $this->put($this->row('    ' . $line));
+                    }
+                }
+            }
+            $this->put($this->row(''));
+        }
+
+        // ── Angle Aspects ─────────────────────────────────────────────────────
+        if (count($angleAspectSections) > 0) {
+            $this->put($this->divider());
+            $this->put($this->row($this->spread('  ✦  ASPECTS TO ANGLES', '')));
+
+            foreach ($angleAspectSections as $section) {
+                $heading = $this->sectionHeading($section->key, $chart->planets ?? []);
+                $toneTag = match ($section->tone) {
+                    'positive' => '▲',
+                    'negative' => '▼',
+                    default    => '◆',
+                };
+                $text = trim(strip_tags($section->text));
+                $this->put($this->row(''));
+                $this->put($this->row('  ' . $toneTag . '  ' . $heading));
+                if ($text !== '') {
+                    foreach ($this->wrap($text, self::IW - 4) as $line) {
+                        $this->put($this->row('    ' . $line));
+                    }
                 }
             }
             $this->put($this->row(''));
@@ -475,7 +526,7 @@ class UiNatalReport extends Command
 
     // ── Singleton / Missing element ──────────────────────────────────────
 
-    private function renderSingletonSection(array $planets, bool $simplified = false, ?string $gender = null): void
+    private function renderSingletonSection(array $planets, bool $simplified = false, ?string $gender = null, ?int $profileId = null): void
     {
         // Count planets per element — only bodies 0–9 (Sun–Pluto)
         $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
@@ -507,7 +558,7 @@ class UiNatalReport extends Command
 
             $this->put($this->divider());
             $this->put($this->row($header));
-            $block = TextBlock::pick($key, $section, 1, 'en', $gender);
+            $block = TextBlock::pickForProfile($key, $section, 'en', $gender, $profileId);
             if ($block) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {

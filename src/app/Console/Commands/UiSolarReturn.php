@@ -212,7 +212,7 @@ class UiSolarReturn extends Command
 
         // ── Solar ASC analysis ────────────────────────────────────────────
         if (! empty($natalHouses)) {
-            $this->renderSolarAscAnalysis($dto, $natalHouses, $simplified, $gender);
+            $this->renderSolarAscAnalysis($dto, $natalHouses, $simplified, $gender, $profile->id);
         } else {
             $this->put($this->row('  🔒 Solar ASC analysis — add birth time & place to unlock'));
             $this->put($this->row(''));
@@ -312,7 +312,7 @@ class UiSolarReturn extends Command
 
             $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $section = $simplified ? 'transit_natal_short' : 'transit_natal';
-            $block   = TextBlock::pick($key, $section, 1, 'en', $gender);
+            $block   = TextBlock::pickForProfile($key, $section, 'en', $gender, $profile->id);
             $text    = $block ? trim(strip_tags($block->text)) : null;
 
             if ($text) {
@@ -557,7 +557,7 @@ class UiSolarReturn extends Command
     /**
      * Show: Solar ASC in which natal house + dispositor in which natal house/sign.
      */
-    private function renderSolarAscAnalysis(SolarReturnDTO $dto, array $natalHouses, bool $simplified = false, ?string $gender = null): void
+    private function renderSolarAscAnalysis(SolarReturnDTO $dto, array $natalHouses, bool $simplified = false, ?string $gender = null, ?int $profileId = null): void
     {
         $this->put($this->divider());
         $this->put($this->row("  \u{25C6}  SOLAR ASC ANALYSIS"));
@@ -569,7 +569,7 @@ class UiSolarReturn extends Command
         $this->put($this->row("  Solar ASC {$ascGlyph} {$dto->solarAscSignName} \u{2192} natal H{$solarAscNatalHouse}"));
 
         $ascSection = $simplified ? 'solar_asc_house_short' : 'solar_asc_house';
-        $block = TextBlock::pick("solar_asc_natal_house_{$solarAscNatalHouse}", $ascSection, 1, 'en', $gender);
+        $block = TextBlock::pickForProfile("solar_asc_natal_house_{$solarAscNatalHouse}", $ascSection, 'en', $gender, $profileId);
         if ($block) {
             $this->put($this->row(''));
             foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {
@@ -599,7 +599,7 @@ class UiSolarReturn extends Command
             $this->put($this->row("  Dispositor {$rulerGlyph} {$rulerName} \u{2192} {$dSignGlyph} {$dispSolar->signName} \u{00B7} natal H{$dispNatalHouse}"));
 
             $dispSection = $simplified ? 'solar_dispositor_house_short' : 'solar_dispositor_house';
-            $block2 = TextBlock::pick("solar_dispositor_natal_house_{$dispNatalHouse}", $dispSection, 1, 'en', $gender);
+            $block2 = TextBlock::pickForProfile("solar_dispositor_natal_house_{$dispNatalHouse}", $dispSection, 'en', $gender, $profileId);
             if ($block2) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block2->text)), self::IW - 4) as $line) {
@@ -608,14 +608,14 @@ class UiSolarReturn extends Command
             }
         }
 
-        $this->renderSolarSingletonSection($dto->solarPlanets, $simplified, $gender);
+        $this->renderSolarSingletonSection($dto->solarPlanets, $simplified, $gender, $profileId);
 
         $this->put($this->row(''));
     }
 
     // ── Singleton / Missing element (solar planets) ───────────────────────
 
-    private function renderSolarSingletonSection(array $solarPlanets, bool $simplified = false, ?string $gender = null): void
+    private function renderSolarSingletonSection(array $solarPlanets, bool $simplified = false, ?string $gender = null, ?int $profileId = null): void
     {
         // Count solar planets per element — only bodies 0–9 (Sun–Pluto)
         $elements = ['fire' => [], 'earth' => [], 'air' => [], 'water' => []];
@@ -645,7 +645,7 @@ class UiSolarReturn extends Command
 
             $this->put($this->row(''));
             $this->put($this->row($header));
-            $block = TextBlock::pick($key, $section, 1, 'en', $gender);
+            $block = TextBlock::pickForProfile($key, $section, 'en', $gender, $profileId);
             if ($block) {
                 $this->put($this->row(''));
                 foreach ($this->wrap(trim(strip_tags($block->text)), self::IW - 4) as $line) {

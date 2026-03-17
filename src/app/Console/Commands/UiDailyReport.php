@@ -194,7 +194,7 @@ class UiDailyReport extends Command
             $chip    = $tGlyph . ' ' . $asp->transitName . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $nGlyph . ' natal ' . $asp->natalName;
             $key     = 'transit_' . strtolower($asp->transitName) . '_' . $asp->aspect . '_natal_' . strtolower($asp->natalName);
             $section = $simplified ? 'transit_natal_short' : 'transit_natal';
-            $block   = TextBlock::pick($key, $section, 1, 'en', $gender);
+            $block   = TextBlock::pickForProfile($key, $section, 'en', $gender, $profile->id);
             $text    = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -214,7 +214,7 @@ class UiDailyReport extends Command
                   . (self::SIGN_GLYPHS[$rx->signIndex] ?? '') . ' ' . $rx->signName;
 
             $rxKey = strtolower($rx->name) . '_rx_' . strtolower($rx->signName);
-            $block = TextBlock::pick($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 1, 'en', $gender);
+            $block = TextBlock::pickForProfile($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 'en', $gender, $profile->id);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -236,7 +236,7 @@ class UiDailyReport extends Command
 
             $chip  = $glyphA . ' ' . $asp->nameA . '  ' . $aspGlyph . ' ' . $aspWord . '  ' . $glyphB . ' ' . $asp->nameB;
             $key   = strtolower($asp->nameA) . '_' . $asp->aspect . '_' . strtolower($asp->nameB);
-            $block = TextBlock::pick($key, $simplified ? 'transit_short' : 'transit', 1, 'en', $gender);
+            $block = TextBlock::pickForProfile($key, $simplified ? 'transit_short' : 'transit', 'en', $gender, $profile->id);
             $text  = $block ? trim(strip_tags($block->text)) : null;
 
             $this->put($this->row(''));
@@ -272,7 +272,7 @@ class UiDailyReport extends Command
             . '  ·  Day ' . $dto->moon->lunarDay . ' / 30  ·  ' . $dto->moon->phaseName
         ));
         $lunarKey   = 'moon_in_' . strtolower($dto->moon->signName);
-        $lunarBlock = TextBlock::pick($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 1, 'en', $gender);
+        $lunarBlock = TextBlock::pickForProfile($lunarKey, $simplified ? 'lunar_day_short' : 'lunar_day', 'en', $gender, $profile->id);
         $lunarText  = $lunarBlock ? trim(strip_tags($lunarBlock->text)) : null;
         if ($lunarText) {
             foreach ($this->wrap($lunarText, self::IW - 4) as $line) {

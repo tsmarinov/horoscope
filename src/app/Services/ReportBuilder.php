@@ -16,7 +16,6 @@ class ReportBuilder
 {
     public function __construct(
         private readonly AspectCalculator $aspectCalculator,
-        private readonly VariantPicker    $variantPicker,
         private readonly ?AiProvider      $aiProvider,
     ) {}
 
@@ -76,7 +75,7 @@ class ReportBuilder
 
         foreach ($chart->aspects as $aspect) {
             $key   = $this->aspectKey($aspect);
-            $block = $this->pickTextBlock($key, $aspectSection, $subject, $chart, $language, $isSimplified);
+            $block = $this->pickTextBlock($key, $aspectSection, $subject, $language, $isSimplified);
 
             if ($block === null) {
                 continue;
@@ -97,7 +96,7 @@ class ReportBuilder
         // Planet Positions (ASC + Sun/Moon/Mercury/Venus/Mars in sign+house)
         foreach ($this->positionKeys($chart) as [$posKey, $posSection]) {
             $section = $isSimplified ? $posSection . '_short' : $posSection;
-            $block = $this->pickTextBlock($posKey, $section, $subject, $chart, $language, $isSimplified);
+            $block = $this->pickTextBlock($posKey, $section, $subject, $language, $isSimplified);
             if ($block === null) {
                 continue;
             }
@@ -114,7 +113,18 @@ class ReportBuilder
 
         // House Lords (pre-generated)
         $gender = TextBlock::resolveGender($subject->gender?->value ?? null);
-        foreach ($this->houseLordSections($chart, $isSimplified, $language, $gender) as $section) {
+        $subjectProfileId = $subject->exists ? $subject->id : null;
+        foreach ($this->houseLordSections($chart, $isSimplified, $language, $gender, $subjectProfileId) as $section) {
+            $sections[] = $section;
+        }
+
+        // House Lord Aspects
+        foreach ($this->houseLordAspectSections($chart, $isSimplified, $language, $gender, $subjectProfileId) as $section) {
+            $sections[] = $section;
+        }
+
+        // Angle Aspects (planet aspects to ASC / MC)
+        foreach ($this->angleAspectSections($chart, $isSimplified, $language, $gender, $subjectProfileId) as $section) {
             $sections[] = $section;
         }
 
@@ -162,6 +172,7 @@ class ReportBuilder
         - Paragraphs 1-4: 4-5 sentences each
         - Paragraph 5: 6-8 sentences — a synthesis that pulls the whole chart together, how the patterns interact, what kind of person emerges from all of this
         - Address the person directly as "you/your", never as "this person" or "the native"
+        - CRITICAL: Vary sentence openings aggressively. Combined, fewer than 20% of sentences may start with "You" or "Your". Never start two consecutive sentences with "You" or "Your". Open sentences with: the planet or sign name ("Saturn", "The Moon", "Mercury here"), a situation ("When someone pushes back", "At work", "In close relationships", "Under pressure"), a behaviour observation ("Most people around you", "What others see is", "The pattern is", "What shows up instead"), a framing device ("Behind that", "The real issue is", "What drives this", "Over time", "Privately", "The problem is", "In practice")
         - Reference specific planets, signs, and aspects from the data — name them explicitly
         - Describe what these placements produce in real behaviour and daily life — no abstract themes
         - Do NOT mention degrees, orb numbers, or technical astrology terms like "stellium", "mutual reception", "trine", "square" — translate everything into lived experience
@@ -235,23 +246,30 @@ class ReportBuilder
         **Chart Data:**
         {$chartSummary}
 
-        Write exactly 1 paragraph of 5 short sentences. Rules:
+        Write exactly 2 paragraphs, each with 5 short sentences (10 sentences total). Rules:
         - Each sentence max 12 words
-        - Address as "you/your" — but vary sentence structure so "you" doesn't start every sentence
+        - CRITICAL: Vary sentence openings — fewer than 20% of sentences may start with "You" or "Your". Never two consecutive sentences starting with "You" or "Your"
         - Reference specific placements from the data — translate into real behaviour, not astrology terms
         - No planet names, no sign names, no aspect names — describe what the person actually does
         - Plain everyday words. No jargon, no metaphors, no poetic language.
-        - Sentence 1: the most defining trait visible to others
-        - Sentence 2: the main inner tension or conflict
-        - Sentence 3: a specific behavioural pattern or blind spot
-        - Sentence 4: what most people misunderstand about you
-        - Sentence 5: what ties it all together — the core of who you are
+        - Paragraph 1 (sentences 1-5):
+          - Sentence 1: the most defining trait visible to others
+          - Sentence 2: the main inner tension or conflict
+          - Sentence 3: a specific behavioural pattern or blind spot
+          - Sentence 4: what most people misunderstand about you
+          - Sentence 5: what ties it all together — the core of who you are
+        - Paragraph 2 (sentences 6-10):
+          - Sentence 6: how you operate in close relationships
+          - Sentence 7: how you approach work or ambition
+          - Sentence 8: what triggers you emotionally
+          - Sentence 9: what most people never see about you
+          - Sentence 10: what makes you different from most people with similar traits
 
-        Return valid JSON with a single key: introduction (string with 1 <p> tag).
+        Return valid JSON with a single key: introduction (string with 2 <p> tags).
         Use <strong> for key qualities.
         PROMPT;
 
-        $response = $this->aiProvider->generate($prompt, $system, 500);
+        $response = $this->aiProvider->generate($prompt, $system, 1000);
         $data     = $this->parseJsonResponse($response->text);
 
         return new NatalReportDTO(
@@ -264,6 +282,156 @@ class ReportBuilder
             aiTokensOut:  $response->outputTokens,
             aiCostUsd:    $response->costUsd,
         );
+    }
+
+    /**
+     * Generate both AiL1 (full) and AiL1Haiku (short) portraits in a single AI call.
+     * Persists each as its own NatalReport row (so loadCached still works per mode).
+     * Returns ['full' => NatalReportDTO, 'short' => NatalReportDTO].
+     */
+    public function buildNatalReportBoth(HoroscopeSubject $subject, string $language = 'en'): array
+    {
+        $chart = $this->aspectCalculator->calculate($subject);
+
+        $cachedFull  = $subject->exists ? $this->findCached($subject, $chart, ReportMode::AiL1,      $language) : null;
+        $cachedShort = $subject->exists ? $this->findCached($subject, $chart, ReportMode::AiL1Haiku, $language) : null;
+
+        if ($cachedFull && $cachedShort) {
+            return [
+                'full'  => $this->hydrateFromModel($cachedFull,  $chart),
+                'short' => $this->hydrateFromModel($cachedShort, $chart),
+            ];
+        }
+
+        if ($this->aiProvider === null) {
+            return [
+                'full'  => $this->buildOrganic($subject, $chart, ReportMode::Organic,     $language),
+                'short' => $this->buildOrganic($subject, $chart, ReportMode::Simplified,  $language),
+            ];
+        }
+
+        $organicFull  = $this->buildOrganic($subject, $chart, ReportMode::Organic,    $language);
+        $organicShort = $this->buildOrganic($subject, $chart, ReportMode::Simplified, $language);
+
+        $chartSummary      = $this->chartSummary($chart);
+        $houseLordsSummary = $this->houseLordsSummary($chart);
+        $system            = $this->aiSystemPrompt($language);
+        $name              = $subject->name ?? 'you';
+
+        $prompt = <<<PROMPT
+        You are an astrologer writing a natal chart portrait for {$name}. Below is the exact chart data.
+
+        **Chart Data:**
+        {$chartSummary}
+
+        **House Lords (whole sign houses):**
+        {$houseLordsSummary}
+
+        Write two versions of the portrait plus the house lords section.
+
+        ---
+        **VERSION 1 — Full Portrait** (key: "introduction")
+        Write exactly 10 paragraphs. Rules:
+        - Paragraphs 1-9: 4-5 sentences each
+        - Paragraph 10: 6-8 sentences — extended synthesis pulling everything together
+        - Address the person directly as "you/your", never as "this person" or "the native"
+        - CRITICAL: Vary sentence openings aggressively. Combined, fewer than 20% of sentences may start with "You" or "Your". Never start two consecutive sentences with "You" or "Your". Open sentences with: the planet or sign name ("Saturn", "The Moon", "Mercury here"), a situation ("When someone pushes back", "At work", "In close relationships", "Under pressure"), a behaviour observation ("Most people around you", "What others see is", "The pattern is", "What shows up instead"), a framing device ("Behind that", "The real issue is", "What drives this", "Over time", "Privately", "The problem is", "In practice")
+        - Reference specific planets, signs, and aspects from the data — name them explicitly
+        - Describe what these placements produce in real behaviour and daily life — no abstract themes
+        - Do NOT mention degrees, orb numbers, or technical astrology terms like "stellium", "mutual reception", "trine", "square" — translate everything into lived experience
+        - Avoid generic phrases ("bridge-builder", "creative tension", "old soul", "rare gift", "profound depth")
+        - Write like a psychologist giving honest feedback after reviewing someone's profile — not an astrologer
+        - Short sentences. Plain words. Zero poetic language.
+        - Forbidden: metaphors, "fire", "waves", "dissolves", "tension", "standoff", "dance", "lifetime", "journey", "path", "depth", "pull", "force"
+        - Paragraph 1: the most striking planetary pattern and what it makes you actually do or feel
+        - Paragraph 2: the main inner conflict between two forces and how it shows up in your life
+        - Paragraph 3: a specific behavioural pattern or blind spot that follows from this chart
+        - Paragraph 4: something most people around you probably misunderstand about you
+        - Paragraph 5: how you operate in close relationships — what you need, what you give, where it gets complicated
+        - Paragraph 6: how you approach work, ambition and public life — what drives you and what holds you back
+        - Paragraph 7: your emotional world — how you process feelings, what triggers you, how you recover
+        - Paragraph 8: what motivates you at a deeper level — the fears and desires that most people never see
+        - Paragraph 9: how you grow or resist growth — what kinds of experiences change you and what you tend to avoid
+        - Paragraph 10: synthesis — how all of this adds up, what kind of person emerges, and what the chart suggests about your trajectory
+        REQUIRED HTML formatting — you MUST follow this exactly:
+        - Every paragraph MUST contain exactly 1-2 words or short phrases wrapped in <strong>...</strong> tags (key behavioral traits, e.g. <strong>overthinks decisions</strong>, <strong>avoids confrontation</strong>)
+        - Planet and sign names MUST be wrapped in <em>...</em> tags
+        - Do NOT skip <strong> tags in any paragraph
+
+        ---
+        **VERSION 2 — Short Portrait** (key: "introduction_short")
+        Write exactly 2 paragraphs, each with 5 short sentences (10 sentences total). Rules:
+        - Each sentence max 12 words
+        - CRITICAL: Vary sentence openings — fewer than 20% of sentences may start with "You" or "Your". Never two consecutive sentences starting with "You" or "Your"
+        - Reference specific placements from the data — translate into real behaviour, not astrology terms
+        - No planet names, no sign names, no aspect names — describe what the person actually does
+        - Plain everyday words. No jargon, no metaphors, no poetic language.
+        - Paragraph 1 (sentences 1-5):
+          - Sentence 1: the most defining trait visible to others
+          - Sentence 2: the main inner tension or conflict
+          - Sentence 3: a specific behavioural pattern or blind spot
+          - Sentence 4: what most people misunderstand about you
+          - Sentence 5: what ties it all together — the core of who you are
+        - Paragraph 2 (sentences 6-10):
+          - Sentence 6: how you operate in close relationships
+          - Sentence 7: how you approach work or ambition
+          - Sentence 8: what triggers you emotionally
+          - Sentence 9: what most people never see about you
+          - Sentence 10: what makes you different from most people with similar traits
+        Use <strong> for key qualities only.
+
+        ---
+        **HOUSE LORDS** (key: "house_lords")
+        For each house from 2nd through 12th:
+        - Name the house ruler (lord) and where it sits (sign + house) using the House Lords data above
+        - Describe in 3-4 sentences what this means in real daily behaviour
+        - Address as "you/your", plain words, no jargon, no metaphors
+        - Do NOT mention degrees or technical astrology terms
+
+        ---
+        Return valid JSON with exactly three keys:
+        - introduction: string with exactly 10 <p> tags (full portrait)
+        - introduction_short: string with exactly 2 <p> tags (short portrait)
+        - house_lords: array of exactly 11 objects, one per house (2nd through 12th), each with:
+            - house: integer (2 through 12)
+            - text: string of 3-4 sentences (plain text, no HTML tags)
+        PROMPT;
+
+        $response = $this->aiProvider->generate($prompt, $system, 12000);
+        $data     = $this->parseJsonResponse($response->text);
+
+        $houseLordsRaw  = $data['house_lords'] ?? null;
+        $houseLordsJson = is_array($houseLordsRaw) ? json_encode($houseLordsRaw) : $houseLordsRaw;
+
+        $dtoFull = new NatalReportDTO(
+            chart:        $chart,
+            sections:     $organicFull->sections,
+            mode:         ReportMode::AiL1,
+            language:     $language,
+            introduction: $data['introduction'] ?? null,
+            houseLords:   $houseLordsJson,
+            aiTokensIn:   $response->inputTokens,
+            aiTokensOut:  $response->outputTokens,
+            aiCostUsd:    $response->costUsd,
+        );
+
+        $dtoShort = new NatalReportDTO(
+            chart:        $chart,
+            sections:     $organicShort->sections,
+            mode:         ReportMode::AiL1Haiku,
+            language:     $language,
+            introduction: $data['introduction_short'] ?? null,
+            aiTokensIn:   $response->inputTokens,
+            aiTokensOut:  $response->outputTokens,
+            aiCostUsd:    $response->costUsd,
+        );
+
+        if ($subject->exists) {
+            if (!$cachedFull)  $this->persist($subject, $dtoFull);
+            if (!$cachedShort) $this->persist($subject, $dtoShort);
+        }
+
+        return ['full' => $dtoFull, 'short' => $dtoShort];
     }
 
     /**
@@ -381,32 +549,18 @@ class ReportBuilder
         string           $key,
         string           $section,
         HoroscopeSubject $subject,
-        NatalChart       $chart,
         string           $language,
         bool             $simplified,
     ): ?TextBlock {
-        $gender        = TextBlock::resolveGender($subject->gender?->value ?? null);
-        $totalVariants = TextBlock::forKey($key, $section, $language, $gender)->count();
+        $gender    = TextBlock::resolveGender($subject->gender?->value ?? null);
+        $profileId = $subject->exists ? $subject->id : null;
 
-        if ($totalVariants === 0) {
-            return null;
-        }
-
-        // Simplified mode always uses variant 1 — text is condensed and definitive,
-        // so rotation across variants makes no sense. One concise text per key is enough.
+        // Simplified mode always uses variant 1
         if ($simplified) {
             return TextBlock::pick($key, $section, 1, $language, $gender);
         }
 
-        $subjectId = $subject->exists ? $subject->id : 'guest';
-        $variant   = $this->variantPicker->pick(
-            (string) $subjectId,
-            $chart->calculated_at?->toDateString() ?? now()->toDateString(),
-            $key,
-            $totalVariants,
-        );
-
-        return TextBlock::pick($key, $section, $variant, $language, $gender);
+        return TextBlock::pickForProfile($key, $section, $language, $gender, $profileId);
     }
 
     private function aspectKey(array $aspect): string
@@ -527,7 +681,7 @@ class ReportBuilder
      * Load pre-generated house lord text blocks for houses 1-12.
      * Key format: house_{house}_cusp_{cusp_sign}_lord_in_{lord_sign}_house_{lord_house}
      */
-    private function houseLordSections(NatalChart $chart, bool $isSimplified, string $language, ?string $gender = null): array
+    private function houseLordSections(NatalChart $chart, bool $isSimplified, string $language, ?string $gender = null, ?int $profileId = null): array
     {
         if ($chart->ascendant === null) {
             return [];
@@ -563,7 +717,7 @@ class ReportBuilder
             }
 
             $key   = "house_{$house}_cusp_{$cuspSign}_lord_in_{$lordSign}_house_{$lordHouse}";
-            $block = TextBlock::pick($key, $section, 1, $language, $gender);
+            $block = TextBlock::pickForProfile($key, $section, $language, $gender, $profileId);
 
             if ($block === null) {
                 continue;
@@ -577,6 +731,136 @@ class ReportBuilder
                 tone:        $block->tone,
                 textBlockId: $block->id,
             );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Load pre-generated house lord aspect text blocks.
+     * Key format: house_{N}_lord_{planet}_{aspect}_{other_planet}
+     */
+    private function houseLordAspectSections(NatalChart $chart, bool $isSimplified, string $language, ?string $gender = null, ?int $profileId = null): array
+    {
+        if ($chart->ascendant === null) {
+            return [];
+        }
+
+        $ascSignIdx  = (int) floor($chart->ascendant / 30);
+        $section     = $isSimplified ? 'natal_house_lord_aspects_short' : 'natal_house_lord_aspects';
+        $result      = [];
+        $planetNames = [
+            0 => 'sun', 1 => 'moon', 2 => 'mercury', 3 => 'venus', 4 => 'mars',
+            5 => 'jupiter', 6 => 'saturn', 7 => 'uranus', 8 => 'neptune', 9 => 'pluto',
+        ];
+
+        for ($house = 1; $house <= 12; $house++) {
+            $cuspSignIdx = ($ascSignIdx + $house - 1) % 12;
+            $lordBodyId  = self::ASC_LORD_MAP[$cuspSignIdx] ?? null;
+
+            if ($lordBodyId === null) continue;
+
+            $lordName = $planetNames[$lordBodyId] ?? null;
+            if ($lordName === null) continue;
+
+            foreach ($chart->aspects as $asp) {
+                $bodyA  = (int) ($asp['body_a'] ?? -1);
+                $bodyB  = (int) ($asp['body_b'] ?? -1);
+                $aspect = $asp['aspect'] ?? '';
+
+                if ($bodyA === $lordBodyId) {
+                    $otherBodyId = $bodyB;
+                } elseif ($bodyB === $lordBodyId) {
+                    $otherBodyId = $bodyA;
+                } else {
+                    continue;
+                }
+
+                $otherName = $planetNames[$otherBodyId] ?? null;
+                if ($otherName === null) continue;
+
+                $key   = "house_{$house}_lord_{$lordName}_{$aspect}_{$otherName}";
+                $block = TextBlock::pickForProfile($key, $section, $language, $gender, $profileId);
+
+                if ($block === null) continue;
+
+                $result[] = new NatalReportSectionDTO(
+                    key:         $key,
+                    section:     $section,
+                    title:       $this->humanTitle($key),
+                    text:        $block->text,
+                    tone:        $block->tone,
+                    textBlockId: $block->id,
+                );
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Load pre-generated angle aspect text blocks (planet aspects to ASC / MC).
+     * Key format: {planet}_{aspect}_{angle}   e.g. sun_conjunction_asc
+     */
+    private function angleAspectSections(NatalChart $chart, bool $isSimplified, string $language, ?string $gender = null, ?int $profileId = null): array
+    {
+        if ($chart->ascendant === null) {
+            return [];
+        }
+
+        $angles = array_filter([
+            'asc' => (float) $chart->ascendant,
+            'mc'  => $chart->mc !== null ? (float) $chart->mc : null,
+        ]);
+
+        $aspectConfig = config('astrology.aspects', []);
+        $orb          = 5.0;
+        $section      = $isSimplified ? 'natal_angles_short' : 'natal_angles';
+        $planetNames  = [
+            0 => 'sun', 1 => 'moon', 2 => 'mercury', 3 => 'venus', 4 => 'mars',
+            5 => 'jupiter', 6 => 'saturn', 7 => 'uranus', 8 => 'neptune', 9 => 'pluto',
+        ];
+        $result = [];
+
+        foreach ($chart->planets as $planet) {
+            $bodyId     = (int) ($planet['body'] ?? -1);
+            $planetName = $planetNames[$bodyId] ?? null;
+            if ($planetName === null) continue;
+
+            $lon = (float) ($planet['longitude'] ?? 0);
+
+            foreach ($angles as $angleName => $angleLon) {
+                $diff = abs($lon - $angleLon);
+                if ($diff > 180) $diff = 360 - $diff;
+
+                $bestAspect = null;
+                $bestOrb    = PHP_FLOAT_MAX;
+
+                foreach ($aspectConfig as $aspName => $def) {
+                    $deviation = abs($diff - $def['angle']);
+                    if ($deviation <= $orb && $deviation < $bestOrb) {
+                        $bestOrb    = $deviation;
+                        $bestAspect = $aspName;
+                    }
+                }
+
+                if ($bestAspect === null) continue;
+
+                $key   = "{$planetName}_{$bestAspect}_{$angleName}";
+                $block = TextBlock::pickForProfile($key, $section, $language, $gender, $profileId)
+                      ?? TextBlock::pickForProfile($key, $section, $language, null, $profileId);
+
+                if ($block === null) continue;
+
+                $result[] = new NatalReportSectionDTO(
+                    key:         $key,
+                    section:     $section,
+                    title:       $this->humanTitle($key),
+                    text:        $block->text,
+                    tone:        $block->tone,
+                    textBlockId: $block->id,
+                );
+            }
         }
 
         return $result;

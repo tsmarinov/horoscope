@@ -190,9 +190,6 @@
                 <a href="{{ url('/synastry') }}" class="drawer-item @yield('nav_synastry')">
                     <span class="di-icon">♾</span> Synastry
                 </a>
-                <a href="{{ url('/transits') }}" class="drawer-item @yield('nav_transits')">
-                    <span class="di-icon">⟳</span> Transits
-                </a>
 
                 {{-- Tools --}}
                 <div class="drawer-section">Tools</div>

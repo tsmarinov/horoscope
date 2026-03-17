@@ -13,7 +13,8 @@
     $aspectGlyphs = [
         'conjunction'  => '☌', 'opposition'   => '☍', 'trine'       => '△',
         'square'       => '□', 'sextile'      => '⚹', 'quincunx'    => '⚻',
-        'semisextile'  => '⚺', 'semisquare'   => '∠', 'sesquiquadrate' => '⊼',
+        'semi_sextile'     => '⚺', 'semisquare'      => '∠', 'sesquiquadrate' => '⊼',
+        'mutual_reception' => '⇌',
     ];
     $planets = $chart->planets ?? [];
     $aspects = $chart->aspects ?? [];
@@ -111,12 +112,15 @@
 
     {{-- Header --}}
     <div style="padding:0 1rem 1rem">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-            <div>
-                <h1 class="font-display" style="font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--theme-text);margin-bottom:0.3rem">
-                    {{ $profile->name }}
-                </h1>
-                <div style="font-size:0.82rem;color:var(--theme-muted);display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+        <div style="position:relative;text-align:center">
+            <a href="{{ route('stellar-profiles.index', ['edit' => $profile->id]) }}"
+               style="position:absolute;top:0;right:0;font-size:0.78rem;color:var(--theme-muted);text-decoration:none;white-space:nowrap">
+                ← Edit Profile
+            </a>
+            <h1 class="font-display" style="font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--theme-text);margin-bottom:0.3rem;font-weight:600">
+                {{ $profile->name }}
+            </h1>
+            <div style="font-size:0.82rem;color:var(--theme-muted);display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;justify-content:center;margin-bottom:0.4rem">
                     @if($sign)<span>{{ $sign['glyph'] }} {{ $sign['name'] }}</span><span>·</span>@endif
                     <span>{{ $profile->birth_date?->format('M j, Y') }}</span>
                     @if($age !== null)<span>· {{ $age }} y.o.</span>@endif
@@ -131,12 +135,12 @@
                         @endphp
                         <span>· ASC {{ $signGlyphs[$ascSign] }} {{ $signNames[$ascSign] }} {{ $ascDeg }}°{{ str_pad($ascMin, 2, '0', STR_PAD_LEFT) }}'</span>
                     @endif
-                </div>
             </div>
-            <a href="{{ route('stellar-profiles.index', ['edit' => $profile->id]) }}"
-               style="font-size:0.78rem;color:var(--theme-muted);text-decoration:none;white-space:nowrap;margin-top:0.2rem">
-                ← Edit Profile
-            </a>
+            <div style="text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:0.5rem">
+                <a href="{{ route('natal.pdf', $profile) }}"
+                   style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
+                   title="Download as PDF"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+            </div>
         </div>
     </div>
 
@@ -230,7 +234,7 @@
     {{-- Aspects --}}
     @if(count($aspects))
     <div class="card" style="margin-top:0.75rem">
-        <div class="section-label" style="margin-bottom:0.75rem">Aspects</div>
+        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_aspects') }}</div>
         <div style="display:flex;flex-direction:column;gap:0.3rem">
             @foreach($aspects as $asp)
             @php
@@ -240,6 +244,7 @@
                 $type = $asp['aspect'] ?? '';
                 $glyph = $aspectGlyphs[$type] ?? '∗';
             @endphp
+            @continue($type === 'mutual_reception')
             <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem">
                 <span style="color:#6a329f;font-size:1rem;width:1.1rem;text-align:center">{{ $bodyGlyphs[$a] ?? '?' }}</span>
                 <span style="color:var(--theme-muted)">{{ $bodyNames[$a] ?? $a }}</span>
@@ -259,19 +264,56 @@
     </div>
     @endif
 
-    {{-- Premium button --}}
-    <div style="margin-top:0.75rem">
-        @include('partials.premium-button', ['context' => 'natal'])
+    {{-- Premium button + Short Version toggle + short PDF --}}
+    <div style="margin-top:0.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+        @include('partials.premium-button', ['context' => 'natal', 'generated' => ($portraitFull !== null && $portraitShort !== null)])
+
+        {{-- Toggle pill --}}
+        <label style="display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.82rem;color:var(--theme-muted);user-select:none">
+            <span style="position:relative;display:inline-block;width:36px;height:20px">
+                <input id="short-ver-chk" type="checkbox" onchange="stelToggleAi(this.checked)"
+                       style="opacity:0;width:0;height:0;position:absolute">
+                <span id="short-ver-track"
+                      style="position:absolute;inset:0;border-radius:20px;background:#a09ab8;transition:background 0.2s"></span>
+                <span id="short-ver-thumb"
+                      style="position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform 0.2s"></span>
+            </span>
+            Short Version
+        </label>
+
+        {{-- PDF for current version --}}
+        <a id="short-pdf-btn"
+           href="{{ route('natal.pdf', $profile) }}"
+           style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
+           title="Download PDF (current version)"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
     </div>
 
+    {{-- Portrait section --}}
+    @if($portraitFull !== null || $portraitShort !== null)
+    <div class="card" id="portrait-card" style="margin-top:0.75rem;padding:0.75rem 1rem;background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25){{ $portraitFull === null ? ';display:none' : '' }}">
+        <div id="portrait-full" style="font-size:0.9rem;line-height:1.65{{ $portraitFull === null ? ';display:none' : '' }}">
+            {!! $portraitFull ?? '' !!}
+        </div>
+        <div id="portrait-short" style="font-size:0.9rem;line-height:1.65;display:none">
+            {!! $portraitShort ?? '' !!}
+        </div>
+    </div>
+    @else
+    <div id="portrait-placeholder" class="card" style="margin-top:0.75rem;padding:0.75rem 1rem;display:none">
+        <div id="portrait-full" style="display:none"></div>
+        <div id="portrait-short" style="display:none"></div>
+    </div>
+    @endif
+
     {{-- Singleton / Missing Element --}}
-    @if(count($singletons))
     @php
         $elementEmoji = ['Fire'=>'🔥','Earth'=>'🌿','Air'=>'💨','Water'=>'💧'];
     @endphp
-    <div class="card" style="margin-top:0.75rem;padding:0.75rem 1rem">
+    @foreach([['full', $singletons], ['short', $singletonsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
         <div class="section-label" style="margin-bottom:0.75rem">Element Pattern</div>
-        @foreach($singletons as $s)
+        @foreach($items as $s)
         <div style="margin-bottom:{{ !$loop->last ? '1.25rem' : '0' }}">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
                 <span style="font-size:1rem">{{ $elementEmoji[$s['element']] ?? '' }}</span>
@@ -292,13 +334,15 @@
         @endforeach
     </div>
     @endif
+    @endforeach
 
     {{-- House Lords --}}
-    @if(count($houseLords))
-    <div class="card" style="margin-top:0.75rem;padding:0.75rem 1rem">
-        <div class="section-label" style="margin-bottom:0.75rem">House Lords</div>
+    @foreach([['full', $houseLords], ['short', $houseLordsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
+        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_house_lords') }}</div>
         <div style="display:flex;flex-direction:column;gap:1.25rem">
-            @foreach($houseLords as $hl)
+            @foreach($items as $hl)
             <div>
                 <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">{{ $hl['label'] }}</div>
                 <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $hl['text'] }}</p>
@@ -307,6 +351,75 @@
         </div>
     </div>
     @endif
+    @endforeach
+
+    {{-- House Lord Aspects --}}
+    @foreach([['full', $houseLordAspects], ['short', $houseLordAspectsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
+        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_house_lord_aspects') }}</div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem">
+            @foreach($items as $item)
+            <div>
+                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.2rem">{{ $item['label'] }}</div>
+                <div style="font-size:0.75rem;color:var(--theme-muted);margin-bottom:0.3rem">{{ $item['lord'] }} · {{ ucfirst(str_replace('_', '-', $item['aspect'])) }} · {{ $item['other'] }}</div>
+                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+    @endforeach
+
+    {{-- Angle Aspects (ASC / MC) --}}
+    @foreach([['full', $angleAspectTexts], ['short', $angleAspectTextsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
+        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_angle_aspects') }}</div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem">
+            @foreach($items as $item)
+            @php
+                $aspLabel = ucfirst(str_replace('_', '-', $item['aspect']));
+                $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
+            @endphp
+            <div>
+                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">
+                    {{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}
+                </div>
+                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+    @endforeach
+
+    {{-- Natal Aspects --}}
+    @foreach([['full', $aspectTexts], ['short', $aspectTextsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
+        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_aspects') }}</div>
+        <div style="display:flex;flex-direction:column;gap:1.25rem">
+            @foreach($items as $item)
+            @php
+                $aspLabel = __('ui.aspects.' . $item['aspect'], [], 'en') ?: ucwords(str_replace('_', ' ', $item['aspect']));
+                $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
+                $nameA    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyA']] ?? '';
+                $nameB    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyB']] ?? '';
+            @endphp
+            <div>
+                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">
+                    {{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}
+                </div>
+                @if($item['text'])
+                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+    @endforeach
 
     {{-- Forecast links --}}
     <div class="card" style="margin-top:0.75rem;padding:0.75rem 1rem">
@@ -318,7 +431,7 @@
                 ['🌙 Monthly forecast', '/horoscope/monthly'],
                 ['✦ Solar Return',      '/horoscope/solar'],
                 ['🌑 Lunar calendar',   '/lunar'],
-                ['⟳ Transits',          '/transits'],
+
             ] as [$label, $href])
             <a href="{{ url($href) }}"
                style="font-size:0.85rem;color:var(--theme-muted);text-decoration:none;padding:0.3rem 0;display:flex;align-items:center;gap:0.5rem"
@@ -525,7 +638,7 @@
         square:         { color:'#c02020', w:'0.8', op:'0.75' },
         sextile:        { color:'#2060c0', w:'0.7', op:'0.75' },
         quincunx:       { color:'#208040', w:'0.6', op:'0.60' },
-        semisextile:    { color:'#2060c0', w:'0.5', op:'0.40' },
+        semi_sextile:   { color:'#2060c0', w:'0.5', op:'0.40' },
         semisquare:     { color:'#c02020', w:'0.5', op:'0.45' },
         sesquiquadrate: { color:'#c02020', w:'0.5', op:'0.45' },
     };
@@ -567,6 +680,10 @@
         } else if (type === 'quincunx') {
             mk('line', {x1:(mx-s*0.5).toFixed(1), y1:(my+s*0.5).toFixed(1), x2:mx, y2:(my-s*0.5).toFixed(1), stroke:color, 'stroke-width':'0.9', 'pointer-events':'none'});
             mk('line', {x1:(mx+s*0.5).toFixed(1), y1:(my+s*0.5).toFixed(1), x2:mx, y2:(my-s*0.5).toFixed(1), stroke:color, 'stroke-width':'0.9', 'pointer-events':'none'});
+        } else if (type === 'semi_sextile') {
+            const t = mk('text', {x:mx, y:(my+s*0.4).toFixed(1), 'text-anchor':'middle', 'dominant-baseline':'middle',
+                fill:color, 'font-size':'7', 'pointer-events':'none'});
+            t.textContent = '⚺';
         }
     }
 
@@ -767,4 +884,132 @@
     });
 })();
 </script>
+<script>
+// ── Short Version toggle ─────────────────────────────────────────────
+(function () {
+    var LS_KEY   = 'stellar_short_ver';
+    var pdfBase  = '{{ route('natal.pdf', $profile) }}';
+    var chk      = document.getElementById('short-ver-chk');
+    var track    = document.getElementById('short-ver-track');
+    var thumb    = document.getElementById('short-ver-thumb');
+    var shortPdf = document.getElementById('short-pdf-btn');
+
+    function applyState(short) {
+        document.querySelectorAll('[data-ver="full"]').forEach(function(el) {
+            el.style.display = short ? 'none' : '';
+        });
+        document.querySelectorAll('[data-ver="short"]').forEach(function(el) {
+            el.style.display = short ? '' : 'none';
+        });
+        if (chk)   chk.checked = short;
+        if (track) track.style.background = short ? '#6a329f' : '#a09ab8';
+        if (thumb) thumb.style.transform  = short ? 'translateX(16px)' : '';
+        if (shortPdf) shortPdf.href = short ? pdfBase + '?short=1' : pdfBase;
+        var pFull  = document.getElementById('portrait-full');
+        var pShort = document.getElementById('portrait-short');
+        var pCard  = document.getElementById('portrait-card');
+        var hasFull  = pFull  && pFull.innerHTML.trim();
+        var hasShort = pShort && pShort.innerHTML.trim();
+        if (pFull)  pFull.style.display  = (!short && hasFull) ? '' : 'none';
+        if (pShort) pShort.style.display = (short && hasShort) ? '' : 'none';
+        if (pCard)  pCard.style.display  = ((!short && hasFull) || (short && hasShort)) ? '' : 'none';
+    }
+
+    applyState(localStorage.getItem(LS_KEY) === '1');
+
+    window.stelToggleAi = function (val) {
+        var next = (val !== undefined) ? val : (localStorage.getItem(LS_KEY) !== '1');
+        localStorage.setItem(LS_KEY, next ? '1' : '0');
+        applyState(next);
+    };
+})();
+</script>
+<script>
+window.addEventListener('premium-confirmed', function(e) {
+    if (!e.detail || e.detail.context !== 'natal') return;
+
+    // Show loading overlay
+    var overlay = document.getElementById('portrait-loading-overlay');
+    if (overlay) overlay.style.display = 'flex';
+
+    var placeholder = document.getElementById('portrait-placeholder');
+    var csrf = document.querySelector('meta[name=csrf-token]');
+
+    fetch('{{ route('natal.portrait', $profile) }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrf ? csrf.content : '',
+            'Accept': 'application/json',
+        },
+    })
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+        if (data.queued) {
+            // Job dispatched — keep overlay, auto-refresh every 5s until portrait is ready
+            setTimeout(function() { window.location.reload(); }, 5000);
+            return;
+        }
+    })
+    .catch(function(err) {
+        console.error('portrait error', err);
+        if (overlay) overlay.style.display = 'none';
+    });
+});
+</script>
 @endpush
+
+@if($generating ?? false)
+<script>
+// Portrait generation in progress — show overlay and auto-refresh every 5s
+document.addEventListener('DOMContentLoaded', function() {
+    var overlay = document.getElementById('portrait-loading-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    setTimeout(function() { window.location.reload(); }, 5000);
+});
+</script>
+@endif
+
+{{-- Portrait generation loading overlay --}}
+<div id="portrait-loading-overlay"
+     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);
+            align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+    <div style="width:48px;height:48px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;
+                border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    <p style="color:#fff;font-size:0.95rem;margin:0;letter-spacing:0.02em">Generating your portrait…</p>
+</div>
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+#portrait-full p, #portrait-short p { margin:0 0 1.1em; }
+#portrait-full p:last-child, #portrait-short p:last-child { margin-bottom:0; }
+/* Lead paragraph */
+#portrait-full p:first-child, #portrait-short p:first-child {
+    font-size:0.95rem;line-height:1.7;
+}
+/* Ensure bold/italic render inside portrait */
+#portrait-full strong, #portrait-short strong,
+#portrait-full b, #portrait-short b { font-weight:700; }
+#portrait-full em, #portrait-short em,
+#portrait-full i, #portrait-short i { font-style:italic; }
+/* Mid-section divider after 5th paragraph (full version only) */
+#portrait-full p:nth-child(5) {
+    padding-bottom:1.1em;
+    border-bottom:1px solid rgba(212,175,55,0.35);
+    margin-bottom:1.1em;
+}
+</style>
+
+{{-- Scroll-to-top button --}}
+<button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+        title="Back to top"
+        style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+               width:2.4rem;height:2.4rem;border-radius:50%;border:none;cursor:pointer;
+               background:var(--theme-accent,#6a329f);color:#fff;font-size:1.1rem;
+               box-shadow:0 2px 8px rgba(0,0,0,0.25);align-items:center;justify-content:center">↑</button>
+<script>
+(function(){
+    var btn = document.getElementById('stt');
+    window.addEventListener('scroll', function(){
+        btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+    }, {passive: true});
+})();
+</script>

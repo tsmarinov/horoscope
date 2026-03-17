@@ -94,6 +94,7 @@ class HoroscopeSynthesisService
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
+            . "- CRITICAL: Vary sentence openings — combined, fewer than 20% may start with \"You\" or \"Your\". Never two consecutive sentences starting with \"You\" or \"Your\". Use: planet names, situation openers (\"When\", \"At work\", \"In relationships\", \"Under pressure\"), observations (\"Most people\", \"What others see is\", \"The pattern is\"), framing devices (\"Behind that\", \"The real issue is\", \"Over time\", \"Privately\", \"The problem is\", \"In practice\")\n"
             . "{$paragraphRule}\n"
             . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
             . ($simplified ? "- Cut all filler: no \"The good news is\", \"This is a day for\", \"At the same time\", \"which means\", \"so if you\" — every sentence states a fact or concrete action\n" : '')
@@ -207,6 +208,7 @@ class HoroscopeSynthesisService
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
+            . "- CRITICAL: Vary sentence openings — combined, fewer than 20% may start with \"You\" or \"Your\". Never two consecutive sentences starting with \"You\" or \"Your\". Use: planet names, situation openers (\"When\", \"At work\", \"In relationships\", \"Under pressure\"), observations (\"Most people\", \"What others see is\", \"The pattern is\"), framing devices (\"Behind that\", \"The real issue is\", \"Over time\", \"Privately\", \"The problem is\", \"In practice\")\n"
             . "{$paragraphRule}\n"
             . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
             . ($simplified ? "- Cut all filler: no \"The good news is\", \"This week is about\", \"At the same time\" — every sentence states a fact or concrete action\n" : '')
@@ -320,6 +322,7 @@ class HoroscopeSynthesisService
             . "Style rules:\n"
             . "- Write like a psychologist giving honest feedback — not an astrologer\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
+            . "- CRITICAL: Vary sentence openings — combined, fewer than 20% may start with \"You\" or \"Your\". Never two consecutive sentences starting with \"You\" or \"Your\". Use: planet names, situation openers (\"When\", \"At work\", \"In relationships\", \"Under pressure\"), observations (\"Most people\", \"What others see is\", \"The pattern is\"), framing devices (\"Behind that\", \"The real issue is\", \"Over time\", \"Privately\", \"The problem is\", \"In practice\")\n"
             . "{$paragraphRule}\n"
             . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
             . ($simplified ? "- Cut all filler — every sentence states a fact or concrete action\n" : '')
@@ -516,6 +519,7 @@ class HoroscopeSynthesisService
             . "Style rules:\n"
             . "- Write like a psychologist giving honest, grounded feedback — not an astrologer reciting placements\n"
             . "- Address the person as \"you\" (gender-neutral, no he/she)\n"
+            . "- CRITICAL: Vary sentence openings — combined, fewer than 20% may start with \"You\" or \"Your\". Never two consecutive sentences starting with \"You\" or \"Your\". Use: planet names, situation openers (\"When\", \"At work\", \"In relationships\", \"Under pressure\"), observations (\"Most people\", \"What others see is\", \"The pattern is\"), framing devices (\"Behind that\", \"The real issue is\", \"Over time\", \"Privately\", \"The problem is\", \"In practice\")\n"
             . "{$paragraphRule}\n"
             . "- Short, simple sentences — one idea per sentence, no dashes, no semicolons\n"
             . "- Plain everyday words only — no spiritual or psychological jargon\n"

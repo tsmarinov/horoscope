@@ -62,12 +62,7 @@ return [
                 'desc'  => 'Each day of the week is ruled by a planet — and that rulership shapes the energy available. See today\'s ruling planet, its colour, gem, and number, plus what kinds of actions, decisions, and intentions align best with the day\'s current.',
                 'cta'   => 'See today\'s day',
             ],
-            'transits' => [
-                'title' => 'Transits',
-                'glyph' => '⟳',
-                'desc'  => 'A live overlay of current planetary positions onto your natal chart. See every active aspect in real time — which planets are forming conjunctions, trines, squares, and oppositions to your natal points right now.',
-                'cta'   => 'View transits',
-            ],
+
             'planets' => [
                 'title' => 'Planet Positions',
                 'glyph' => '🪐',
@@ -109,6 +104,17 @@ return [
     ],
 
     'natal' => [
+        'page_title'                 => 'Natal Chart',
+        'section_planets'            => 'Planets',
+        'section_houses'             => 'Houses (Placidus)',
+        'section_aspects_table'      => 'Aspects',
+        'section_element_pattern'    => 'Element Pattern',
+        'section_house_lords'        => 'House Lords',
+        'section_house_lord_aspects' => 'House Lord Aspects',
+        'section_angle_aspects'      => 'Aspects to Angles',
+        'section_aspects'            => 'Natal Aspects',
+        'singleton_label'            => 'Singleton',
+        'missing_element_label'      => 'Missing element',
         'footer_links' => [
             '→ Daily forecast',
             '→ Weekly forecast',

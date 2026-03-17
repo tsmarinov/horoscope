@@ -36,6 +36,21 @@ services:
     depends_on:
       - horo_php
 
+  horo_queue:
+    image: php:8.2-fpm
+    container_name: horo_queue
+    restart: unless-stopped
+    depends_on:
+      - horo_redis
+      - horo_mysql
+    build:
+      context: ./php
+    volumes:
+      - ./src:/var/www/html
+    command: php artisan queue:work --tries=1 --timeout=300
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   horo_mysql:
     image: mysql:8.3
     container_name: horo_mysql

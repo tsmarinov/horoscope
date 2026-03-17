@@ -153,7 +153,7 @@ class UiPlanetPositions extends Command
 
                 // Load text from transit section
                 $key   = strtolower($nameA) . '_' . $asp['aspect'] . '_' . strtolower($nameB);
-                $block = TextBlock::pick($key, 'transit', 1);
+                $block = TextBlock::pickForProfile($key, 'transit', 'en', null, null);
                 $text  = $block ? trim(strip_tags($block->text)) : null;
 
                 if ($text) {
@@ -188,7 +188,7 @@ class UiPlanetPositions extends Command
             $nameA = PlanetaryPosition::BODY_NAMES[$asp['body_a']] ?? '';
             $nameB = PlanetaryPosition::BODY_NAMES[$asp['body_b']] ?? '';
             $key   = strtolower($nameA) . '_' . $asp['aspect'] . '_' . strtolower($nameB);
-            $block = TextBlock::pick($key, 'transit', 1);
+            $block = TextBlock::pickForProfile($key, 'transit', 'en', null, null);
             if ($block) {
                 // Take first sentence only for the day note
                 $text = trim(strip_tags($block->text));

@@ -1,7 +1,7 @@
 FROM php:8.2-fpm-bookworm
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -qq && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -22,6 +22,12 @@ RUN apt-get update && apt-get install -y \
     procps \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install pdo_mysql zip gd bcmath pcntl exif intl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install wkhtmltopdf with patched Qt (for PDF generation with JS support)
+RUN curl -sL https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb -o /tmp/wkhtmltox.deb \
+    && apt-get install -y /tmp/wkhtmltox.deb \
+    && rm /tmp/wkhtmltox.deb \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer

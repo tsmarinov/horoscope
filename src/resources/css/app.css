@@ -1,5 +1,5 @@
 /* ── Fonts (must precede @import 'tailwindcss') ─────────────────────────── */
-@import url('https://fonts.bunny.net/css?family=cinzel:400,600,700|inter:400,500,600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cinzel:400,600,700|inter:400,500,600,700&display=swap');
 
 @import 'tailwindcss';
 
