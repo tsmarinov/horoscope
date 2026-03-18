@@ -115,12 +115,16 @@ return [
         'section_aspects'            => 'Natal Aspects',
         'singleton_label'            => 'Singleton',
         'missing_element_label'      => 'Missing element',
-        'footer_links' => [
-            '→ Daily forecast',
-            '→ Weekly forecast',
-            '→ Monthly forecast',
-            '→ Yearly forecast',
-            '→ Lunar calendar',
+        'preparing_pdf'              => 'Preparing PDF…',
+        'generating_portrait'        => 'Generating your portrait…',
+        'download_pdf'               => 'Download as PDF',
+        'forecasts_title'            => 'Forecasts',
+        'back_to_profiles'           => '← Stellar Profiles',
+        'forecast_links' => [
+            'daily'   => '☀ Daily forecast',
+            'weekly'  => '📅 Weekly forecast',
+            'monthly' => '🌙 Monthly forecast',
+            'solar'   => '✦ Solar Return',
         ],
     ],
 
@@ -218,6 +222,10 @@ return [
         ],
     ],
 
+    'stellar_profiles' => [
+        'birth_data_warn' => '⚠ Changing birth date, time, or city will delete the saved natal chart and all generated content for this profile.',
+    ],
+
     'retrograde' => [
         'title'          => 'Retrograde Calendar',
         'subtitle'       => 'Universal · no birth data required',
@@ -244,9 +252,9 @@ return [
             'pluto'   => 'Transformation · Power · Rebirth',
         ],
         'premium' => [
-            'button_show'              => '✦ Show premium content',
-            'button_locked'            => '🔒 Premium content',
-            'dialog_title'             => '✦ Premium content',
+            'button_show'              => '✦ Personal Portrait',
+            'button_locked'            => '🔒 Personal Portrait',
+            'dialog_title'             => '✦ Personal Portrait',
             'dialog_body'              => 'Would you like to generate personalised content for this section?',
             'dialog_remaining_prefix'  => 'You have',
             'dialog_remaining_of'      => 'of',

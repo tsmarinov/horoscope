@@ -14,17 +14,48 @@ class StellarProfileController extends Controller
     {
         $q = trim($request->query('q', ''));
 
+        // If ?edit=uuid is present without ?page, redirect to the correct page
+        if (($editUuid = $request->query('edit')) && !$request->query('page')) {
+            $editProfile = Profile::where('user_id', auth()->id())
+                                  ->where('uuid', $editUuid)
+                                  ->first();
+            if ($editProfile) {
+                $position = Profile::where('user_id', auth()->id())
+                    ->where(function ($q2) use ($editProfile) {
+                        $q2->where('first_name', '<', $editProfile->first_name)
+                           ->orWhere(function ($q3) use ($editProfile) {
+                               $q3->where('first_name', $editProfile->first_name)
+                                  ->where('last_name', '<', ($editProfile->last_name ?? ''));
+                           });
+                    })
+                    ->count();
+                $perPage = config('horo.stellar_profiles_per_page');
+                $page    = (int) floor($position / $perPage) + 1;
+                if ($page > 1) {
+                    return redirect()->route('stellar-profiles.index',
+                        array_filter(['q' => $q, 'page' => $page, 'edit' => $editUuid]));
+                }
+            }
+        }
+
         $profiles = Profile::where('user_id', auth()->id())
             ->with('birthCity')
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
                 $query->where('first_name', 'like', "%{$q}%")
-                      ->orWhere('last_name',  'like', "%{$q}%");
+                      ->orWhere('last_name',  'like', "%{$q}%")
+                      ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$q}%"]);
             }))
-            ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
+            ->orderBy('first_name')->orderBy('last_name')
+            ->paginate(config('horo.stellar_profiles_per_page'))
+            ->appends(['q' => $q]);
 
-        return view('stellar-profiles.index', compact('profiles', 'q'));
+        $allNames = Profile::where('user_id', auth()->id())
+            ->orderBy('first_name')->orderBy('last_name')
+            ->get(['first_name', 'last_name'])
+            ->map(fn ($p) => trim($p->first_name . ' ' . $p->last_name))
+            ->values();
+
+        return view('stellar-profiles.index', compact('profiles', 'q', 'allNames'));
     }
 
     public function store(Request $request)
@@ -36,16 +67,28 @@ class StellarProfileController extends Controller
         $profile->loadMissing('birthCity');
         AspectCalculator::calculate($profile);
 
-        return back()->with('status', 'profile_created');
+        return redirect()->route('stellar-profiles.index')->with('status', 'profile_created');
     }
 
     public function update(Request $request, Profile $stellarProfile)
     {
         abort_if($stellarProfile->user_id !== auth()->id(), 403);
 
-        // Delete old chart so AspectCalculator recalculates with new birth data
-        $stellarProfile->natalChart()->delete();
-        $stellarProfile->update($this->validated($request));
+        $data = $this->validated($request);
+
+        // Only invalidate generated content when birth data changes
+        $birthChanged = $stellarProfile->birth_date?->format('Y-m-d') !== ($data['birth_date'] ?? null)
+                     || $stellarProfile->birth_time                    !== ($data['birth_time'] ?? null)
+                     || (string) $stellarProfile->birth_city_id        !== (string) ($data['birth_city_id'] ?? null);
+
+        if ($birthChanged) {
+            $stellarProfile->natalChart()->delete();
+            \App\Models\NatalReport::where('profile_id', $stellarProfile->id)->delete();
+            // TODO: when horoscope reports (daily/weekly/monthly/solar/synastry) are implemented,
+            // delete their cached AI content here too. premium_usage counter is NOT reset.
+        }
+
+        $stellarProfile->update($data);
         $stellarProfile->loadMissing('birthCity');
         AspectCalculator::calculate($stellarProfile);
 

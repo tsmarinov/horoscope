@@ -125,13 +125,42 @@ class NatalController extends Controller
         Cache::put($cacheKey, true, 300);
         GenerateNatalPortrait::dispatch($profile);
 
+        $user = auth()->user();
+        \App\Models\UserHoroscopeLog::create([
+            'user_id'              => $user->id,
+            'user_uuid'            => $user->uuid ?? null,
+            'user_email'           => $user->email,
+            'profile_uuid'         => $profile->uuid,
+            'profile_snapshot'     => \App\Models\UserHoroscopeLog::snapshotProfile($profile),
+            'type'                 => 'natal_portrait',
+            'premium_content'      => true,
+            'premium_requested_at' => now(),
+        ]);
+
         return response()->json(['queued' => true]);
+    }
+
+    public function portraitStatus(Profile $profile): \Illuminate\Http\JsonResponse
+    {
+        abort_if($profile->user_id !== auth()->id(), 403);
+
+        $generating    = Cache::has("natal_portrait_generating_{$profile->id}");
+        $builder       = app(ReportBuilder::class);
+        $portraitFull  = $builder->loadCached($profile, ReportMode::AiL1,      'en')?->introduction;
+        $portraitShort = $builder->loadCached($profile, ReportMode::AiL1Haiku,  'en')?->introduction;
+
+        return response()->json([
+            'generating'    => $generating,
+            'portrait_full'  => $portraitFull,
+            'portrait_short' => $portraitShort,
+        ]);
     }
 
     public function show(Profile $profile)
     {
         abort_if($profile->user_id !== auth()->id(), 403);
 
+        $profile->touchLastUsed();
         $profile->loadMissing('birthCity');
 
         $chart = AspectCalculator::calculate($profile);
@@ -141,7 +170,7 @@ class NatalController extends Controller
         $portraitShort = $builder->loadCached($profile, ReportMode::AiL1Haiku, 'en')?->introduction;
         $generating    = Cache::has("natal_portrait_generating_{$profile->id}");
 
-        $profiles   = Profile::where('user_id', auth()->id())->orderBy('first_name')->get();
+        $profiles   = Profile::where('user_id', auth()->id())->orderByDesc('last_used_at')->orderBy('first_name')->get();
         $gender     = $profile->gender instanceof \App\Enums\Gender ? $profile->gender->value : $profile->gender;
         $singletons            = $this->computeSingletons($chart->planets ?? [], $gender, $profile->id);
         $houseLords            = $this->computeHouseLords($chart, $gender, $profile->id);

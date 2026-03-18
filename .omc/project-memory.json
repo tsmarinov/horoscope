@@ -84,9 +84,15 @@
   },
   "hotPaths": [
     {
+      "path": "src/resources/views/natal/pdf.blade.php",
+      "accessCount": 17,
+      "lastAccessed": 1773821451460,
+      "type": "file"
+    },
+    {
       "path": "src/resources/views/natal/show.blade.php",
-      "accessCount": 8,
-      "lastAccessed": 1773790567041,
+      "accessCount": 17,
+      "lastAccessed": 1773821789184,
       "type": "file"
     },
     {
@@ -96,9 +102,21 @@
       "type": "directory"
     },
     {
+      "path": "src/resources/views/natal/pdf_footer.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773820785242,
+      "type": "file"
+    },
+    {
+      "path": "src/lang/en/ui.php",
+      "accessCount": 4,
+      "lastAccessed": 1773821227728,
+      "type": "directory"
+    },
+    {
       "path": "src/resources/css/app.css",
-      "accessCount": 3,
-      "lastAccessed": 1773790557156,
+      "accessCount": 4,
+      "lastAccessed": 1773821752925,
       "type": "directory"
     },
     {
@@ -106,6 +124,12 @@
       "accessCount": 1,
       "lastAccessed": 1773790472275,
       "type": "directory"
+    },
+    {
+      "path": "src/resources/views/partials/premium-button.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1773820052740,
+      "type": "file"
     }
   ],
   "userDirectives": []

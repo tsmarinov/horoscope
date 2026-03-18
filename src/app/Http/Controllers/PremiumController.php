@@ -8,6 +8,24 @@ use Illuminate\Http\Request;
 class PremiumController extends Controller
 {
     /**
+     * Return current premium usage counts without consuming a request.
+     */
+    public function remaining(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json(['error' => 'unauthenticated'], 401);
+        }
+
+        return response()->json([
+            'used'      => $user->premiumUsageThisMonth(),
+            'remaining' => $user->premiumRemaining(),
+            'limit'     => config('premium.monthly_limit'),
+        ]);
+    }
+
+    /**
      * Record a premium generation request and return updated counts.
      * Called via fetch() from the premium button partial.
      */

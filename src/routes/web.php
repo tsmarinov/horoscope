@@ -50,7 +50,8 @@ Route::get('/api/cities', [CitySearchController::class, 'search'])->name('api.ci
 Route::middleware('auth')->group(function () {
     Route::get('/natal/{profile}',         [NatalController::class, 'show'])->name('natal.show');
     Route::get('/natal/{profile}/pdf',     [NatalController::class, 'pdf'])->name('natal.pdf');
-    Route::post('/natal/{profile}/portrait', [NatalController::class, 'generatePortrait'])->name('natal.portrait');
+    Route::post('/natal/{profile}/portrait',        [NatalController::class, 'generatePortrait'])->name('natal.portrait');
+    Route::get('/natal/{profile}/portrait/status', [NatalController::class, 'portraitStatus'])->name('natal.portrait.status');
 });
 
 // Stellar Profiles
@@ -63,7 +64,8 @@ Route::middleware('auth')->group(function () {
 
 // Premium
 Route::middleware('auth')->group(function () {
-    Route::post('/premium/use', [\App\Http\Controllers\PremiumController::class, 'use'])->name('premium.use');
+    Route::post('/premium/use',       [\App\Http\Controllers\PremiumController::class, 'use'])->name('premium.use');
+    Route::get('/premium/remaining',  [\App\Http\Controllers\PremiumController::class, 'remaining'])->name('premium.remaining');
 });
 
 // Email change

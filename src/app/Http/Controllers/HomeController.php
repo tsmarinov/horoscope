@@ -19,7 +19,7 @@ class HomeController extends Controller
     {
         $natalUrl = url('/natal');
         if (auth()->check()) {
-            $profile  = Profile::where('user_id', auth()->id())->latest()->first();
+            $profile  = Profile::where('user_id', auth()->id())->orderByDesc('last_used_at')->orderBy('id')->first();
             $natalUrl = $profile
                 ? route('natal.show', $profile)
                 : route('stellar-profiles.index');

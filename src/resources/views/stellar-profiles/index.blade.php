@@ -32,11 +32,39 @@
     @endif
 
     {{-- Search / filter --}}
-    <form method="GET" action="{{ route('stellar-profiles.index') }}" style="margin-bottom:1rem">
+    <form method="GET" action="{{ route('stellar-profiles.index') }}" style="margin-bottom:1rem"
+          x-data="{
+              q: '{{ addslashes($q) }}',
+              open: false,
+              names: {{ $allNames->toJson() }},
+              get suggestions() {
+                  if (this.q.length < 1) return [];
+                  var q = this.q.toLowerCase();
+                  return this.names.filter(function(n) { return n.toLowerCase().includes(q); });
+              },
+              pick(name) { this.q = name; this.open = false; }
+          }"
+          @click.outside="open = false">
         <div style="display:flex;gap:0.5rem">
-            <input type="text" name="q" value="{{ $q }}" placeholder="Search by name…"
-                   style="flex:1;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.45rem 0.75rem;font-size:0.85rem;color:var(--theme-text);outline:none"
-                   onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
+            <div style="position:relative;flex:1">
+                <input type="text" name="q" x-model="q" placeholder="Search by name…"
+                       @input="open = true"
+                       @keydown.escape="open = false"
+                       @keydown.enter="open = false"
+                       style="width:100%;box-sizing:border-box;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.45rem 0.75rem;font-size:0.85rem;color:var(--theme-text);outline:none"
+                       onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
+                <div x-show="open && suggestions.length > 0" x-cloak
+                     style="position:absolute;z-index:50;top:100%;left:0;right:0;margin-top:0.2rem;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:0.35rem;box-shadow:0 4px 16px rgba(0,0,0,0.12);overflow:hidden">
+                    <template x-for="name in suggestions" :key="name">
+                        <div @mousedown.prevent="pick(name)"
+                             x-text="name"
+                             style="padding:0.45rem 0.75rem;font-size:0.83rem;cursor:pointer;color:var(--theme-text);border-bottom:1px solid var(--theme-border)"
+                             onmouseover="this.style.background='rgba(106,50,159,0.07)'"
+                             onmouseout="this.style.background=''">
+                        </div>
+                    </template>
+                </div>
+            </div>
             <button type="submit"
                     style="background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.45rem 0.85rem;font-size:0.83rem;color:var(--theme-text);cursor:pointer">
                 Search
@@ -51,8 +79,8 @@
     </form>
 
     {{-- Add new profile --}}
-    <div x-data="profileForm()" style="margin-bottom:1rem">
-        <button @click="open = !open"
+    <div x-data="profileForm()" @open-edit.window="open = false" style="margin-bottom:1rem">
+        <button @click="open = !open; if (open) $dispatch('open-add')"
                 style="display:flex;align-items:center;gap:0.4rem;background:#6a329f;color:#fff;border:none;border-radius:0.4rem;padding:0.55rem 1rem;font-size:0.83rem;font-weight:600;cursor:pointer;letter-spacing:0.03em">
             <span x-text="open ? '✕ Cancel' : '+ Add Stellar Profile'"></span>
         </button>
@@ -88,7 +116,7 @@
         <p style="font-size:0.85rem;color:var(--theme-muted)">No stellar profiles yet. Add your birth data to unlock personalised horoscopes.</p>
     </div>
     @else
-    <div style="display:flex;flex-direction:column;gap:0.75rem">
+    <div style="display:flex;flex-direction:column;gap:0">
         @foreach($profiles as $profile)
         @php
             $cityName = $profile->birthCity?->name;
@@ -96,8 +124,10 @@
             $cityInit = $cityName ? $cityName . ($cityCode ? ' (' . $cityCode . ')' : '') : '';
             $cityId   = $profile->birth_city_id ?? 'null';
         @endphp
-        <div x-data="profileForm('{{ addslashes($cityInit) }}', {{ $cityId }}, {{ request('edit') == $profile->id ? 'true' : 'false' }})"
-             @open-edit.window="open = ($event.detail.id === {{ $profile->id }})"
+        <div id="{{ $profile->uuid }}"
+             x-data="profileForm('{{ addslashes($cityInit) }}', {{ $cityId }}, {{ request('edit') === $profile->uuid ? 'true' : 'false' }})"
+             @open-edit.window="open = ($event.detail.uuid === '{{ $profile->uuid }}')"
+             @open-add.window="open = false"
              class="card" style="padding:0">
 
             {{-- Profile summary row --}}
@@ -139,7 +169,7 @@
                        style="font-size:0.78rem;color:#6a329f;font-weight:600;text-decoration:none;padding:0.25rem 0.5rem">
                         Natal →
                     </a>
-                    <button @click="$dispatch('open-edit', { id: {{ $profile->id }} })"
+                    <button @click="$dispatch('open-edit', { uuid: '{{ $profile->uuid }}' })"
                             style="background:none;border:none;font-size:0.78rem;color:#6a329f;cursor:pointer;font-weight:600;padding:0.25rem 0.5rem">
                         Edit
                     </button>
@@ -195,7 +225,7 @@
             @if($page == $profiles->currentPage())
                 <span style="padding:0.35rem 0.65rem;font-size:0.8rem;font-weight:600;color:#fff;background:#6a329f;border:1px solid #6a329f;border-radius:0.35rem">{{ $page }}</span>
             @else
-                <a href="{{ $url }}" style="padding:0.35rem 0.65rem;font-size:0.8rem;color:var(--theme-text);border:1px solid var(--theme-border);border-radius:0.35rem;text-decoration:none" onmouseover="this.style.borderColor='#6a329f'" onmouseout="this.style.borderColor='var(--theme-border)'">{{ $page }}</span>
+                <a href="{{ $url }}" style="padding:0.35rem 0.65rem;font-size:0.8rem;color:var(--theme-text);border:1px solid var(--theme-border);border-radius:0.35rem;text-decoration:none" onmouseover="this.style.borderColor='#6a329f'" onmouseout="this.style.borderColor='var(--theme-border)'">{{ $page }}</a>
             @endif
         @endforeach
 

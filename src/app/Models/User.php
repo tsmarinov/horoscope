@@ -90,14 +90,11 @@ class User extends Authenticatable
     /** Increment the monthly premium usage counter. */
     public function incrementPremiumUsage(): void
     {
-        $this->premiumUsage()->updateOrCreate(
-            ['year' => now()->year, 'month' => now()->month],
-            ['count' => 0],
-        );
-
         $this->premiumUsage()
-            ->where('year', now()->year)
-            ->where('month', now()->month)
+            ->firstOrCreate(
+                ['year' => now()->year, 'month' => now()->month],
+                ['count' => 0],
+            )
             ->increment('count');
     }
 }

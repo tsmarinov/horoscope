@@ -253,7 +253,7 @@ body {
 
 /* ── Narrow wrap — for single-column pages (daily, natal, etc.) ────────── */
 .page-wrap-narrow {
-    max-width: 640px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1rem 3rem;
 }

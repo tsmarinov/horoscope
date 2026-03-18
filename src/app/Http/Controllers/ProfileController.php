@@ -11,7 +11,10 @@ class ProfileController extends Controller
     public function index()
     {
         $user     = auth()->user();
-        $profiles = $user->profile()->with('birthCity')->latest()->limit(5)->get();
+        $profiles = $user->profile()->with('birthCity')
+                        ->whereNotNull('last_used_at')
+                        ->orderByDesc('last_used_at')
+                        ->limit(5)->get();
 
         return view('profile.index', compact('user', 'profiles'));
     }
@@ -43,6 +46,13 @@ class ProfileController extends Controller
             'email'         => $user->email,
             'registered_at' => $user->created_at,
             'deleted_at'    => now(),
+        ]);
+
+        // GDPR erasure — anonymise horoscope logs before deleting the user
+        \App\Models\UserHoroscopeLog::where('user_id', $user->id)->update([
+            'user_id'    => null,
+            'user_uuid'  => null,
+            'user_email' => hash('sha256', $user->email),
         ]);
 
         Auth::logout();

@@ -187,7 +187,7 @@
     {{-- Birth charts --}}
     <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
-            <div class="section-label" style="margin-bottom:0">Birth Charts</div>
+            <div class="section-label" style="margin-bottom:0">Last Used Birth Charts</div>
             <a href="{{ route('stellar-profiles.index') }}"
                style="font-size:0.75rem;color:#6a329f;font-weight:600;text-decoration:none">
                 Manage →

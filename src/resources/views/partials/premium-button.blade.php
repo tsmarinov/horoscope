@@ -22,6 +22,16 @@
         loading: false,
         remaining: {{ $remaining }},
         limit: {{ $limit }},
+        openDialog() {
+            this.open = true;
+            const self = this;
+            fetch('{{ route('premium.remaining') }}', {
+                headers: { 'Accept': 'application/json' },
+            })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(data) { if (data) { self.remaining = data.remaining; self.limit = data.limit; } })
+            .catch(function() {});
+        },
         generate() {
             const self = this;
             self.loading = true;
@@ -49,7 +59,7 @@
         {{ __('ui.retrograde.premium.button_show') }}
     </button>
     @else
-    <button @click="open = true"
+    <button @click="openDialog()"
             data-premium-btn
             style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid #6a329f;background:none;color:#6a329f;font-size:0.82rem;cursor:pointer;font-family:inherit"
             onmouseover="this.style.background='#6a329f';this.style.color='#fff'"
@@ -90,8 +100,8 @@
                         style="padding:0.4rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:pointer;font-family:inherit">
                     {{ __('ui.retrograde.premium.cancel') }}
                 </button>
-                <button @click="generate()" :disabled="loading"
-                        :style="`padding:0.4rem 1rem;border-radius:6px;border:none;background:#6a329f;color:#fff;font-size:0.82rem;font-family:inherit;cursor:${loading ? 'not-allowed' : 'pointer'};opacity:${loading ? '0.6' : '1'}`">
+                <button @click="generate()" :disabled="loading || remaining <= 0"
+                        :style="`padding:0.4rem 1rem;border-radius:6px;border:none;background:#6a329f;color:#fff;font-size:0.82rem;font-family:inherit;cursor:${(loading || remaining <= 0) ? 'not-allowed' : 'pointer'};opacity:${(loading || remaining <= 0) ? '0.45' : '1'}`">
                     <span x-show="!loading">{{ __('ui.retrograde.premium.confirm') }}</span>
                     <span x-show="loading" x-cloak>...</span>
                 </button>

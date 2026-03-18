@@ -38,8 +38,11 @@
     .section {
         margin-bottom: 18px;
     }
+    .section:last-of-type {
+        margin-bottom: 0;
+    }
     .section-title {
-        font-size: 7.5pt;
+        font-size: 8.5pt;
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
@@ -53,7 +56,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 9pt;
+        font-size: 10pt;
     }
     table th {
         text-align: left;
@@ -61,7 +64,7 @@
         color: #444;
         border-bottom: 1px solid #ddd;
         padding: 3px 6px;
-        font-size: 8.5pt;
+        font-size: 9.5pt;
     }
     table td {
         padding: 3px 6px;
@@ -82,18 +85,18 @@
     /* ── Text entries (aspects etc.) ─────────────────────────────────────── */
     .entry { margin-bottom: 10px; page-break-inside: avoid; }
     .entry-label {
-        font-size: 8.5pt;
+        font-size: 9.5pt;
         font-weight: 700;
         color: #6a329f;
         margin-bottom: 2px;
     }
     .entry-sub {
-        font-size: 8pt;
+        font-size: 9pt;
         color: #888;
         margin-bottom: 2px;
     }
     .entry-text {
-        font-size: 9pt;
+        font-size: 10pt;
         color: #333;
         line-height: 1.55;
     }
@@ -151,11 +154,12 @@
 {{-- ── Page header ──────────────────────────────────────────────────────── --}}
 <div class="page-header" style="display:table;width:100%">
     <div style="display:table-cell;vertical-align:middle">
-        <div style="font-size:15pt;font-weight:800;color:#6a329f;letter-spacing:0.03em;line-height:1.1">Stellar ✦ Omens</div>
-        <div style="font-size:8pt;color:#a090c0;letter-spacing:0.06em">{{ parse_url(config('app.url'), PHP_URL_HOST) }}</div>
+        <div style="font-size:18pt;font-weight:800;color:#6a329f;letter-spacing:0.03em;line-height:1.1">Stellar ✦ Omens</div>
+        <div style="font-size:10pt;color:#8a70b8;letter-spacing:0.04em;font-style:italic;margin-top:2px">Your stars, decoded</div>
+        <div style="font-size:9pt;color:#a090c0;letter-spacing:0.06em;margin-top:2px">{{ parse_url(config('app.url'), PHP_URL_HOST) }}</div>
     </div>
     <div style="display:table-cell;vertical-align:middle;text-align:right">
-        <div style="font-size:8pt;color:#bbb">{{ __('ui.natal.page_title') }} · Generated {{ now()->format('M j, Y') }}</div>
+        <div style="font-size:9pt;color:#bbb">{{ __('ui.natal.page_title') }} · Generated {{ now()->format('M j, Y') }}</div>
     </div>
 </div>
 
@@ -370,66 +374,63 @@ window.onload = function() {
 {{-- ── Portrait ──────────────────────────────────────────────────────── --}}
 @if(!empty($portrait))
 <div class="section" style="background:#fdf9ec;border:1px solid #e8d88a;border-radius:5px;padding:10px 12px">
-    <div style="font-size:9pt;line-height:1.65;color:#1a1a2e">{!! $portrait !!}</div>
+    <div style="font-size:10pt;line-height:1.65;color:#1a1a2e">{!! $portrait !!}</div>
 </div>
 @endif
 
 {{-- ── Planets + Houses (two-column) ───────────────────────────────────── --}}
-<div class="section">
-    <table class="two-col">
-    <tr>
-        <td>
-            <div class="section-title">{{ __('ui.natal.section_planets') }}</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Planet</th>
-                        <th>Sign</th>
-                        <th class="num">Position</th>
-                        @if(count($houses))<th>H</th>@endif
-                        <th>Rx</th>
-                    </tr>
-                </thead>
-                <tbody>
-                @foreach($planets as $p)
-                @php
-                    $deg = floor($p['degree']);
-                    $min = floor(($p['degree'] - $deg) * 60);
-                @endphp
+<div class="section" style="overflow:hidden">
+    <div style="float:left;width:48%">
+        <div class="section-title">{{ __('ui.natal.section_planets') }}</div>
+        <table>
+            <thead>
                 <tr>
-                    <td><span class="accent">{{ $bodyGlyphs[$p['body']] ?? '' }}</span> {{ $bodyNames[$p['body']] ?? '' }}</td>
-                    <td class="muted">{{ $signGlyphs[$p['sign']] ?? '' }} {{ $signNames[$p['sign']] ?? '' }}</td>
-                    <td class="num">{{ $deg }}°{{ str_pad($min, 2, '0', STR_PAD_LEFT) }}'</td>
-                    @if(count($houses))<td class="accent" style="text-align:center">{{ $houseNames[($p['house'] ?? 1) - 1] ?? '' }}</td>@endif
-                    <td class="{{ $p['is_retrograde'] ? 'rx-on' : 'muted' }}">{{ $p['is_retrograde'] ? 'Rx' : '·' }}</td>
+                    <th>Planet</th>
+                    <th>Sign</th>
+                    <th class="num">Position</th>
+                    @if(count($houses))<th>H</th>@endif
+                    <th>Rx</th>
                 </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </td>
-        @if(count($houses))
-        <td>
-            <div class="section-title">{{ __('ui.natal.section_houses') }}</div>
-            <table>
-                <tbody>
-                @foreach($houses as $i => $cusp)
-                @php
-                    $s   = (int)floor($cusp / 30);
-                    $d   = floor(fmod($cusp, 30));
-                    $m   = round((fmod($cusp, 30) - $d) * 60);
-                @endphp
-                <tr>
-                    <td style="{{ in_array($i,[0,3,6,9]) ? 'color:#6a329f' : 'color:#666' }};width:24px">{{ $houseNames[$i] }}</td>
-                    <td class="muted">{{ $signGlyphs[$s] ?? '' }} {{ $signNames[$s] ?? '' }}</td>
-                    <td class="num">{{ $d }}°{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}'</td>
-                </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </td>
-        @endif
-    </tr>
-    </table>
+            </thead>
+            <tbody>
+            @foreach($planets as $p)
+            @php
+                $deg = floor($p['degree']);
+                $min = floor(($p['degree'] - $deg) * 60);
+            @endphp
+            <tr>
+                <td><span class="accent">{{ $bodyGlyphs[$p['body']] ?? '' }}</span> {{ $bodyNames[$p['body']] ?? '' }}</td>
+                <td class="muted">{{ $signGlyphs[$p['sign']] ?? '' }} {{ $signNames[$p['sign']] ?? '' }}</td>
+                <td class="num">{{ $deg }}°{{ str_pad($min, 2, '0', STR_PAD_LEFT) }}'</td>
+                @if(count($houses))<td class="accent" style="text-align:center">{{ $houseNames[($p['house'] ?? 1) - 1] ?? '' }}</td>@endif
+                <td class="{{ $p['is_retrograde'] ? 'rx-on' : 'muted' }}">{{ $p['is_retrograde'] ? 'Rx' : '·' }}</td>
+            </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @if(count($houses))
+    <div style="float:right;width:48%">
+        <div class="section-title">{{ __('ui.natal.section_houses') }}</div>
+        <table>
+            <tbody>
+            @foreach($houses as $i => $cusp)
+            @php
+                $s   = (int)floor($cusp / 30);
+                $d   = floor(fmod($cusp, 30));
+                $m   = round((fmod($cusp, 30) - $d) * 60);
+            @endphp
+            <tr>
+                <td style="{{ in_array($i,[0,3,6,9]) ? 'color:#6a329f' : 'color:#666' }};width:24px">{{ $houseNames[$i] }}</td>
+                <td class="muted">{{ $signGlyphs[$s] ?? '' }} {{ $signNames[$s] ?? '' }}</td>
+                <td class="num">{{ $d }}°{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}'</td>
+            </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
+    <div style="clear:both"></div>
 </div>
 
 {{-- ── Aspects table ─────────────────────────────────────────────────────── --}}
@@ -536,7 +537,6 @@ window.onload = function() {
     @endforeach
 </div>
 @endif
-
-
+<div style="height:0;line-height:0;font-size:0;clear:both;page-break-after:avoid"></div>
 </body>
 </html>

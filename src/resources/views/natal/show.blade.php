@@ -113,7 +113,7 @@
     {{-- Header --}}
     <div style="padding:0 1rem 1rem">
         <div style="position:relative;text-align:center">
-            <a href="{{ route('stellar-profiles.index', ['edit' => $profile->id]) }}"
+            <a href="{{ route('stellar-profiles.index', ['edit' => $profile->uuid]) }}#{{ $profile->uuid }}"
                style="position:absolute;top:0;right:0;font-size:0.78rem;color:var(--theme-muted);text-decoration:none;white-space:nowrap">
                 ← Edit Profile
             </a>
@@ -137,9 +137,11 @@
                     @endif
             </div>
             <div style="text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:0.5rem">
-                <a href="{{ route('natal.pdf', $profile) }}"
+                <a id="top-pdf-btn"
+                   href="{{ route('natal.pdf', $profile) }}"
+                   onclick="showPdfLoading()"
                    style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
-                   title="Download as PDF"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+                   title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
             </div>
         </div>
     </div>
@@ -148,7 +150,7 @@
     <div class="card" style="padding:0.75rem;overflow:hidden;margin-bottom:0.75rem">
         <div class="section-label" style="margin-bottom:0.5rem">Natal Chart</div>
         <svg id="natal-wheel" viewBox="0 0 320 320" width="100%"
-             style="display:block;margin:0 auto"
+             style="max-width:600px;display:block;margin:0 auto"
              aria-label="Natal chart wheel"></svg>
         @if(!$wheelAsc)
             <div style="text-align:center;font-size:0.75rem;color:var(--theme-muted);margin-top:0.5rem">
@@ -284,8 +286,9 @@
         {{-- PDF for current version --}}
         <a id="short-pdf-btn"
            href="{{ route('natal.pdf', $profile) }}"
+           onclick="showPdfLoading()"
            style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
-           title="Download PDF (current version)"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
     </div>
 
     {{-- Portrait section --}}
@@ -299,7 +302,7 @@
         </div>
     </div>
     @else
-    <div id="portrait-placeholder" class="card" style="margin-top:0.75rem;padding:0.75rem 1rem;display:none">
+    <div id="portrait-card" class="card" style="margin-top:0.75rem;padding:0.75rem 1rem;background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25);display:none">
         <div id="portrait-full" style="display:none"></div>
         <div id="portrait-short" style="display:none"></div>
     </div>
@@ -328,7 +331,7 @@
                 @endif
             </div>
             @if($s['text'])
-            <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $s['text'] }}</p>
+            <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $s['text'] }}</p>
             @endif
         </div>
         @endforeach
@@ -345,7 +348,7 @@
             @foreach($items as $hl)
             <div>
                 <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">{{ $hl['label'] }}</div>
-                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $hl['text'] }}</p>
+                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $hl['text'] }}</p>
             </div>
             @endforeach
         </div>
@@ -363,7 +366,7 @@
             <div>
                 <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.2rem">{{ $item['label'] }}</div>
                 <div style="font-size:0.75rem;color:var(--theme-muted);margin-bottom:0.3rem">{{ $item['lord'] }} · {{ ucfirst(str_replace('_', '-', $item['aspect'])) }} · {{ $item['other'] }}</div>
-                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
             </div>
             @endforeach
         </div>
@@ -386,7 +389,7 @@
                 <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">
                     {{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}
                 </div>
-                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
             </div>
             @endforeach
         </div>
@@ -412,7 +415,7 @@
                     {{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}
                 </div>
                 @if($item['text'])
-                <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
                 @endif
             </div>
             @endforeach
@@ -421,17 +424,24 @@
     @endif
     @endforeach
 
+    {{-- PDF button after last data card --}}
+    <div style="margin-top:0.75rem;display:flex;justify-content:flex-end">
+        <a id="bottom-pdf-btn"
+           href="{{ route('natal.pdf', $profile) }}"
+           onclick="showPdfLoading()"
+           style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
+           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+    </div>
+
     {{-- Forecast links --}}
     <div class="card" style="margin-top:0.75rem;padding:0.75rem 1rem">
-        <div class="section-label" style="margin-bottom:0.6rem">Forecasts</div>
+        <div class="section-label" style="margin-bottom:0.6rem">{{ __('ui.natal.forecasts_title') }}</div>
         <div style="display:flex;flex-direction:column;gap:0.15rem">
             @foreach([
-                ['☀ Daily forecast',   '/horoscope/daily'],
-                ['📅 Weekly forecast',  '/horoscope/weekly'],
-                ['🌙 Monthly forecast', '/horoscope/monthly'],
-                ['✦ Solar Return',      '/horoscope/solar'],
-                ['🌑 Lunar calendar',   '/lunar'],
-
+                [__('ui.natal.forecast_links.daily'),   '/horoscope/daily'],
+                [__('ui.natal.forecast_links.weekly'),  '/horoscope/weekly'],
+                [__('ui.natal.forecast_links.monthly'), '/horoscope/monthly'],
+                [__('ui.natal.forecast_links.solar'),   '/horoscope/solar'],
             ] as [$label, $href])
             <a href="{{ url($href) }}"
                style="font-size:0.85rem;color:var(--theme-muted);text-decoration:none;padding:0.3rem 0;display:flex;align-items:center;gap:0.5rem"
@@ -443,7 +453,7 @@
     </div>
 
     <div style="padding:0.5rem 0 1.5rem;text-align:center">
-        <a href="{{ route('stellar-profiles.index') }}" style="font-size:0.8rem;color:var(--theme-muted);text-decoration:underline">← Stellar Profiles</a>
+        <a href="{{ route('stellar-profiles.index') }}" style="font-size:0.8rem;color:var(--theme-muted);text-decoration:underline">{{ __('ui.natal.back_to_profiles') }}</a>
     </div>
 
 @endsection
@@ -892,7 +902,9 @@
     var chk      = document.getElementById('short-ver-chk');
     var track    = document.getElementById('short-ver-track');
     var thumb    = document.getElementById('short-ver-thumb');
-    var shortPdf = document.getElementById('short-pdf-btn');
+    var topPdf    = document.getElementById('top-pdf-btn');
+    var shortPdf  = document.getElementById('short-pdf-btn');
+    var bottomPdf = document.getElementById('bottom-pdf-btn');
 
     function applyState(short) {
         document.querySelectorAll('[data-ver="full"]').forEach(function(el) {
@@ -904,7 +916,9 @@
         if (chk)   chk.checked = short;
         if (track) track.style.background = short ? '#6a329f' : '#a09ab8';
         if (thumb) thumb.style.transform  = short ? 'translateX(16px)' : '';
-        if (shortPdf) shortPdf.href = short ? pdfBase + '?short=1' : pdfBase;
+        if (topPdf)    topPdf.href    = short ? pdfBase + '?short=1' : pdfBase;
+        if (shortPdf)  shortPdf.href  = short ? pdfBase + '?short=1' : pdfBase;
+        if (bottomPdf) bottomPdf.href = short ? pdfBase + '?short=1' : pdfBase;
         var pFull  = document.getElementById('portrait-full');
         var pShort = document.getElementById('portrait-short');
         var pCard  = document.getElementById('portrait-card');
@@ -925,49 +939,83 @@
 })();
 </script>
 <script>
-window.addEventListener('premium-confirmed', function(e) {
-    if (!e.detail || e.detail.context !== 'natal') return;
-
-    // Show loading overlay
+function startPortraitPolling() {
     var overlay = document.getElementById('portrait-loading-overlay');
     if (overlay) overlay.style.display = 'flex';
 
-    var placeholder = document.getElementById('portrait-placeholder');
-    var csrf = document.querySelector('meta[name=csrf-token]');
+    var statusUrl = '{{ route('natal.portrait.status', $profile) }}';
+    var timer = setInterval(function() {
+        fetch(statusUrl, { headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+            .then(function(data) {
+                if (!data.generating && (data.portrait_full || data.portrait_short)) {
+                    clearInterval(timer);
+                    if (overlay) overlay.style.display = 'none';
 
+                    var card = document.getElementById('portrait-card');
+                    var pFull  = document.getElementById('portrait-full');
+                    var pShort = document.getElementById('portrait-short');
+
+                    if (data.portrait_full && pFull) {
+                        pFull.innerHTML = data.portrait_full;
+                        pFull.style.display = '';
+                    }
+                    if (data.portrait_short && pShort) {
+                        pShort.innerHTML = data.portrait_short;
+                    }
+                    if (card) card.style.display = '';
+
+                    // Disable premium button
+                    var btn = document.querySelector('[data-premium-btn]');
+                    if (btn) { btn.disabled = true; btn.style.opacity = '0.45'; btn.style.cursor = 'not-allowed'; }
+                }
+            })
+            .catch(function() { clearInterval(timer); if (overlay) overlay.style.display = 'none'; });
+    }, 5000);
+}
+
+window.addEventListener('premium-confirmed', function(e) {
+    if (!e.detail || e.detail.context !== 'natal') return;
+
+    var csrf = document.querySelector('meta[name=csrf-token]');
     fetch('{{ route('natal.portrait', $profile) }}', {
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrf ? csrf.content : '',
-            'Accept': 'application/json',
-        },
+        headers: { 'X-CSRF-TOKEN': csrf ? csrf.content : '', 'Accept': 'application/json' },
     })
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function(data) {
-        if (data.queued) {
-            // Job dispatched — keep overlay, auto-refresh every 5s until portrait is ready
-            setTimeout(function() { window.location.reload(); }, 5000);
-            return;
-        }
-    })
-    .catch(function(err) {
-        console.error('portrait error', err);
-        if (overlay) overlay.style.display = 'none';
-    });
+    .then(function(data) { if (data.queued) startPortraitPolling(); })
+    .catch(function(err) { console.error('portrait error', err); });
 });
 </script>
 @endpush
 
 @if($generating ?? false)
 <script>
-// Portrait generation in progress — show overlay and auto-refresh every 5s
-document.addEventListener('DOMContentLoaded', function() {
-    var overlay = document.getElementById('portrait-loading-overlay');
-    if (overlay) overlay.style.display = 'flex';
-    setTimeout(function() { window.location.reload(); }, 5000);
-});
+document.addEventListener('DOMContentLoaded', function() { startPortraitPolling(); });
 </script>
 @endif
+
+{{-- PDF loading overlay --}}
+<div id="pdf-loading-overlay"
+     style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.45);
+            align-items:center;justify-content:center;flex-direction:column;gap:0.75rem">
+    <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;
+                border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;margin:0">{{ __('ui.natal.preparing_pdf') }}</p>
+</div>
+<script>
+function showPdfLoading() {
+    var overlay = document.getElementById('pdf-loading-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    var timer = setTimeout(function() { overlay.style.display = 'none'; }, 30000);
+    window.addEventListener('focus', function hidePdf() {
+        clearTimeout(timer);
+        overlay.style.display = 'none';
+        window.removeEventListener('focus', hidePdf);
+    });
+}
+</script>
 
 {{-- Portrait generation loading overlay --}}
 <div id="portrait-loading-overlay"
@@ -975,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', function() {
             align-items:center;justify-content:center;flex-direction:column;gap:1rem">
     <div style="width:48px;height:48px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;
                 border-radius:50%;animation:spin 0.8s linear infinite"></div>
-    <p style="color:#fff;font-size:0.95rem;margin:0;letter-spacing:0.02em">Generating your portrait…</p>
+    <p style="color:#fff;font-size:0.95rem;margin:0;letter-spacing:0.02em">{{ __('ui.natal.generating_portrait') }}</p>
 </div>
 <style>
 @keyframes spin{to{transform:rotate(360deg)}}

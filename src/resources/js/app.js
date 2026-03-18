@@ -53,11 +53,13 @@ Alpine.data('profileForm', (initCityName = '', initCityId = null, initOpen = fal
         this.cityQuery = city.name + ' (' + city.country_code + ')';
         this.cityResults = [];
         this.cityOpen    = false;
+        window.dispatchEvent(new CustomEvent('birth-data-change'));
     },
 
     clearCity() {
         this.cityId    = null;
         this.cityQuery = '';
+        window.dispatchEvent(new CustomEvent('birth-data-change'));
     },
 }));
 

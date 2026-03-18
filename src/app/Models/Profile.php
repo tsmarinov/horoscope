@@ -62,10 +62,19 @@ class Profile extends Model implements HoroscopeSubject
     protected function casts(): array
     {
         return [
-            'is_demo'    => 'boolean',
-            'birth_date' => 'date',
-            'gender'     => Gender::class,
+            'is_demo'      => 'boolean',
+            'birth_date'   => 'date',
+            'gender'       => Gender::class,
+            'last_used_at' => 'datetime',
         ];
+    }
+
+    public function touchLastUsed(): void
+    {
+        $this->timestamps = false;
+        $this->last_used_at = now();
+        $this->save();
+        $this->timestamps = true;
     }
 
     // ── Computed attributes ───────────────────────────────────────────────

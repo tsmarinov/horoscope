@@ -4,7 +4,7 @@
     Alpine context: profileForm() — provides cityQuery, cityId, cityResults, cityOpen
 --}}
 @php
-    $pfx      = $profile ? 'edit_' . $profile->id . '_' : 'new_';
+    $pfx      = $profile ? 'edit_' . $profile->uuid . '_' : 'new_';
     $initDate = old('birth_date', $profile?->birth_date?->format('Y-m-d')) ?? '';
 @endphp
 
@@ -127,7 +127,10 @@
                                 <button type="button" @click="prevYear()"
                                         style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--theme-muted);padding:0.1rem 0.35rem;border-radius:4px"
                                         onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''">‹</button>
-                                <span x-text="year" style="font-size:0.9rem;font-weight:600;color:var(--theme-text);min-width:2.8rem;text-align:center"></span>
+                                <button type="button" @click="yearStart=Math.floor(year/12)*12; view='years'"
+                    style="background:none;border:none;cursor:pointer;font-size:0.9rem;font-weight:600;color:#6a329f;padding:0.2rem 0.5rem;border-radius:4px;min-width:2.8rem;text-align:center"
+                    onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''"
+                    x-text="year"></button>
                                 <button type="button" @click="nextYear()"
                                         style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--theme-muted);padding:0.1rem 0.35rem;border-radius:4px"
                                         onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''">›</button>
@@ -143,6 +146,36 @@
                                             background:${isCurrentMonth(i) ? '#6a329f' : 'var(--theme-raised)'};
                                             color:${isCurrentMonth(i) ? '#fff' : 'var(--theme-text)'};
                                             font-weight:${isCurrentMonth(i) ? '600' : '400'}`">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- ── Year view ── --}}
+                    <div x-show="view==='years'">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
+                            <button type="button" @click="view='months'"
+                                    style="background:none;border:none;cursor:pointer;font-size:0.78rem;color:#6a329f;padding:0.2rem 0.4rem;border-radius:4px"
+                                    onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''">← Back</button>
+                            <div style="display:flex;align-items:center;gap:0.4rem">
+                                <button type="button" @click="prevYears()"
+                                        style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--theme-muted);padding:0.1rem 0.35rem;border-radius:4px"
+                                        onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''">‹</button>
+                                <span x-text="yearStart + ' – ' + (yearStart + 11)"
+                                      style="font-size:0.82rem;font-weight:600;color:var(--theme-text);min-width:6rem;text-align:center"></span>
+                                <button type="button" @click="nextYears()"
+                                        style="background:none;border:none;cursor:pointer;font-size:1rem;color:var(--theme-muted);padding:0.1rem 0.35rem;border-radius:4px"
+                                        onmouseover="this.style.background='var(--theme-raised)'" onmouseout="this.style.background=''">›</button>
+                            </div>
+                            <div style="width:3rem"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.35rem">
+                            <template x-for="y in yearRange" :key="y">
+                                <button type="button" @click="selectYear(y)" x-text="y"
+                                        :style="`padding:0.4rem;border:none;border-radius:6px;font-size:0.82rem;cursor:pointer;
+                                            background:${isCurrentYear(y) ? '#6a329f' : 'var(--theme-raised)'};
+                                            color:${isCurrentYear(y) ? '#fff' : 'var(--theme-text)'};
+                                            font-weight:${isCurrentYear(y) ? '600' : '400'}`">
                                 </button>
                             </template>
                         </div>
@@ -166,6 +199,7 @@
             <input type="hidden" name="birth_time" :value="hour && minute !== '' ? hour + ':' + minute : ''">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem">
                 <select x-model="hour"
+                        @change="window.dispatchEvent(new CustomEvent('birth-data-change'))"
                         style="width:100%;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.5rem 0.6rem;font-size:0.92rem;color:var(--theme-text);outline:none;appearance:none;text-align:center"
                         onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
                     <option value="">HH</option>
@@ -174,6 +208,7 @@
                     @endfor
                 </select>
                 <select x-model="minute"
+                        @change="window.dispatchEvent(new CustomEvent('birth-data-change'))"
                         style="width:100%;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.5rem 0.6rem;font-size:0.92rem;color:var(--theme-text);outline:none;appearance:none;text-align:center"
                         onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
                     <option value="">MM</option>
@@ -185,6 +220,16 @@
             <p style="font-size:0.72rem;color:var(--theme-muted);margin-top:0.3rem;line-height:1.4">Without an exact birth time, horoscopes will be incomplete — houses, Ascendant, and MC won't be calculated.</p>
         </div>
     </div>
+
+    @if($profile)
+    {{-- Birth data change warning (edit only) --}}
+    <div x-data="{ birthChanged: false }" @birth-data-change.window="birthChanged = true">
+        <div x-show="birthChanged" x-cloak
+             style="font-size:0.78rem;color:#92400e;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.4);border-radius:0.35rem;padding:0.5rem 0.75rem;line-height:1.5">
+            {{ __('ui.stellar_profiles.birth_data_warn') }}
+        </div>
+    </div>
+    @endif
 
     {{-- Birth city autocomplete --}}
     <div>
@@ -236,12 +281,15 @@ function datePicker(initVal) {
 
     const initDate = initVal ? new Date(initVal + 'T12:00:00') : null;
 
+    const curYear = initDate ? initDate.getFullYear() : new Date().getFullYear();
+
     return {
-        open:     false,
-        view:     'days',
-        selected: initDate,
-        viewDate: initDate ? new Date(initDate) : new Date(),
-        months:   MONTHS_SHORT,
+        open:      false,
+        view:      'days',
+        selected:  initDate,
+        viewDate:  initDate ? new Date(initDate) : new Date(),
+        months:    MONTHS_SHORT,
+        yearStart: Math.floor(curYear / 12) * 12,
 
         get displayValue() {
             if (!this.selected) return '';
@@ -273,10 +321,16 @@ function datePicker(initVal) {
         nextMonth()  { this.viewDate = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth()+1, 1); },
         prevYear()   { this.viewDate = new Date(this.viewDate.getFullYear()-1, this.viewDate.getMonth(), 1); },
         nextYear()   { this.viewDate = new Date(this.viewDate.getFullYear()+1, this.viewDate.getMonth(), 1); },
+        prevYears()  { this.yearStart -= 12; },
+        nextYears()  { this.yearStart += 12; },
+        selectYear(y){ this.viewDate = new Date(y, this.viewDate.getMonth(), 1); this.yearStart = Math.floor(y/12)*12; this.view = 'months'; },
+        get yearRange(){ return Array.from({length:12}, (_,i) => this.yearStart + i); },
+        isCurrentYear(y){ return this.viewDate.getFullYear() === y; },
 
         selectDay(d) {
             this.selected = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth(), d);
             this.open = false;
+            window.dispatchEvent(new CustomEvent('birth-data-change'));
         },
         selectMonth(m) {
             this.viewDate = new Date(this.viewDate.getFullYear(), m, 1);
