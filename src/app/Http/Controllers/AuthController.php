@@ -55,6 +55,18 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        // Migrate guest profiles to the new user account
+        $uuid = $request->cookie('guest_uuid');
+        if ($uuid) {
+            $guest = \App\Models\Guest::where('uuid', $uuid)->first();
+            if ($guest) {
+                \App\Models\Profile::where('guest_id', $guest->id)
+                    ->update(['guest_id' => null, 'user_id' => $user->id]);
+            }
+        }
+        // Clear guest cookie
+        cookie()->queue(cookie()->forget('guest_uuid'));
+
         // Audit log
         DeletedAccount::create([
             'event'         => 'registered',

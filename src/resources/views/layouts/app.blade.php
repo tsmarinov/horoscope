@@ -92,6 +92,10 @@
                             <span class="pd-hello">Hello, visitor</span>
                         </div>
                         <div class="pd-divider"></div>
+                        <a href="{{ route('stellar-profiles.index') }}" class="pd-item" @click="profileOpen = false">
+                            <span class="pd-icon">✦</span> Stellar Profiles
+                        </a>
+                        <div class="pd-divider"></div>
                         @if(Route::has('login'))
                         <a href="{{ route('login') }}" class="pd-item" @click="profileOpen = false">
                             <span class="pd-icon">↪</span> Sign In
@@ -221,6 +225,9 @@
                 </form>
                 @endif
                 @else
+                <a href="{{ url('/stellar-profiles') }}" class="drawer-item @yield('nav_stellar')">
+                    <span class="di-icon">✦</span> Stellar Profiles
+                </a>
                 @if(Route::has('login'))
                 <a href="{{ route('login') }}"    class="drawer-item">
                     <span class="di-icon">↪</span> Sign In

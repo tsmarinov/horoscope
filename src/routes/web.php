@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CitySearchController;
 use App\Http\Controllers\DailyHoroscopeController;
+use App\Http\Controllers\LunarCalendarController;
 use App\Http\Controllers\NatalController;
 use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\EmailController;
@@ -47,28 +48,29 @@ Route::middleware('auth')->group(function () {
 // City search (public — no auth needed for autocomplete)
 Route::get('/api/cities', [CitySearchController::class, 'search'])->name('api.cities');
 
-// Natal chart
+// Natal chart — guest-accessible
+Route::get('/natal',               [NatalController::class, 'redirect'])->name('natal.index');
+Route::get('/natal/{profile}',     [NatalController::class, 'show'])->name('natal.show');
+Route::get('/natal/{profile}/pdf', [NatalController::class, 'pdf'])->name('natal.pdf');
+// Natal chart — auth-only (AI L1)
 Route::middleware('auth')->group(function () {
-    Route::get('/natal/{profile}',         [NatalController::class, 'show'])->name('natal.show');
-    Route::get('/natal/{profile}/pdf',     [NatalController::class, 'pdf'])->name('natal.pdf');
-    Route::post('/natal/{profile}/portrait',        [NatalController::class, 'generatePortrait'])->name('natal.portrait');
+    Route::post('/natal/{profile}/portrait',       [NatalController::class, 'generatePortrait'])->name('natal.portrait');
     Route::get('/natal/{profile}/portrait/status', [NatalController::class, 'portraitStatus'])->name('natal.portrait.status');
 });
 
-// Daily horoscope
+// Daily horoscope — guest-accessible
+Route::get('/horoscope/daily',                   [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
+Route::get('/horoscope/daily/{profile}/{date?}', [DailyHoroscopeController::class, 'show'])->name('daily.show');
+// Daily horoscope — auth-only (AI L1)
 Route::middleware('auth')->group(function () {
-    Route::get('/horoscope/daily', [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
-    Route::get('/horoscope/daily/{profile}/{date?}',             [DailyHoroscopeController::class, 'show'])->name('daily.show');
-    Route::post('/horoscope/daily/{profile}/{date}/synthesis',   [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
+    Route::post('/horoscope/daily/{profile}/{date}/synthesis', [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
 });
 
-// Stellar Profiles
-Route::middleware('auth')->group(function () {
-    Route::get('/stellar-profiles',              [StellarProfileController::class, 'index'])->name('stellar-profiles.index');
-    Route::post('/stellar-profiles',             [StellarProfileController::class, 'store'])->name('stellar-profiles.store');
-    Route::patch('/stellar-profiles/{stellarProfile}', [StellarProfileController::class, 'update'])->name('stellar-profiles.update');
-    Route::delete('/stellar-profiles/{stellarProfile}', [StellarProfileController::class, 'destroy'])->name('stellar-profiles.destroy');
-});
+// Stellar Profiles — guest-accessible
+Route::get('/stellar-profiles',                       [StellarProfileController::class, 'index'])->name('stellar-profiles.index');
+Route::post('/stellar-profiles',                      [StellarProfileController::class, 'store'])->name('stellar-profiles.store');
+Route::patch('/stellar-profiles/{stellarProfile}',    [StellarProfileController::class, 'update'])->name('stellar-profiles.update');
+Route::delete('/stellar-profiles/{stellarProfile}',   [StellarProfileController::class, 'destroy'])->name('stellar-profiles.destroy');
 
 // Premium
 Route::middleware('auth')->group(function () {
@@ -84,3 +86,7 @@ Route::middleware('auth')->group(function () {
         ->middleware('signed');
     Route::post('/email/change/cancel',  [EmailChangeController::class, 'cancel'])->name('email.change.cancel');
 });
+
+// Lunar calendar (public)
+Route::get('/lunar-calendar', [LunarCalendarController::class, 'redirect'])->name('lunar.index');
+Route::get('/lunar-calendar/{year}/{month}', [LunarCalendarController::class, 'show'])->name('lunar.show');

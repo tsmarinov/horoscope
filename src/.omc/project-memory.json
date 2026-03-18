@@ -256,32 +256,80 @@
   "hotPaths": [
     {
       "path": "resources/views/natal/show.blade.php",
-      "accessCount": 14,
-      "lastAccessed": 1773840854643,
-      "type": "directory"
-    },
-    {
-      "path": "resources/views/horoscope/daily/show.blade.php",
-      "accessCount": 10,
-      "lastAccessed": 1773840758306,
-      "type": "file"
-    },
-    {
-      "path": "resources/views",
-      "accessCount": 7,
-      "lastAccessed": 1773840692997,
+      "accessCount": 72,
+      "lastAccessed": 1773848639494,
       "type": "directory"
     },
     {
       "path": "resources/css/app.scss",
-      "accessCount": 5,
-      "lastAccessed": 1773840845618,
+      "accessCount": 31,
+      "lastAccessed": 1773848654068,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/horoscope/daily/show.blade.php",
+      "accessCount": 29,
+      "lastAccessed": 1773845941164,
+      "type": "file"
+    },
+    {
+      "path": "routes/web.php",
+      "accessCount": 11,
+      "lastAccessed": 1773847571818,
+      "type": "file"
+    },
+    {
+      "path": "resources/views",
+      "accessCount": 9,
+      "lastAccessed": 1773842052244,
+      "type": "directory"
+    },
+    {
+      "path": "app/Http/Controllers/NatalController.php",
+      "accessCount": 8,
+      "lastAccessed": 1773847602014,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/DailyHoroscopeController.php",
+      "accessCount": 7,
+      "lastAccessed": 1773847024065,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/layouts/app.blade.php",
+      "accessCount": 7,
+      "lastAccessed": 1773847548516,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/StellarProfileController.php",
+      "accessCount": 6,
+      "lastAccessed": 1773847132548,
       "type": "file"
     },
     {
       "path": "resources/views/partials/premium-button.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1773847157457,
+      "type": "file"
+    },
+    {
+      "path": "lang/en/ui.php",
+      "accessCount": 4,
+      "lastAccessed": 1773847176071,
+      "type": "file"
+    },
+    {
+      "path": "routes/console.php",
+      "accessCount": 4,
+      "lastAccessed": 1773847395093,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/AuthController.php",
       "accessCount": 3,
-      "lastAccessed": 1773822782989,
+      "lastAccessed": 1773847145606,
       "type": "file"
     },
     {
@@ -291,27 +339,45 @@
       "type": "directory"
     },
     {
-      "path": "routes/web.php",
-      "accessCount": 2,
-      "lastAccessed": 1773822741970,
-      "type": "file"
-    },
-    {
       "path": "app/Http/Controllers/PremiumController.php",
       "accessCount": 2,
       "lastAccessed": 1773822754121,
       "type": "file"
     },
     {
-      "path": "resources/views/layouts/app.blade.php",
-      "accessCount": 2,
-      "lastAccessed": 1773840363837,
-      "type": "file"
-    },
-    {
       "path": "vite.config.js",
       "accessCount": 2,
       "lastAccessed": 1773840375759,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/UiLunarCalendar.php",
+      "accessCount": 2,
+      "lastAccessed": 1773845927701,
+      "type": "file"
+    },
+    {
+      "path": "app/Models/Guest.php",
+      "accessCount": 2,
+      "lastAccessed": 1773846935276,
+      "type": "file"
+    },
+    {
+      "path": "bootstrap/app.php",
+      "accessCount": 2,
+      "lastAccessed": 1773846959927,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/Controller.php",
+      "accessCount": 2,
+      "lastAccessed": 1773846969525,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/natal/pdf.blade.php",
+      "accessCount": 2,
+      "lastAccessed": 1773848620398,
       "type": "file"
     },
     {
@@ -331,6 +397,42 @@
       "accessCount": 1,
       "lastAccessed": 1773840222476,
       "type": "file"
+    },
+    {
+      "path": "app/Services",
+      "accessCount": 1,
+      "lastAccessed": 1773845018871,
+      "type": "directory"
+    },
+    {
+      "path": "app/Http/Controllers/LunarCalendarController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773845979866,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/lunar/show.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1773846037248,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Middleware/EnsureGuestSession.php",
+      "accessCount": 1,
+      "lastAccessed": 1773846950510,
+      "type": "file"
+    },
+    {
+      "path": "app/Console/Commands/PruneGuests.php",
+      "accessCount": 1,
+      "lastAccessed": 1773847289664,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/natal",
+      "accessCount": 1,
+      "lastAccessed": 1773848594715,
+      "type": "directory"
     }
   ],
   "userDirectives": []

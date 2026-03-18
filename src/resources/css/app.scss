@@ -137,7 +137,7 @@ body {
 .chip-transit {
     display: inline-block;
     background: $accent-tint;
-    color: $accent-light;
+    color: $accent;
     font-size: 0.75rem;
     padding: 3px 10px;
     border-radius: 20px;
@@ -179,6 +179,7 @@ body {
     text-transform: uppercase;
     color: var(--theme-muted);
     font-family: 'Inter', sans-serif;
+    margin-bottom: 0.75rem;
 }
 
 // ── Colored accent labels (small uppercase inside cards) ─────────────────
@@ -338,10 +339,12 @@ body {
 
         &:first-child { padding-left: 1rem; text-align: left; }
         &:last-child  { padding-right: 0.5rem; }
+        &.ct-th-l { text-align: left; }
+        &.ct-th-r { text-align: right; }
     }
 
     td {
-        padding: 0.55rem 0.25rem;
+        padding: 0.35rem 0.25rem;
         border-bottom: 1px solid var(--theme-border);
         color: var(--theme-text);
         white-space: nowrap;
@@ -462,3 +465,435 @@ img.emoji {
 *, *::before, *::after {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+
+// ── Profile switcher ───────────────────────────────────────────────────────
+.switcher      { padding: 0.5rem 0 1.5rem; }
+.switcher-wrap { position: relative; }
+.switcher-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-card);
+    color: var(--theme-text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+.switcher-btn-name { font-weight: 500; }
+.switcher-btn-sub  { color: var(--theme-muted); }
+.switcher-arrow    { color: var(--theme-muted); font-size: 0.7rem; }
+.switcher-dropdown {
+    position: absolute;
+    z-index: 200;
+    left: 0; right: 0;
+    margin-top: 4px;
+    background: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+.switcher-search-wrap { padding: 0.5rem 0.75rem; }
+.switcher-input {
+    width: 100%;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--theme-border);
+    border-radius: 5px;
+    background: var(--theme-bg);
+    color: var(--theme-text);
+    font-size: 0.82rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.switcher-list  { max-height: 220px; overflow-y: auto; }
+.switcher-check { color: $accent; font-size: 0.75rem; }
+.switcher-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.75rem;
+    text-decoration: none;
+    font-size: 0.85rem;
+
+    &:hover { background: var(--theme-raised); }
+    &.active { background: var(--theme-raised); }
+    .switcher-item-name { color: var(--theme-text); }
+    &.active .switcher-item-name { font-weight: 600; color: $accent; }
+}
+.switcher-empty { padding: 0.75rem; text-align: center; font-size: 0.82rem; color: var(--theme-muted); }
+
+// ── Page header (profile name + meta + top PDF) ────────────────────────────
+.page-header       { padding: 0 1rem 1rem; }
+.page-header-inner { position: relative; text-align: center; }
+.edit-profile-link {
+    position: absolute;
+    top: 0; right: 0;
+    font-size: 0.78rem;
+    color: var(--theme-muted);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover { color: $accent; }
+}
+.profile-name {
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--theme-text);
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+.profile-meta {
+    font-size: 0.82rem;
+    color: var(--theme-muted);
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.4rem;
+}
+.pdf-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.pdf-row-end { margin-top: 0.75rem; display: flex; justify-content: flex-end; }
+.btn-pdf {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    color: #fff;
+    text-decoration: none;
+    background: #c97b7b;
+    border-radius: 3px;
+    padding: 0.28rem 0.45rem;
+    white-space: nowrap;
+
+    svg {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 3px;
+        margin-top: -1px;
+    }
+}
+
+// ── Card variants ──────────────────────────────────────────────────────────
+.card-flush   { padding: 0; overflow: hidden; }
+.card-wheel   { padding: 0.75rem; overflow: hidden; margin-bottom: 0.75rem; }
+.card-section { margin-top: 0.75rem; padding: 0.75rem 1rem; }
+.card-content { padding: 0.75rem 1rem; }
+.card-scroll  { overflow-x: auto; }
+.card-mt      { margin-top: 0.75rem; }
+.card-header  { padding: 0.75rem 1rem 0.5rem; }
+.card-ai {
+    background: rgba(212,175,55,0.08);
+    border-color: rgba(212,175,55,0.25);
+}
+
+// ── Natal wheel ────────────────────────────────────────────────────────────
+.wheel-label       { margin-bottom: 0.5rem; } // override section-label default
+.wheel-svg         { max-width: 600px; display: block; margin: 0 auto; }
+.chart-unlock-hint { text-align: center; margin-top: 0.75rem; }
+.chart-unlock-link { font-size: 1rem; color: $accent; text-decoration: none; font-weight: 500;
+    &:hover { text-decoration: underline; } }
+
+// ── Chart table extras ─────────────────────────────────────────────────────
+.ct-planet-glyph { font-size: 1rem; margin-right: 0.35rem; color: $accent; }
+.ct-planet-name  { font-weight: 500; }
+.ct-sign-glyph   { margin-right: 0.25rem; }
+.ct-angle        { font-weight: 600; color: $accent; width: 2rem; }
+.ct-house-num    { font-weight: 600; color: var(--theme-muted); width: 2rem; }
+
+// ── Aspect list (raw planet↔planet rows) ──────────────────────────────────
+.aspect-list   { display: flex; flex-direction: column; }
+.aspect-row    {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    padding: 0 0;
+    border-bottom: 1px solid var(--theme-divider);
+}
+.aspect-row:last-child { border-bottom: none; }
+.glyph         { font-size: 1rem; width: 1.1rem; text-align: center; flex-shrink: 0; }
+.glyph-accent  { color: $accent; }
+.glyph-neutral { color: var(--theme-text); }
+.asp-name      { color: var(--theme-muted); flex: 1; }
+.asp-orb       { color: var(--theme-muted); width: 3rem; text-align: right; }
+.asp-dir       { width: 1.2rem; text-align: center; color: var(--theme-muted); }
+.asp-dir-on    { color: $accent; }
+
+// ── Stack layout ───────────────────────────────────────────────────────────
+.stack    { display: flex; flex-direction: column; gap: 1.25rem; }
+.stack-sm { display: flex; flex-direction: column; gap: 0.3rem; }
+
+// ── Element pattern item ───────────────────────────────────────────────────
+.ep-header       { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.ep-label        { font-size: 0.82rem; font-weight: 600; color: var(--theme-text); }
+.ep-label-muted  { color: var(--theme-muted); }
+
+// ── Sub-label — detail line below a chip ──────────────────────────────────
+.sub-label { font-size: 0.75rem; color: var(--theme-muted); margin-bottom: 0.3rem; }
+
+// ── Action row (premium button + toggle + PDF) ─────────────────────────────
+.action-row {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+// ── Toggle pill (Short Version / Full Version) ─────────────────────────────
+.toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--theme-muted);
+    user-select: none;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+.toggle-input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: #a09ab8;
+    transition: background 0.2s;
+}
+.toggle-thumb {
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    transition: transform 0.2s;
+}
+
+// ── Forecast links ─────────────────────────────────────────────────────────
+.forecast-list { display: flex; flex-direction: column; gap: 0.15rem; }
+.forecast-link {
+    font-size: 0.85rem;
+    color: var(--theme-muted);
+    text-decoration: none;
+    padding: 0.3rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover { color: $accent; }
+}
+.forecast-arrow { color: $accent; }
+
+// ── Back link row ──────────────────────────────────────────────────────────
+.back-link-row { padding: 0.5rem 0 1.5rem; text-align: center; }
+.back-link {
+    font-size: 0.8rem;
+    color: var(--theme-muted);
+    text-decoration: underline;
+
+    &:hover { color: $accent; }
+}
+
+// ── Loading overlays ───────────────────────────────────────────────────────
+.loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.overlay-pdf      { z-index: 9998; background: rgba(0,0,0,0.45); gap: 0.75rem; }
+.overlay-portrait { z-index: 9999; background: rgba(0,0,0,0.55); gap: 1rem; }
+.spinner {
+    border: 3px solid rgba(255,255,255,0.25);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+.spinner-sm { width: 36px; height: 36px; }
+.spinner-lg { width: 48px; height: 48px; }
+.overlay-msg-pdf      { color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0; }
+.overlay-msg-portrait { color: #fff; font-size: 0.95rem; letter-spacing: 0.02em; margin: 0; }
+
+// ── Daily / period header ──────────────────────────────────────────────────
+.header-date {
+    font-size: 0.82rem;
+    color: var(--theme-muted);
+    margin-bottom: 0.9rem;
+}
+.date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-bottom: 0.9rem;
+}
+.date-nav-link {
+    font-size: 0.8rem;
+    color: var(--theme-muted);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover { color: $accent; }
+}
+.date-nav-current {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--theme-text);
+}
+.period-tabs { display: flex; justify-content: center; gap: 0.3rem; }
+.period-tab {
+    padding: 0.28rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    color: var(--theme-muted);
+    text-decoration: none;
+    border: 1px solid var(--theme-border);
+}
+.period-tab-active {
+    padding: 0.28rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    background: $accent;
+    color: #fff;
+    font-weight: 600;
+}
+
+// ── Section label color modifier ───────────────────────────────────────────
+.section-label-gold { color: $gold; }
+.section-label-sm   { margin-bottom: 0.5rem; } // override section-label default
+
+// ── Transit wheel (bi-wheel placeholder) ──────────────────────────────────
+.card-center     { text-align: center; }
+.transit-svg     { max-width: 260px; display: block; margin: 0 auto; }
+.transit-subtitle { font-size: 0.78rem; color: var(--theme-muted); margin-top: 0.5rem; }
+
+// ── Planet grid (Planets Today) ────────────────────────────────────────────
+.planet-grid {
+    display: grid; grid-template-columns: 1fr; gap: 0.25rem;
+    @media (min-width: 520px) { grid-template-columns: 1fr 1fr; column-gap: 1rem; }
+}
+.planet-row   { font-size: 0.82rem; color: var(--theme-muted); display: grid; grid-template-columns: 1.2rem 5rem 1.5rem 1fr; align-items: center; gap: 0 0.2rem; }
+.planet-glyph { color: $accent; text-align: center; }
+.planet-in    { font-size: 0.72rem; opacity: 0.5; }
+.rx-badge     { color: $rx-red; font-size: 0.72rem; margin-left: 0.25rem; }
+
+// ── Card accent border variants ────────────────────────────────────────────
+.card-lunar    { border-left: 3px solid $blue-border; }
+.card-tip      { border-left: 3px solid $gold; }
+.card-clothing { border-left: 3px solid $label-purple; }
+
+// ── Card meta info line (lunar phase, clothing context, etc.) ──────────────
+.card-meta {
+    font-size: 0.82rem;
+    color: var(--theme-muted);
+    line-height: 1.5;
+}
+
+// ── Areas of Life ──────────────────────────────────────────────────────────
+.area-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.2rem 1rem;
+    border-top: 1px solid var(--theme-border);
+    font-size: 0.88rem;
+}
+.area-wait  { font-size: 0.78rem; color: var(--theme-muted); font-style: italic; }
+.area-stars {
+    color: $accent;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+}
+
+// ── Day meta card (ruler, color, gem, number) ──────────────────────────────
+.card-day-meta { font-size: 0.85rem; color: var(--theme-muted); line-height: 1.9; }
+
+// ── Utility colors ─────────────────────────────────────────────────────────
+.text-gold  { color: $gold; }
+.text-accent { color: $accent; }
+
+// ── Empty / no-data message ────────────────────────────────────────────────
+.empty-msg { font-size: 0.85rem; color: var(--theme-muted); text-align: center; padding: 0.25rem 0; }
+
+// ── Scroll-to-top button ───────────────────────────────────────────────────
+.scroll-top {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    z-index: 999;
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: $accent;
+    color: #fff;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    align-items: center;
+    justify-content: center;
+}
+
+// ── Lunar Calendar ───────────────────────────────────────────────────────────
+.lunar-header      { text-align: center; padding: 0.25rem 0; }
+.lunar-title-month { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem; }
+.lunar-nav         { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }
+.lunar-nav-btn     { color: $accent; font-size: 0.88rem; text-decoration: none; font-weight: 500; }
+.lunar-nav-title   { font-size: 0.82rem; color: var(--theme-muted); }
+
+.lunar-weekdays    { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+.lunar-weekday     { text-align: center; font-size: 0.7rem; color: var(--theme-muted); padding: 0.2rem 0; }
+.lunar-grid        { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+
+.lunar-cell {
+    min-height: 3.8rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 0.25rem 0.1rem; border-radius: 5px; gap: 1px;
+    background: var(--theme-card); border: 1px solid var(--theme-border);
+}
+.lunar-cell-empty  { background: transparent; border-color: transparent; }
+.lunar-cell-today  { border-color: $accent; }
+.lunar-cell-new    { background: var(--theme-raised); border-color: $accent; }
+.lunar-cell-full   { background: var(--theme-raised); border-color: $gold; }
+
+.lunar-day-num    { font-size: 0.7rem; font-weight: 600; color: var(--theme-text); line-height: 1.2; align-self: flex-start; padding-left: 0.2rem; }
+.lunar-day-today  { color: $accent; }
+.lunar-cell-phase { font-size: 0.9rem; line-height: 1; }
+.lunar-cell-sign  { font-size: 0.65rem; color: var(--theme-muted); }
+
+.lunar-legend        { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.75rem; color: var(--theme-muted); margin-top: 0.6rem; }
+.lunar-legend-swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 0.2rem; vertical-align: middle; }
+.lunar-swatch-new    { background: $accent; }
+.lunar-swatch-full   { background: $gold; }
+.lunar-swatch-today  { background: transparent; border: 2px solid $accent; }
+
+.lunation-title    { font-size: 0.88rem; font-weight: 600; }
+.lunation-meta     { font-size: 0.78rem; color: var(--theme-muted); margin-top: 0.15rem; margin-bottom: 0.35rem; }
+
+.lunar-list-marker { font-size: 0.82rem; font-weight: 600; color: var(--theme-text); padding: 0.4rem 0 0.1rem; }
+.lunar-day-row     { display: flex; align-items: baseline; gap: 0.35rem; font-size: 0.82rem; color: var(--theme-muted); padding: 0.15rem 0; }
+.lunar-day-date    { font-weight: 500; color: var(--theme-text); min-width: 4.5rem; }
+.lunar-day-sign    { flex: 1; }
+.lunar-day-lday    { font-size: 0.72rem; white-space: nowrap; }
+
+.lunar-lunation-row { font-size: 0.88rem; padding: 0.25rem 0; }
+
+.btn-register-unlock { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 6px; border: 1px solid var(--theme-border); background: none; color: var(--theme-muted); font-size: 0.82rem; text-decoration: none; opacity: 0.7; }

@@ -1,7 +1,7 @@
 {
   "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"/var/www/horo/project/astro-horoscope-project-plan.md\"}",
-  "error": "File content (45843 tokens) exceeds maximum allowed tokens (25000). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.",
-  "timestamp": "2026-03-15T23:19:07.097Z",
+  "tool_input_preview": "{\"file_path\":\"/var/www/horo/web/src/resources/lang/en/ui.php\",\"offset\":1,\"limit\":30}",
+  "error": "File does not exist. Note: your current working directory is /var/www/horo/web/src.",
+  "timestamp": "2026-03-18T15:15:28.231Z",
   "retry_count": 1
 }

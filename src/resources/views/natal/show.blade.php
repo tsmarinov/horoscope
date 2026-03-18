@@ -48,7 +48,7 @@
             'active'=> $p->id === $profile->id,
         ])->values()->toArray();
     @endphp
-    <div style="padding:0.5rem 0 1.5rem"
+    <div class="switcher"
          x-data="{
             open: false,
             search: '',
@@ -62,65 +62,63 @@
          }"
          @click.outside="open = false">
 
-        <div style="position:relative">
+        <div class="switcher-wrap">
 
         {{-- Trigger --}}
-        <button @click="open = !open"
-                style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0.75rem;border-radius:6px;border:1px solid var(--theme-border);background:var(--theme-card);color:var(--theme-text);font-size:0.85rem;cursor:pointer;font-family:inherit;text-align:left">
+        <button @click="open = !open" class="switcher-btn">
             <span>
-                <span x-text="current.name" style="font-weight:500"></span>
-                <span x-text="current.sub ? ' · ' + current.sub : ''" style="color:var(--theme-muted)"></span>
+                <span x-text="current.name" class="switcher-btn-name"></span>
+                <span x-text="current.sub ? ' · ' + current.sub : ''" class="switcher-btn-sub"></span>
             </span>
-            <span style="color:var(--theme-muted);font-size:0.7rem" x-text="open ? '▲' : '▼'"></span>
+            <span class="switcher-arrow" x-text="open ? '▲' : '▼'"></span>
         </button>
 
         {{-- Dropdown --}}
-        <div x-show="open" x-cloak
-             style="position:absolute;z-index:200;left:0;right:0;margin-top:4px;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.15);overflow:hidden">
+        <div x-show="open" x-cloak class="switcher-dropdown">
 
             {{-- Search --}}
-            <div style="padding:0.5rem 0.75rem">
+            <div class="switcher-search-wrap">
                 <input x-ref="search" x-model="search" @keydown.escape="open = false"
                        placeholder="Search profiles…"
-                       style="width:100%;padding:0.4rem 0.65rem;border:1px solid var(--theme-border);border-radius:5px;background:var(--theme-bg);color:var(--theme-text);font-size:0.82rem;font-family:inherit;box-sizing:border-box"
+                       class="switcher-input"
                        x-init="$watch('open', v => v && $nextTick(() => $refs.search.focus()))">
             </div>
 
             {{-- List --}}
-            <div style="max-height:220px;overflow-y:auto">
+            <div class="switcher-list">
                 <template x-for="p in filtered" :key="p.id">
                     <a :href="p.url"
-                       :style="`display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0.75rem;text-decoration:none;font-size:0.85rem;background:${p.active ? 'var(--theme-raised)' : 'transparent'}`"
+                       class="switcher-item"
+                       :class="p.active ? 'active' : ''"
                        @mouseover="$el.style.background='var(--theme-raised)'"
                        @mouseout="$el.style.background=p.active ? 'var(--theme-raised)' : 'transparent'">
                         <span>
-                            <span x-text="p.name" :style="p.active ? 'font-weight:600;color:#6a329f' : 'color:var(--theme-text)'"></span>
-                            <span x-text="p.sub ? ' · ' + p.sub : ''" style="color:var(--theme-muted)"></span>
+                            <span x-text="p.name" class="switcher-item-name"></span>
+                            <span x-text="p.sub ? ' · ' + p.sub : ''" class="switcher-btn-sub"></span>
                         </span>
-                        <span x-show="p.active" style="color:#6a329f;font-size:0.75rem">✓</span>
+                        <span x-show="p.active" class="switcher-check">✓</span>
                     </a>
                 </template>
-                <div x-show="filtered.length === 0"
-                     style="padding:0.75rem;text-align:center;font-size:0.82rem;color:var(--theme-muted)">
+                <div x-show="filtered.length === 0" class="switcher-empty">
                     No profiles found
                 </div>
             </div>
         </div>
-        </div>{{-- /position:relative --}}
+        </div>{{-- /switcher-wrap --}}
     </div>
     @endif
 
     {{-- Header --}}
-    <div style="padding:0 1rem 1rem">
-        <div style="position:relative;text-align:center">
+    <div class="page-header">
+        <div class="page-header-inner">
             <a href="{{ route('stellar-profiles.index', ['edit' => $profile->uuid]) }}#{{ $profile->uuid }}"
-               style="position:absolute;top:0;right:0;font-size:0.78rem;color:var(--theme-muted);text-decoration:none;white-space:nowrap">
+               class="edit-profile-link">
                 ← Edit Profile
             </a>
-            <h1 class="font-display" style="font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--theme-text);margin-bottom:0.3rem;font-weight:600">
+            <h1 class="font-display profile-name">
                 {{ $profile->name }}
             </h1>
-            <div style="font-size:0.82rem;color:var(--theme-muted);display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;justify-content:center;margin-bottom:0.4rem">
+            <div class="profile-meta">
                     @if($sign)<span>{{ $sign['glyph'] }} {{ $sign['name'] }}</span><span>·</span>@endif
                     <span>{{ $profile->birth_date?->format('M j, Y') }}</span>
                     @if($age !== null)<span>· {{ $age }} y.o.</span>@endif
@@ -136,41 +134,43 @@
                         <span>· ASC {{ $signGlyphs[$ascSign] }} {{ $signNames[$ascSign] }} {{ $ascDeg }}°{{ str_pad($ascMin, 2, '0', STR_PAD_LEFT) }}'</span>
                     @endif
             </div>
-            <div style="text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:0.5rem">
+            <div class="pdf-row">
                 <a id="top-pdf-btn"
                    href="{{ route('natal.pdf', $profile) }}"
                    onclick="showPdfLoading()"
-                   style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
-                   title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+                   class="btn-pdf"
+                   title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
             </div>
         </div>
     </div>
 
     {{-- Natal Wheel --}}
-    <div class="card" style="padding:0.75rem;overflow:hidden;margin-bottom:0.75rem">
-        <div class="section-label" style="margin-bottom:0.5rem">Natal Chart</div>
+    <div class="card card-wheel">
+        <div class="section-label wheel-label">Natal Chart</div>
         <svg id="natal-wheel" viewBox="0 0 320 320" width="100%"
-             style="max-width:600px;display:block;margin:0 auto"
+             class="wheel-svg"
              aria-label="Natal chart wheel"></svg>
         @if(!$wheelAsc)
-            <div style="text-align:center;font-size:0.75rem;color:var(--theme-muted);margin-top:0.5rem">
-                Add birth time &amp; place to unlock houses
+            <div class="chart-unlock-hint">
+                <a href="{{ route('stellar-profiles.index', ['edit' => $profile->uuid]) }}" class="chart-unlock-link">
+                    🔒 Add birth time &amp; place to unlock houses
+                </a>
             </div>
         @endif
     </div>
 
     {{-- Planets --}}
-    <div class="card" style="padding:0;overflow:hidden">
-        <div style="padding:0.75rem 1rem 0.5rem">
+    <div class="card card-flush">
+        <div class="card-header">
             <div class="section-label">Planets</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="card-scroll">
             <table class="ct">
                 <thead>
                     <tr>
-                        <th style="text-align:left">Planet</th>
-                        <th style="text-align:left">Sign</th>
-                        <th style="text-align:right">Position</th>
+                        <th class="ct-th-l">Planet</th>
+                        <th class="ct-th-l">Sign</th>
+                        <th class="ct-th-r">Position</th>
                         @if(count($houses))<th>House</th>@endif
                         <th>Rx</th>
                     </tr>
@@ -187,11 +187,11 @@
                     @endphp
                     <tr>
                         <td>
-                            <span style="font-size:1rem;margin-right:0.35rem;color:#6a329f">{{ $bodyGlyphs[$planet['body']] ?? '?' }}</span>
-                            <span style="font-weight:500">{{ $bodyNames[$planet['body']] ?? 'Body ' . $planet['body'] }}</span>
+                            <span class="ct-planet-glyph">{{ $bodyGlyphs[$planet['body']] ?? '?' }}</span>
+                            <span class="ct-planet-name">{{ $bodyNames[$planet['body']] ?? 'Body ' . $planet['body'] }}</span>
                         </td>
                         <td class="ct-muted">
-                            <span style="margin-right:0.25rem">{{ $signGlyphs[$planet['sign']] ?? '' }}</span>{{ $signNames[$planet['sign']] ?? '' }}
+                            <span class="ct-sign-glyph">{{ $signGlyphs[$planet['sign']] ?? '' }}</span>{{ $signNames[$planet['sign']] ?? '' }}
                         </td>
                         <td class="ct-num">{{ $deg }}°{{ str_pad($min, 2, '0', STR_PAD_LEFT) }}'{{ str_pad($sec, 2, '0', STR_PAD_LEFT) }}"</td>
                         @if(count($houses))
@@ -207,11 +207,11 @@
 
     {{-- Houses (Tier 3 only) --}}
     @if(count($houses) && $chart->ascendant !== null)
-    <div class="card" style="padding:0;overflow:hidden;margin-top:0.75rem">
-        <div style="padding:0.75rem 1rem 0.5rem">
+    <div class="card card-flush card-mt">
+        <div class="card-header">
             <div class="section-label">Houses (Placidus)</div>
         </div>
-        <div style="overflow-x:auto">
+        <div class="card-scroll">
             <table class="ct">
                 <tbody>
                     @foreach($houses as $i => $cusp)
@@ -222,8 +222,8 @@
                         if ($min >= 60) { $deg++; $min = 0; }
                     @endphp
                     <tr>
-                        <td style="font-weight:600;color:{{ in_array($i, [0,3,6,9]) ? '#6a329f' : 'var(--theme-muted)' }};width:2rem">{{ $houseNames[$i] }}</td>
-                        <td class="ct-muted"><span style="margin-right:0.25rem">{{ $signGlyphs[$sign] }}</span>{{ $signNames[$sign] }}</td>
+                        <td class="{{ in_array($i, [0,3,6,9]) ? 'ct-angle' : 'ct-house-num' }}">{{ $houseNames[$i] }}</td>
+                        <td class="ct-muted"><span class="ct-sign-glyph">{{ $signGlyphs[$sign] }}</span>{{ $signNames[$sign] }}</td>
                         <td class="ct-num">{{ $deg }}°{{ str_pad($min, 2, '0', STR_PAD_LEFT) }}'</td>
                     </tr>
                     @endforeach
@@ -235,9 +235,9 @@
 
     {{-- Aspects --}}
     @if(count($aspects))
-    <div class="card" style="margin-top:0.75rem">
-        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_aspects') }}</div>
-        <div style="display:flex;flex-direction:column;gap:0.3rem">
+    <div class="card card-mt">
+        <div class="section-label">{{ __('ui.natal.section_aspects') }}</div>
+        <div class="aspect-list">
             @foreach($aspects as $asp)
             @php
                 $a   = $asp['body_a'] ?? 0;
@@ -247,18 +247,18 @@
                 $glyph = $aspectGlyphs[$type] ?? '∗';
             @endphp
             @continue($type === 'mutual_reception')
-            <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem">
-                <span style="color:#6a329f;font-size:1rem;width:1.1rem;text-align:center">{{ $bodyGlyphs[$a] ?? '?' }}</span>
-                <span style="color:var(--theme-muted)">{{ $bodyNames[$a] ?? $a }}</span>
-                <span style="color:var(--theme-text);font-size:1rem;width:1.1rem;text-align:center">{{ $glyph }}</span>
-                <span style="color:var(--theme-muted);flex:1">{{ ucwords(str_replace('_', ' ', $type)) }}</span>
-                <span style="color:#6a329f;font-size:1rem;width:1.1rem;text-align:center">{{ $bodyGlyphs[$b] ?? '?' }}</span>
-                <span style="color:var(--theme-muted)">{{ $bodyNames[$b] ?? $b }}</span>
-                <span style="color:var(--theme-muted);width:3rem;text-align:right">{{ $orb }}°</span>
+            <div class="aspect-row">
+                <span class="glyph glyph-accent">{{ $bodyGlyphs[$a] ?? '?' }}</span>
+                <span class="asp-name">{{ $bodyNames[$a] ?? $a }}</span>
+                <span class="glyph glyph-neutral">{{ $glyph }}</span>
+                <span class="asp-name">{{ ucwords(str_replace('_', ' ', $type)) }}</span>
+                <span class="glyph glyph-accent">{{ $bodyGlyphs[$b] ?? '?' }}</span>
+                <span class="asp-name">{{ $bodyNames[$b] ?? $b }}</span>
+                <span class="asp-orb">{{ $orb }}°</span>
                 @if(!empty($asp['applying']))
-                    <span style="color:#6a329f;width:1.2rem;text-align:center">↑</span>
+                    <span class="asp-dir asp-dir-on">↑</span>
                 @else
-                    <span style="color:var(--theme-muted);width:1.2rem;text-align:center">↓</span>
+                    <span class="asp-dir">↓</span>
                 @endif
             </div>
             @endforeach
@@ -267,18 +267,16 @@
     @endif
 
     {{-- Premium button + Short Version toggle + short PDF --}}
-    <div style="margin-top:0.75rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+    <div class="action-row">
         @include('partials.premium-button', ['context' => 'natal', 'generated' => ($portraitFull !== null && $portraitShort !== null)])
 
         {{-- Toggle pill --}}
-        <label style="display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.82rem;color:var(--theme-muted);user-select:none">
-            <span style="position:relative;display:inline-block;width:36px;height:20px">
+        <label class="toggle-label">
+            <span class="toggle-switch">
                 <input id="short-ver-chk" type="checkbox" onchange="stelToggleAi(this.checked)"
-                       style="opacity:0;width:0;height:0;position:absolute">
-                <span id="short-ver-track"
-                      style="position:absolute;inset:0;border-radius:20px;background:#a09ab8;transition:background 0.2s"></span>
-                <span id="short-ver-thumb"
-                      style="position:absolute;left:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform 0.2s"></span>
+                       class="toggle-input">
+                <span id="short-ver-track" class="toggle-track"></span>
+                <span id="short-ver-thumb" class="toggle-thumb"></span>
             </span>
             Short Version
         </label>
@@ -287,14 +285,14 @@
         <a id="short-pdf-btn"
            href="{{ route('natal.pdf', $profile) }}"
            onclick="showPdfLoading()"
-           style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
-           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+           class="btn-pdf"
+           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
     </div>
 
     {{-- Portrait section --}}
     @if($portraitFull !== null || $portraitShort !== null)
-    <div class="card" id="portrait-card" style="margin-top:0.75rem;padding:0.75rem 1rem;background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25){{ $portraitFull === null ? ';display:none' : '' }}">
-        <div id="portrait-full" class="prose" style="{{ $portraitFull === null ? 'display:none' : '' }}">
+    <div class="card card-section card-ai" id="portrait-card" @if($portraitFull === null) style="display:none" @endif>
+        <div id="portrait-full" class="prose" @if($portraitFull === null) style="display:none" @endif>
             {!! $portraitFull ?? '' !!}
         </div>
         <div id="portrait-short" class="prose" style="display:none">
@@ -302,7 +300,7 @@
         </div>
     </div>
     @else
-    <div id="portrait-card" class="card" style="margin-top:0.75rem;padding:0.75rem 1rem;background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25);display:none">
+    <div id="portrait-card" class="card card-section card-ai" style="display:none">
         <div id="portrait-full" style="display:none"></div>
         <div id="portrait-short" style="display:none"></div>
     </div>
@@ -314,27 +312,25 @@
     @endphp
     @foreach([['full', $singletons], ['short', $singletonsShort]] as [$ver, $items])
     @if(count($items))
-    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
-        <div class="section-label" style="margin-bottom:0.75rem">Element Pattern</div>
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">Element Pattern</div>
+        <div class="stack">
         @foreach($items as $s)
-        <div style="margin-bottom:{{ !$loop->last ? '1.25rem' : '0' }}">
-            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
-                <span style="font-size:1rem">{{ $elementEmoji[$s['element']] ?? '' }}</span>
+        <div>
+            <div class="ep-header">
+                <span>{{ $elementEmoji[$s['element']] ?? '' }}</span>
                 @if($s['type'] === 'singleton')
-                    <span style="font-size:0.82rem;font-weight:600;color:var(--theme-text)">
-                        Singleton: {{ $bodyGlyphs[$s['planet']['body']] ?? '' }} {{ $bodyNames[$s['planet']['body']] ?? '' }} ({{ $s['element'] }})
-                    </span>
+                    <span class="ep-label">Singleton: {{ $bodyGlyphs[$s['planet']['body']] ?? '' }} {{ $bodyNames[$s['planet']['body']] ?? '' }} ({{ $s['element'] }})</span>
                 @else
-                    <span style="font-size:0.82rem;font-weight:600;color:var(--theme-muted)">
-                        Missing element: {{ $s['element'] }}
-                    </span>
+                    <span class="ep-label ep-label-muted">Missing element: {{ $s['element'] }}</span>
                 @endif
             </div>
             @if($s['text'])
-            <p class="prose-muted">{{ $s['text'] }}</p>
+            <p class="prose">{{ $s['text'] }}</p>
             @endif
         </div>
         @endforeach
+        </div>
     </div>
     @endif
     @endforeach
@@ -342,16 +338,14 @@
     {{-- House Lords --}}
     @foreach([['full', $houseLords], ['short', $houseLordsShort]] as [$ver, $items])
     @if(count($items))
-    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
-        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_house_lords') }}</div>
-        <div style="display:flex;flex-direction:column;gap:1.25rem">
-            @foreach($items as $hl)
-            <div>
-                <div class="chip-transit">{{ $hl['label'] }}</div>
-                <p class="prose-muted">{{ $hl['text'] }}</p>
-            </div>
-            @endforeach
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">{{ __('ui.natal.section_house_lords') }}</div>
+        @foreach($items as $hl)
+        <div class="{{ !$loop->first ? 'item-sep' : '' }}">
+            <div class="chip-transit">{{ $hl['label'] }}</div>
+            <p class="prose">{{ $hl['text'] }}</p>
         </div>
+        @endforeach
     </div>
     @endif
     @endforeach
@@ -359,17 +353,15 @@
     {{-- House Lord Aspects --}}
     @foreach([['full', $houseLordAspects], ['short', $houseLordAspectsShort]] as [$ver, $items])
     @if(count($items))
-    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
-        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_house_lord_aspects') }}</div>
-        <div style="display:flex;flex-direction:column;gap:1.25rem">
-            @foreach($items as $item)
-            <div>
-                <div class="chip-transit">{{ $item['label'] }}</div>
-                <div style="font-size:0.75rem;color:var(--theme-muted);margin-bottom:0.3rem">{{ $item['lord'] }} · {{ ucfirst(str_replace('_', '-', $item['aspect'])) }} · {{ $item['other'] }}</div>
-                <p class="prose-muted">{!! $item['text'] !!}</p>
-            </div>
-            @endforeach
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">{{ __('ui.natal.section_house_lord_aspects') }}</div>
+        @foreach($items as $item)
+        <div class="{{ !$loop->first ? 'item-sep' : '' }}">
+            <div class="chip-transit">{{ $item['label'] }}</div>
+            <div class="sub-label">{{ $item['lord'] }} · {{ ucfirst(str_replace('_', '-', $item['aspect'])) }} · {{ $item['other'] }}</div>
+            <p class="prose">{!! $item['text'] !!}</p>
         </div>
+        @endforeach
     </div>
     @endif
     @endforeach
@@ -377,20 +369,18 @@
     {{-- Angle Aspects (ASC / MC) --}}
     @foreach([['full', $angleAspectTexts], ['short', $angleAspectTextsShort]] as [$ver, $items])
     @if(count($items))
-    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
-        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_angle_aspects') }}</div>
-        <div style="display:flex;flex-direction:column;gap:1.25rem">
-            @foreach($items as $item)
-            @php
-                $aspLabel = ucfirst(str_replace('_', '-', $item['aspect']));
-                $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
-            @endphp
-            <div>
-                <div class="chip-transit">{{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}</div>
-                <p class="prose-muted">{!! $item['text'] !!}</p>
-            </div>
-            @endforeach
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">{{ __('ui.natal.section_angle_aspects') }}</div>
+        @foreach($items as $item)
+        @php
+            $aspLabel = ucfirst(str_replace('_', '-', $item['aspect']));
+            $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
+        @endphp
+        <div class="{{ !$loop->first ? 'item-sep' : '' }}">
+            <div class="chip-transit">{{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}</div>
+            <p class="prose">{!! $item['text'] !!}</p>
         </div>
+        @endforeach
     </div>
     @endif
     @endforeach
@@ -398,58 +388,54 @@
     {{-- Natal Aspects --}}
     @foreach([['full', $aspectTexts], ['short', $aspectTextsShort]] as [$ver, $items])
     @if(count($items))
-    <div class="card" data-ver="{{ $ver }}" style="margin-top:0.75rem;padding:0.75rem 1rem;{{ $ver === 'short' ? 'display:none' : '' }}">
-        <div class="section-label" style="margin-bottom:0.75rem">{{ __('ui.natal.section_aspects') }}</div>
-        <div style="display:flex;flex-direction:column;gap:1.25rem">
-            @foreach($items as $item)
-            @php
-                $aspLabel = __('ui.aspects.' . $item['aspect'], [], 'en') ?: ucwords(str_replace('_', ' ', $item['aspect']));
-                $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
-                $nameA    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyA']] ?? '';
-                $nameB    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyB']] ?? '';
-            @endphp
-            <div>
-                <div class="chip-transit">{{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}</div>
-                @if($item['text'])
-                <p class="prose-muted">{!! $item['text'] !!}</p>
-                @endif
-            </div>
-            @endforeach
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">{{ __('ui.natal.section_aspects') }}</div>
+        @foreach($items as $item)
+        @php
+            $aspLabel = __('ui.aspects.' . $item['aspect'], [], 'en') ?: ucwords(str_replace('_', ' ', $item['aspect']));
+            $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
+            $nameA    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyA']] ?? '';
+            $nameB    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyB']] ?? '';
+        @endphp
+        <div class="{{ !$loop->first ? 'item-sep' : '' }}">
+            <div class="chip-transit">{{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}</div>
+            @if($item['text'])
+            <p class="prose">{!! $item['text'] !!}</p>
+            @endif
         </div>
+        @endforeach
     </div>
     @endif
     @endforeach
 
     {{-- PDF button after last data card --}}
-    <div style="margin-top:0.75rem;display:flex;justify-content:flex-end">
+    <div class="pdf-row-end">
         <a id="bottom-pdf-btn"
            href="{{ route('natal.pdf', $profile) }}"
            onclick="showPdfLoading()"
-           style="font-size:0.65rem;font-weight:700;letter-spacing:0.07em;color:#fff;text-decoration:none;background:#c97b7b;border-radius:3px;padding:0.28rem 0.45rem;white-space:nowrap"
-           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-1px"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
+           class="btn-pdf"
+           title="{{ __('ui.natal.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
     </div>
 
     {{-- Forecast links --}}
-    <div class="card" style="margin-top:0.75rem;padding:0.75rem 1rem">
-        <div class="section-label" style="margin-bottom:0.6rem">{{ __('ui.natal.forecasts_title') }}</div>
-        <div style="display:flex;flex-direction:column;gap:0.15rem">
+    <div class="card card-section card-content">
+        <div class="section-label">{{ __('ui.natal.forecasts_title') }}</div>
+        <div class="forecast-list">
             @foreach([
                 [__('ui.natal.forecast_links.daily'),   '/horoscope/daily'],
                 [__('ui.natal.forecast_links.weekly'),  '/horoscope/weekly'],
                 [__('ui.natal.forecast_links.monthly'), '/horoscope/monthly'],
                 [__('ui.natal.forecast_links.solar'),   '/horoscope/solar'],
             ] as [$label, $href])
-            <a href="{{ url($href) }}"
-               style="font-size:0.85rem;color:var(--theme-muted);text-decoration:none;padding:0.3rem 0;display:flex;align-items:center;gap:0.5rem"
-               onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">
-                <span style="color:#6a329f">→</span> {{ $label }}
+            <a href="{{ url($href) }}" class="forecast-link">
+                <span class="forecast-arrow">→</span> {{ $label }}
             </a>
             @endforeach
         </div>
     </div>
 
-    <div style="padding:0.5rem 0 1.5rem;text-align:center">
-        <a href="{{ route('stellar-profiles.index') }}" style="font-size:0.8rem;color:var(--theme-muted);text-decoration:underline">{{ __('ui.natal.back_to_profiles') }}</a>
+    <div class="back-link-row">
+        <a href="{{ route('stellar-profiles.index') }}" class="back-link">{{ __('ui.natal.back_to_profiles') }}</a>
     </div>
 
 @endsection
@@ -569,15 +555,16 @@
     // ── Rings 4+3+2 background ────────────────────────────────────────────────
     mk('circle', {cx:CX, cy:CY, r:RZ, fill:C.card, stroke:'none'});
 
-    // ── Separator: Ring 5 / Ring 4 ────────────────────────────────────────────
-    mk('circle', {cx:CX, cy:CY, r:R4IN, fill:'none', stroke:C.border, 'stroke-width':'0.4'});
-
-    // ── Ring 2: plain background (house numbers only) ─────────────────────────
     const HOUSE_N = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
     const ANGULAR = new Set([0,3,6,9]);
 
+    if (HS.length === 12) {
+    // ── Separator: Ring 5 / Ring 4 ────────────────────────────────────────────
+    mk('circle', {cx:CX, cy:CY, r:R4IN, fill:'none', stroke:C.border, 'stroke-width':'0.4'});
+
     // ── Separator: Ring 3 / Ring 2 ────────────────────────────────────────────
     mk('circle', {cx:CX, cy:CY, r:R3IN, fill:'none', stroke:C.border, 'stroke-width':'0.4'});
+    }
 
     // ── House cusps (R4IN→RC), Ring-4 labels, Ring-2 numbers ─────────────────
     if (HS.length === 12) {
@@ -992,12 +979,9 @@ document.addEventListener('DOMContentLoaded', function() { startPortraitPolling(
 @endif
 
 {{-- PDF loading overlay --}}
-<div id="pdf-loading-overlay"
-     style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.45);
-            align-items:center;justify-content:center;flex-direction:column;gap:0.75rem">
-    <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;
-                border-radius:50%;animation:spin 0.8s linear infinite"></div>
-    <p style="color:rgba(255,255,255,0.85);font-size:0.85rem;margin:0">{{ __('ui.natal.preparing_pdf') }}</p>
+<div id="pdf-loading-overlay" class="loading-overlay overlay-pdf">
+    <div class="spinner spinner-sm"></div>
+    <p class="overlay-msg-pdf">{{ __('ui.natal.preparing_pdf') }}</p>
 </div>
 <script>
 function showPdfLoading() {
@@ -1014,12 +998,9 @@ function showPdfLoading() {
 </script>
 
 {{-- Portrait generation loading overlay --}}
-<div id="portrait-loading-overlay"
-     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);
-            align-items:center;justify-content:center;flex-direction:column;gap:1rem">
-    <div style="width:48px;height:48px;border:3px solid rgba(255,255,255,0.25);border-top-color:#fff;
-                border-radius:50%;animation:spin 0.8s linear infinite"></div>
-    <p style="color:#fff;font-size:0.95rem;margin:0;letter-spacing:0.02em">{{ __('ui.natal.generating_portrait') }}</p>
+<div id="portrait-loading-overlay" class="loading-overlay overlay-portrait">
+    <div class="spinner spinner-lg"></div>
+    <p class="overlay-msg-portrait">{{ __('ui.natal.generating_portrait') }}</p>
 </div>
 <style>
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1045,10 +1026,7 @@ function showPdfLoading() {
 {{-- Scroll-to-top button --}}
 <button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})"
         title="Back to top"
-        style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
-               width:2.4rem;height:2.4rem;border-radius:50%;border:none;cursor:pointer;
-               background:var(--theme-accent,#6a329f);color:#fff;font-size:1.1rem;
-               box-shadow:0 2px 8px rgba(0,0,0,0.25);align-items:center;justify-content:center">↑</button>
+        class="scroll-top">↑</button>
 <script>
 (function(){
     var btn = document.getElementById('stt');

@@ -263,6 +263,7 @@ return [
         'premium' => [
             'button_show'              => '✦ Personal Portrait',
             'button_locked'            => '🔒 Personal Portrait',
+            'register_to_unlock'       => 'Register to unlock',
             'dialog_title'             => '✦ Personal Portrait',
             'dialog_body'              => 'Would you like to generate personalised content for this section?',
             'dialog_remaining_prefix'  => 'You have',

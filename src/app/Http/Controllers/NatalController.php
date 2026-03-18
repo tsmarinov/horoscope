@@ -76,7 +76,7 @@ class NatalController extends Controller
 
     public function pdf(Profile $profile)
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!$this->ownsProfile($profile), 403);
 
         $profile->loadMissing('birthCity');
         $chart = AspectCalculator::calculate($profile);
@@ -113,7 +113,7 @@ class NatalController extends Controller
 
     public function generatePortrait(Profile $profile)
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!auth()->check(), 403);
 
         $cacheKey = "natal_portrait_generating_{$profile->id}";
 
@@ -142,7 +142,7 @@ class NatalController extends Controller
 
     public function portraitStatus(Profile $profile): \Illuminate\Http\JsonResponse
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!auth()->check(), 403);
 
         $generating    = Cache::has("natal_portrait_generating_{$profile->id}");
         $builder       = app(ReportBuilder::class);
@@ -156,9 +156,27 @@ class NatalController extends Controller
         ]);
     }
 
+    public function redirect()
+    {
+        if (auth()->check()) {
+            $profile = Profile::where('user_id', auth()->id())
+                ->whereNotNull('last_used_at')->orderByDesc('last_used_at')->first()
+                ?? Profile::where('user_id', auth()->id())->orderBy('first_name')->first();
+        } else {
+            $guest   = $this->currentGuest();
+            $profile = $guest ? Profile::where('guest_id', $guest->id)->first() : null;
+        }
+
+        if ($profile === null) {
+            return redirect()->route('stellar-profiles.index');
+        }
+
+        return redirect()->route('natal.show', $profile);
+    }
+
     public function show(Profile $profile)
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!$this->ownsProfile($profile), 403);
 
         $profile->touchLastUsed();
         $profile->loadMissing('birthCity');
@@ -170,7 +188,11 @@ class NatalController extends Controller
         $portraitShort = $builder->loadCached($profile, ReportMode::AiL1Haiku, 'en')?->introduction;
         $generating    = Cache::has("natal_portrait_generating_{$profile->id}");
 
-        $profiles   = Profile::where('user_id', auth()->id())->orderByDesc('last_used_at')->orderBy('first_name')->get();
+        if (auth()->check()) {
+            $profiles = Profile::where('user_id', auth()->id())->orderByDesc('last_used_at')->orderBy('first_name')->get();
+        } else {
+            $profiles = collect();
+        }
         $gender     = $profile->gender instanceof \App\Enums\Gender ? $profile->gender->value : $profile->gender;
         $singletons            = $this->computeSingletons($chart->planets ?? [], $gender, $profile->id);
         $houseLords            = $this->computeHouseLords($chart, $gender, $profile->id);

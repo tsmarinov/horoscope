@@ -14,13 +14,15 @@ class StellarProfileController extends Controller
     {
         $q = trim($request->query('q', ''));
 
+        $ownerQuery = auth()->check()
+            ? fn() => Profile::where('user_id', auth()->id())
+            : fn() => Profile::where('guest_id', $this->currentGuest()?->id ?? 0);
+
         // If ?edit=uuid is present without ?page, redirect to the correct page
         if (($editUuid = $request->query('edit')) && !$request->query('page')) {
-            $editProfile = Profile::where('user_id', auth()->id())
-                                  ->where('uuid', $editUuid)
-                                  ->first();
+            $editProfile = $ownerQuery()->where('uuid', $editUuid)->first();
             if ($editProfile) {
-                $position = Profile::where('user_id', auth()->id())
+                $position = $ownerQuery()
                     ->where(function ($q2) use ($editProfile) {
                         $q2->where('first_name', '<', $editProfile->first_name)
                            ->orWhere(function ($q3) use ($editProfile) {
@@ -38,7 +40,7 @@ class StellarProfileController extends Controller
             }
         }
 
-        $profiles = Profile::where('user_id', auth()->id())
+        $profiles = $ownerQuery()
             ->with('birthCity')
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
                 $query->where('first_name', 'like', "%{$q}%")
@@ -49,7 +51,7 @@ class StellarProfileController extends Controller
             ->paginate(config('horo.stellar_profiles_per_page'))
             ->appends(['q' => $q]);
 
-        $allNames = Profile::where('user_id', auth()->id())
+        $allNames = $ownerQuery()
             ->orderBy('first_name')->orderBy('last_name')
             ->get(['first_name', 'last_name'])
             ->map(fn ($p) => trim($p->first_name . ' ' . $p->last_name))
@@ -61,7 +63,17 @@ class StellarProfileController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
-        $data['user_id'] = auth()->id();
+
+        if (auth()->check()) {
+            $data['user_id'] = auth()->id();
+        } else {
+            $guest = $this->currentGuest();
+            if (!$guest) abort(403);
+            if (Profile::where('guest_id', $guest->id)->count() >= 1) {
+                return back()->withErrors(['_guest_limit' => 'Register to create more profiles.'])->withInput();
+            }
+            $data['guest_id'] = $guest->id;
+        }
 
         $profile = Profile::create($data);
         $profile->loadMissing('birthCity');
@@ -72,7 +84,7 @@ class StellarProfileController extends Controller
 
     public function update(Request $request, Profile $stellarProfile)
     {
-        abort_if($stellarProfile->user_id !== auth()->id(), 403);
+        abort_if(!$this->ownsProfile($stellarProfile), 403);
 
         $data = $this->validated($request);
 
@@ -97,7 +109,7 @@ class StellarProfileController extends Controller
 
     public function destroy(Profile $stellarProfile)
     {
-        abort_if($stellarProfile->user_id !== auth()->id(), 403);
+        abort_if(!$this->ownsProfile($stellarProfile), 403);
 
         $stellarProfile->delete();
 

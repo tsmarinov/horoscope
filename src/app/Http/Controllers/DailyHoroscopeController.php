@@ -34,11 +34,14 @@ class DailyHoroscopeController extends Controller
 
     public function redirect()
     {
-        $profile = Profile::where('user_id', auth()->id())
-            ->whereNotNull('last_used_at')
-            ->orderByDesc('last_used_at')
-            ->first()
-            ?? Profile::where('user_id', auth()->id())->orderBy('first_name')->first();
+        if (auth()->check()) {
+            $profile = Profile::where('user_id', auth()->id())
+                ->whereNotNull('last_used_at')->orderByDesc('last_used_at')->first()
+                ?? Profile::where('user_id', auth()->id())->orderBy('first_name')->first();
+        } else {
+            $guest = $this->currentGuest();
+            $profile = $guest ? Profile::where('guest_id', $guest->id)->first() : null;
+        }
 
         if ($profile === null) {
             return redirect()->route('stellar-profiles.index');
@@ -49,7 +52,7 @@ class DailyHoroscopeController extends Controller
 
     public function show(Profile $profile, ?string $date = null)
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!$this->ownsProfile($profile), 403);
 
         $date = $date ?? now()->toDateString();
         $profile->touchLastUsed();
@@ -75,8 +78,12 @@ class DailyHoroscopeController extends Controller
         $clothingTextShort = $this->loadClothingText($dto, $carbon, $gender, true);
         $aiText            = $this->loadAiSynthesis($profile->id, $date, $gender);
 
-        $profiles = Profile::where('user_id', auth()->id())
-            ->orderByDesc('last_used_at')->orderBy('first_name')->get();
+        if (auth()->check()) {
+            $profiles = Profile::where('user_id', auth()->id())
+                ->orderByDesc('last_used_at')->orderBy('first_name')->get();
+        } else {
+            $profiles = collect();
+        }
 
         return view('horoscope.daily.show', compact(
             'profile', 'dto', 'date', 'gender', 'profiles',
@@ -90,7 +97,7 @@ class DailyHoroscopeController extends Controller
 
     public function generateSynthesis(Profile $profile, string $date)
     {
-        abort_if($profile->user_id !== auth()->id(), 403);
+        abort_if(!auth()->check(), 403);
 
         $service = app(DailyHoroscopeService::class);
         try {

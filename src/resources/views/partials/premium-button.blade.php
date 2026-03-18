@@ -7,6 +7,13 @@
     When premium user    — active button + confirm dialog.
     When non-premium     — disabled locked button.
 --}}
+@guest
+@if(config('premium.enabled'))
+<a href="{{ route('register') }}" class="btn-register-unlock">
+    🔒 {{ __('ui.retrograde.premium.register_to_unlock') }}
+</a>
+@endif
+@endguest
 @auth
 @if(config('premium.enabled'))
 @php

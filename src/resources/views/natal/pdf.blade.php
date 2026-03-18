@@ -252,8 +252,10 @@ window.onload = function() {
     }
     mk('circle',{cx:CX,cy:CY,r:RZ,fill:'none',stroke:C.border,'stroke-width':'0.4'});
     mk('circle',{cx:CX,cy:CY,r:RZ,fill:C.card,stroke:'none'});
-    mk('circle',{cx:CX,cy:CY,r:R4IN,fill:'none',stroke:C.border,'stroke-width':'0.4'});
-    mk('circle',{cx:CX,cy:CY,r:R3IN,fill:'none',stroke:C.border,'stroke-width':'0.4'});
+    if (HS.length===12) {
+        mk('circle',{cx:CX,cy:CY,r:R4IN,fill:'none',stroke:C.border,'stroke-width':'0.4'});
+        mk('circle',{cx:CX,cy:CY,r:R3IN,fill:'none',stroke:C.border,'stroke-width':'0.4'});
+    }
 
     var HOUSE_N=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
     var ANGULAR=[0,3,6,9];
