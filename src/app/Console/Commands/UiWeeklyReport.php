@@ -212,7 +212,7 @@ class UiWeeklyReport extends Command
                 $block     = TextBlock::pickForProfile($rxKey, $simplified ? 'retrograde_short' : 'retrograde', 'en', $gender, $profile->id);
 
                 $this->put($this->row(''));
-                $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender) . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
+                $this->put($this->row('  · ' . $bodyGlyph . ' ' . $rx->name . ' ' . ui_trans('retrograde.label', $gender) . '  ·  in ' . $signGlyph . ' ' . $rx->signName));
 
                 if ($block) {
                     $this->put($this->row(''));

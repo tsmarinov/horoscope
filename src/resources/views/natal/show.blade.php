@@ -294,10 +294,10 @@
     {{-- Portrait section --}}
     @if($portraitFull !== null || $portraitShort !== null)
     <div class="card" id="portrait-card" style="margin-top:0.75rem;padding:0.75rem 1rem;background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.25){{ $portraitFull === null ? ';display:none' : '' }}">
-        <div id="portrait-full" style="font-size:0.9rem;line-height:1.65{{ $portraitFull === null ? ';display:none' : '' }}">
+        <div id="portrait-full" class="prose" style="{{ $portraitFull === null ? 'display:none' : '' }}">
             {!! $portraitFull ?? '' !!}
         </div>
-        <div id="portrait-short" style="font-size:0.9rem;line-height:1.65;display:none">
+        <div id="portrait-short" class="prose" style="display:none">
             {!! $portraitShort ?? '' !!}
         </div>
     </div>
@@ -331,7 +331,7 @@
                 @endif
             </div>
             @if($s['text'])
-            <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $s['text'] }}</p>
+            <p class="prose-muted">{{ $s['text'] }}</p>
             @endif
         </div>
         @endforeach
@@ -347,8 +347,8 @@
         <div style="display:flex;flex-direction:column;gap:1.25rem">
             @foreach($items as $hl)
             <div>
-                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">{{ $hl['label'] }}</div>
-                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{{ $hl['text'] }}</p>
+                <div class="chip-transit">{{ $hl['label'] }}</div>
+                <p class="prose-muted">{{ $hl['text'] }}</p>
             </div>
             @endforeach
         </div>
@@ -364,9 +364,9 @@
         <div style="display:flex;flex-direction:column;gap:1.25rem">
             @foreach($items as $item)
             <div>
-                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.2rem">{{ $item['label'] }}</div>
+                <div class="chip-transit">{{ $item['label'] }}</div>
                 <div style="font-size:0.75rem;color:var(--theme-muted);margin-bottom:0.3rem">{{ $item['lord'] }} · {{ ucfirst(str_replace('_', '-', $item['aspect'])) }} · {{ $item['other'] }}</div>
-                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <p class="prose-muted">{!! $item['text'] !!}</p>
             </div>
             @endforeach
         </div>
@@ -386,10 +386,8 @@
                 $aspGlyph = $aspectGlyphs[$item['aspect']] ?? '∗';
             @endphp
             <div>
-                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">
-                    {{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}
-                </div>
-                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <div class="chip-transit">{{ $item['planet'] }} {{ $aspGlyph }} {{ $aspLabel }} {{ $item['angle'] }}</div>
+                <p class="prose-muted">{!! $item['text'] !!}</p>
             </div>
             @endforeach
         </div>
@@ -411,11 +409,9 @@
                 $nameB    = \App\Models\PlanetaryPosition::BODY_NAMES[$item['bodyB']] ?? '';
             @endphp
             <div>
-                <div style="font-size:0.8rem;font-weight:600;color:#6a329f;margin-bottom:0.35rem">
-                    {{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}
-                </div>
+                <div class="chip-transit">{{ $nameA }} {{ $aspGlyph }} {{ $aspLabel }} {{ $nameB }}</div>
                 @if($item['text'])
-                <p style="font-size:0.9rem;color:var(--theme-muted);line-height:1.6;margin:0">{!! $item['text'] !!}</p>
+                <p class="prose-muted">{!! $item['text'] !!}</p>
                 @endif
             </div>
             @endforeach

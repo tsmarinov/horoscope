@@ -209,7 +209,7 @@ class UiDailyReport extends Command
 
         // 2. Retrograde planets
         foreach ($dto->retrogrades as $rx) {
-            $chip = (self::BODY_GLYPHS[$rx->body] ?? '?') . ' ' . $rx->name . ' ' . ui_trans('retrograde', $gender)
+            $chip = (self::BODY_GLYPHS[$rx->body] ?? '?') . ' ' . $rx->name . ' ' . ui_trans('retrograde.label', $gender)
                   . '  ·  in '
                   . (self::SIGN_GLYPHS[$rx->signIndex] ?? '') . ' ' . $rx->signName;
 

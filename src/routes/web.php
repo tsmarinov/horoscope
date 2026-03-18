@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CitySearchController;
+use App\Http\Controllers\DailyHoroscopeController;
 use App\Http\Controllers\NatalController;
 use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\EmailController;
@@ -52,6 +53,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/natal/{profile}/pdf',     [NatalController::class, 'pdf'])->name('natal.pdf');
     Route::post('/natal/{profile}/portrait',        [NatalController::class, 'generatePortrait'])->name('natal.portrait');
     Route::get('/natal/{profile}/portrait/status', [NatalController::class, 'portraitStatus'])->name('natal.portrait.status');
+});
+
+// Daily horoscope
+Route::middleware('auth')->group(function () {
+    Route::get('/horoscope/daily', [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
+    Route::get('/horoscope/daily/{profile}/{date?}',             [DailyHoroscopeController::class, 'show'])->name('daily.show');
+    Route::post('/horoscope/daily/{profile}/{date}/synthesis',   [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
 });
 
 // Stellar Profiles

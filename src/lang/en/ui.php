@@ -73,7 +73,6 @@ return [
     ],
 
     'rating_wait'      => '⚠ wait',
-    'retrograde'       => 'Retrograde',
     'retrograde_short' => 'Rx',
     'aspects' => [
         'conjunction'      => 'Conjunction',
@@ -141,7 +140,16 @@ return [
         'dispositor'      => 'Dispositor',
     ],
     'daily' => [
-        'ai_overview' => "TODAY'S OVERVIEW",
+        'ai_overview'    => "TODAY'S OVERVIEW",
+        'page_title'     => 'Daily Horoscope',
+        'key_transits'   => 'KEY TRANSIT FACTORS',
+        'lunar_day'      => 'LUNAR DAY',
+        'tip_label'      => 'Tip of the Day',
+        'clothing_label' => 'Clothing & Jewelry',
+        'no_transits'    => 'No significant transit factors today.',
+        'generating'     => 'Generating…',
+        'back_to_natal'  => '← Natal Chart',
+        'today'          => 'Today',
     ],
     'weekly' => [
         'ai_overview' => 'WEEKLY OVERVIEW',
@@ -227,6 +235,7 @@ return [
     ],
 
     'retrograde' => [
+        'label'          => 'Retrograde',
         'title'          => 'Retrograde Calendar',
         'subtitle'       => 'Universal · no birth data required',
         'active_now'     => 'ACTIVE NOW',

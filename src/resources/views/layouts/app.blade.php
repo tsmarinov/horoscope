@@ -11,7 +11,7 @@
     <title>@yield('title', 'StellarOmens') — Stellar Omens</title>
     <meta name="description" content="@yield('description', 'Personal astrology — daily, weekly and monthly horoscopes tailored to your birth chart.')">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.scss', 'resources/js/app.js'])
 
     {{-- Twemoji — flat SVG emojis --}}
     <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
@@ -249,7 +249,8 @@
     </template>
 
     {{-- ── Page content ──────────────────────────────────────────────────── --}}
-    <main class="@yield('main_class', 'page-wrap')">
+    <main id="page-{{ str_replace('.', '-', Route::currentRouteName() ?? 'unknown') }}"
+          class="@yield('main_class', 'page-wrap')">
         @yield('content')
     </main>
 

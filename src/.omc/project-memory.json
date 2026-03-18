@@ -255,6 +255,30 @@
   },
   "hotPaths": [
     {
+      "path": "resources/views/natal/show.blade.php",
+      "accessCount": 14,
+      "lastAccessed": 1773840854643,
+      "type": "directory"
+    },
+    {
+      "path": "resources/views/horoscope/daily/show.blade.php",
+      "accessCount": 10,
+      "lastAccessed": 1773840758306,
+      "type": "file"
+    },
+    {
+      "path": "resources/views",
+      "accessCount": 7,
+      "lastAccessed": 1773840692997,
+      "type": "directory"
+    },
+    {
+      "path": "resources/css/app.scss",
+      "accessCount": 5,
+      "lastAccessed": 1773840845618,
+      "type": "file"
+    },
+    {
       "path": "resources/views/partials/premium-button.blade.php",
       "accessCount": 3,
       "lastAccessed": 1773822782989,
@@ -279,6 +303,18 @@
       "type": "file"
     },
     {
+      "path": "resources/views/layouts/app.blade.php",
+      "accessCount": 2,
+      "lastAccessed": 1773840363837,
+      "type": "file"
+    },
+    {
+      "path": "vite.config.js",
+      "accessCount": 2,
+      "lastAccessed": 1773840375759,
+      "type": "file"
+    },
+    {
       "path": "app/Models/PremiumUsage.php",
       "accessCount": 1,
       "lastAccessed": 1773822596949,
@@ -291,16 +327,10 @@
       "type": "directory"
     },
     {
-      "path": "resources/views/natal/show.blade.php",
+      "path": "resources/css/app.css",
       "accessCount": 1,
-      "lastAccessed": 1773822605064,
-      "type": "directory"
-    },
-    {
-      "path": "resources/views",
-      "accessCount": 1,
-      "lastAccessed": 1773822608448,
-      "type": "directory"
+      "lastAccessed": 1773840222476,
+      "type": "file"
     }
   ],
   "userDirectives": []
