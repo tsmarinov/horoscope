@@ -163,8 +163,8 @@
                 </a>
             </div>
         @endif
-        <div style="text-align:center;margin-top:0.5rem;display:flex;justify-content:center;gap:1.2rem">
-            <a href="{{ route('daily.show', $profile) }}" style="font-size:0.78rem;color:var(--theme-muted);text-decoration:none;opacity:0.7" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">{{ __('ui.natal.forecast_links.daily') }} →</a>
+        <div class="forecast-nav">
+            <a href="{{ route('daily.show', $profile) }}" class="forecast-nav-link">{{ __('ui.natal.forecast_links.daily') }} →</a>
         </div>
     </div>
 
@@ -229,7 +229,7 @@
             <div class="house-row{{ in_array($i, [0,3,6,9]) ? ' house-row-angle' : '' }}">
                 <span class="house-num">{{ $houseNames[$i] }}</span>
                 <span><span class="ct-sign-glyph">{{ $signGlyphs[$sign] }}</span>{{ $signNames[$sign] }}</span>
-                <span style="color:var(--theme-muted);font-size:0.78rem">{{ $deg }}°{{ str_pad($min,2,'0',STR_PAD_LEFT) }}'</span>
+                <span class="deg-text">{{ $deg }}°{{ str_pad($min,2,'0',STR_PAD_LEFT) }}'</span>
             </div>
             @endforeach
         </div>

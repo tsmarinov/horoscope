@@ -6,35 +6,33 @@
 @section('content')
 
 {{-- ── Hero ──────────────────────────────────────────────────────────────── --}}
-<div style="text-align:center;padding:2.5rem 0 2rem">
-    <h1 class="font-display" style="font-size:1.35rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--theme-text);margin-bottom:0.4rem">
+<div class="page-hero-lg">
+    <h1 class="font-display" style="font-size:1.35rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.4rem">
         {{ __('ui.home.hero_title') }}
     </h1>
-    <p style="color:var(--theme-muted);font-size:0.9rem;max-width:26rem;margin:0 auto">
+    <p class="page-subtitle" style="max-width:26rem;margin:0 auto">
         {{ __('ui.home.hero_sub') }}
     </p>
 </div>
 
 {{-- ── Cards grid ────────────────────────────────────────────────────────── --}}
-<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1.5rem"
-     class="home-cards">
+<div class="hcard-grid home-cards">
     @foreach ($cards as $card)
     @if($card['disabled'])
-    <div style="display:flex;flex-direction:column;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:0.5rem;overflow:hidden;opacity:0.38;cursor:default;user-select:none">
+    <div class="hcard-disabled">
     @else
-    <a href="{{ $card['url'] }}"
-       style="display:flex;flex-direction:column;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:0.5rem;overflow:hidden;text-decoration:none;transition:border-color 0.15s"
+    <a href="{{ $card['url'] }}" class="hcard"
        onmouseover="this.style.borderColor='#6a329f'"
        onmouseout="this.style.borderColor='var(--theme-border)'"
     >
     @endif
 
         {{-- Art header --}}
-        <div class="hcard-art" style="height:110px;background:linear-gradient(150deg,rgba(106,50,159,0.13) 0%,rgba(106,50,159,0.04) 100%);position:relative;overflow:hidden;flex-shrink:0">
+        <div class="hcard-art">
             @switch($card['key'])
 
             @case('daily')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="140" cy="55" r="52" stroke="#6a329f" stroke-width="0.5" opacity="0.12"/>
                 <circle cx="140" cy="55" r="38" stroke="#6a329f" stroke-width="0.5" opacity="0.18"/>
                 <circle cx="140" cy="55" r="22" stroke="#6a329f" stroke-width="1.5" opacity="0.65"/>
@@ -55,7 +53,7 @@
             @break
 
             @case('weekly')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="130" cy="55" r="38" stroke="#6a329f" stroke-width="0.5" opacity="0.15"/>
                 <path d="M155 55 C155 37 145 22 130 19 C148 21 162 36.5 162 55 C162 73.5 148 89 130 91 C145 88 155 73 155 55Z" fill="#6a329f" opacity="0.55"/>
                 <circle cx="50"  cy="22" r="2"   fill="#6a329f" opacity="0.45"/>
@@ -71,7 +69,7 @@
             @break
 
             @case('monthly')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 {{-- dot grid 6×4 --}}
                 @php
                     $cols = [70,98,126,154,182,210];
@@ -94,7 +92,7 @@
             @break
 
             @case('solar')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <ellipse cx="130" cy="62" rx="90" ry="36" stroke="#6a329f" stroke-width="1" opacity="0.28" stroke-dasharray="5 4"/>
                 <circle  cx="100" cy="62" r="7"  fill="#6a329f" opacity="0.4"/>
                 <circle  cx="100" cy="62" r="13" stroke="#6a329f" stroke-width="0.75" opacity="0.18"/>
@@ -110,7 +108,7 @@
             @break
 
             @case('natal')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="140" cy="55" r="48" stroke="#6a329f" stroke-width="1"    opacity="0.28"/>
                 <circle cx="140" cy="55" r="36" stroke="#6a329f" stroke-width="0.75" opacity="0.22"/>
                 <circle cx="140" cy="55" r="22" stroke="#6a329f" stroke-width="1"    opacity="0.32"/>
@@ -139,7 +137,7 @@
             @break
 
             @case('synastry')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="115" cy="55" r="38" stroke="#6a329f" stroke-width="1.25" opacity="0.42"/>
                 <circle cx="165" cy="55" r="38" stroke="#6a329f" stroke-width="1.25" opacity="0.42"/>
                 <circle cx="115" cy="55" r="24" stroke="#6a329f" stroke-width="0.75" opacity="0.18"/>
@@ -154,7 +152,7 @@
             @break
 
             @case('lunar')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <line x1="14" y1="55" x2="266" y2="55" stroke="#6a329f" stroke-width="0.5" opacity="0.12" stroke-dasharray="2 4"/>
                 @php
                     $phases = [
@@ -182,7 +180,7 @@
             @break
 
             @case('retrograde')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <path d="M18 58 C45 58 62 28 90 58 C107 73 107 36 130 36 C153 36 153 74 170 58 C196 35 218 58 262 58" stroke="#6a329f" stroke-width="1.5" opacity="0.48" fill="none" stroke-linecap="round"/>
                 <circle cx="90"  cy="58" r="3.5" fill="#6a329f" opacity="0.5"/>
                 <circle cx="170" cy="58" r="3.5" fill="#6a329f" opacity="0.5"/>
@@ -198,7 +196,7 @@
             @break
 
             @case('weekday')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 {{-- 7 day circles --}}
                 @php $dayX = [40,80,120,160,200,240,260]; @endphp
                 @foreach([40,80,120,160,200,240,260] as $i => $dx)
@@ -218,7 +216,7 @@
 
 
             @case('planets')
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 {{-- Orbits --}}
                 <ellipse cx="140" cy="55" rx="20"  ry="6"  stroke="#6a329f" stroke-width="0.5" opacity="0.2"/>
                 <ellipse cx="140" cy="55" rx="36"  ry="11" stroke="#6a329f" stroke-width="0.5" opacity="0.2"/>
@@ -243,24 +241,24 @@
             @break
 
             @default
-            <svg viewBox="0 0 280 110" fill="none" style="width:100%;height:100%;position:absolute;inset:0">
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="140" cy="55" r="32" stroke="#6a329f" stroke-width="1" opacity="0.3"/>
             </svg>
             @endswitch
 
             {{-- Glyph badge --}}
-            <span style="position:absolute;bottom:0.55rem;left:0.8rem;font-size:1.15rem;line-height:1;opacity:0.85">{{ $card['glyph'] }}</span>
+            <span class="hcard-glyph">{{ $card['glyph'] }}</span>
         </div>
 
         {{-- Card body --}}
-        <div style="display:flex;flex-direction:column;gap:0.45rem;padding:0.85rem 1rem 1rem">
-            <span style="font-size:0.85rem;font-weight:600;color:var(--theme-text);line-height:1.3">
+        <div class="hcard-body">
+            <span class="hcard-title">
                 {{ $card['title'] }}
             </span>
-            <span style="font-size:0.85rem;color:var(--theme-muted);line-height:1.55;flex:1">
+            <span class="hcard-desc">
                 {{ $card['desc'] }}
             </span>
-            <span style="font-size:0.72rem;color:#6a329f;font-weight:600;letter-spacing:0.02em;margin-top:0.15rem">
+            <span class="hcard-cta">
                 {{ $card['cta'] }} →
             </span>
         </div>
@@ -270,7 +268,7 @@
 </div>
 
 {{-- ── Footer CTA ────────────────────────────────────────────────────────── --}}
-<p style="text-align:center;font-size:0.75rem;color:var(--theme-muted);padding-bottom:1rem;line-height:1.6">
+<p class="home-cta">
     <a href="{{ route('register') }}" style="color:inherit;text-decoration:underline">{{ __('ui.home.cta_free') }}</a>
 </p>
 

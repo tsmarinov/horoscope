@@ -66,14 +66,13 @@
     }">
 
     @if($generated ?? false)
-    <button disabled
-            style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:not-allowed;font-family:inherit;opacity:0.45">
+    <button disabled class="btn-premium-disabled">
         {{ $premShow }}
     </button>
     @else
     <button @click="openDialog()"
             data-premium-btn
-            style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid #6a329f;background:none;color:#6a329f;font-size:0.82rem;cursor:pointer;font-family:inherit"
+            class="btn-premium"
             onmouseover="this.style.background='#6a329f';this.style.color='#fff'"
             onmouseout="this.style.background='none';this.style.color='#6a329f'">
         {{ $premShow }}
@@ -82,34 +81,33 @@
 
     {{-- Confirm modal --}}
     <div x-show="open" x-cloak
-         style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem"
+         class="premium-modal-wrap"
          @click.self="open = false">
 
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:0"></div>
+        <div class="premium-modal-overlay"></div>
 
-        <div style="position:relative;z-index:1;background:var(--theme-card);border-radius:12px;padding:1.5rem 1.75rem;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.25)"
+        <div class="premium-modal-box"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0 scale-95"
              x-transition:enter-end="opacity-100 scale-100">
 
-            <div style="font-size:1rem;font-weight:600;color:var(--theme-text);margin-bottom:0.6rem">
+            <div class="premium-modal-title">
                 {{ $premTitle }}
             </div>
 
-            <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0 0 0.4rem">
+            <p class="premium-modal-text">
                 {{ __('ui.retrograde.premium.dialog_body') }}
             </p>
-            <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0 0 1.25rem">
+            <p class="premium-modal-text-last">
                 {{ __('ui.retrograde.premium.dialog_remaining_prefix') }}
-                <strong x-text="remaining" style="color:#6a329f"></strong>
+                <strong x-text="remaining" class="premium-accent"></strong>
                 {{ __('ui.retrograde.premium.dialog_remaining_of') }}
                 <span x-text="limit"></span>
                 {{ __('ui.retrograde.premium.dialog_remaining_suffix') }}
             </p>
 
-            <div style="display:flex;gap:0.6rem;justify-content:flex-end">
-                <button @click="open = false"
-                        style="padding:0.4rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:pointer;font-family:inherit">
+            <div class="premium-modal-actions">
+                <button @click="open = false" class="btn-modal-cancel">
                     {{ __('ui.retrograde.premium.cancel') }}
                 </button>
                 <button @click="generate()" :disabled="loading || remaining <= 0"
@@ -125,8 +123,7 @@
 
 @else
 {{-- Non-premium: show locked button --}}
-<button disabled
-        style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:not-allowed;font-family:inherit;opacity:0.6">
+<button disabled class="btn-premium-disabled-soft">
     {{ $premLocked }}
 </button>
 @endif

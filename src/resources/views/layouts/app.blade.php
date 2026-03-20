@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
 
-<body class="min-h-screen" style="background-color:var(--theme-bg);color:var(--theme-text)">
+<body class="min-h-screen">
 
     {{-- ── Navbar ────────────────────────────────────────────────────────── --}}
     <header class="navbar">
@@ -29,13 +29,13 @@
             </a>
 
             {{-- Right controls --}}
-            <div style="display:flex;align-items:center;gap:0.5rem">
+            <div class="nav-controls">
 
                 {{-- Desktop only: Home, Theme, Profile --}}
                 <div class="navbar-desktop">
 
                 {{-- Home --}}
-                <a href="{{ route('home') }}" class="icon-btn" title="Home" style="text-decoration:none">
+                <a href="{{ route('home') }}" class="icon-btn" title="Home">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/>
                         <path d="M5.5 15V9.5h5V15"/>
@@ -50,7 +50,7 @@
                 </button>
 
                 {{-- Profile --}}
-                <div style="position:relative">
+                <div class="nav-profile">
                     <button class="icon-btn" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" aria-label="{{ __('ui.nav.account') }}" title="{{ __('ui.nav.account') }}">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="9" cy="6.5" r="3"/>
@@ -82,7 +82,7 @@
                         @if(Route::has('logout'))
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="pd-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                            <button type="submit" class="pd-item btn-reset">
                                 <span class="pd-icon">↩</span> {{ __('ui.nav.sign_out') }}
                             </button>
                         </form>
@@ -152,8 +152,8 @@
                  role="navigation">
 
                 {{-- Drawer logo + close --}}
-                <div class="drawer-logo" style="display:flex;align-items:center;justify-content:space-between">
-                    <span class="logo-text" style="font-size:0.9rem">STELLAR <span class="logo-accent">✦ OMENS</span></span>
+                <div class="drawer-logo">
+                    <span class="logo-text logo-text-sm">STELLAR <span class="logo-accent">✦ OMENS</span></span>
                     <button class="icon-btn" @click="menuOpen = false" aria-label="Close menu">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                             <line x1="2" y1="2" x2="14" y2="14"/>
@@ -166,7 +166,7 @@
                 <a href="{{ route('home') }}" class="drawer-item @yield('nav_home')">
                     <span class="di-icon">⌂</span> {{ __('ui.nav.home') }}
                 </a>
-                <div class="divider" style="margin:0.4rem 0"></div>
+                <div class="divider divider-sm"></div>
 
                 {{-- Horoscopes --}}
                 <div class="drawer-section">{{ __('ui.nav.horoscopes') }}</div>
@@ -219,7 +219,7 @@
                 @if(Route::has('logout'))
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="drawer-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                    <button type="submit" class="drawer-item btn-reset">
                         <span class="di-icon">↩</span> {{ __('ui.nav.sign_out') }}
                     </button>
                 </form>
@@ -241,8 +241,8 @@
                 @endauth
 
                 {{-- Theme --}}
-                <div class="divider" style="margin:0.4rem 0"></div>
-                <button class="drawer-item" @click="toggleTheme()" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                <div class="divider divider-sm"></div>
+                <button class="drawer-item btn-reset" @click="toggleTheme()">
                     <span class="di-icon">
                         <span x-show="theme === 'dark'" x-cloak>☀</span>
                         <span x-show="theme === 'light'" x-cloak>☽</span>
@@ -262,13 +262,13 @@
     </main>
 
     {{-- ── Footer ───────────────────────────────────────────────────────── --}}
-    <footer style="border-top:1px solid var(--theme-divider);margin-top:2rem;padding:1.5rem 1rem;text-align:center">
-        <p style="font-size:0.72rem;color:var(--theme-muted);letter-spacing:0.05em">
-            <span class="logo-text" style="font-size:0.72rem">STELLAR <span class="logo-accent">✦ OMENS</span></span>
+    <footer class="site-footer">
+        <p class="footer-text">
+            <span class="logo-text logo-text-xs">STELLAR <span class="logo-accent">✦ OMENS</span></span>
             &nbsp;·&nbsp;
-            <a href="{{ route('terms') }}"   style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">{{ __('ui.nav.terms') }}</a>
+            <a href="{{ route('terms') }}"   class="footer-link">{{ __('ui.nav.terms') }}</a>
             &nbsp;·&nbsp;
-            <a href="{{ route('privacy') }}" style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">{{ __('ui.nav.privacy') }}</a>
+            <a href="{{ route('privacy') }}" class="footer-link">{{ __('ui.nav.privacy') }}</a>
             &nbsp;·&nbsp; {{ date('Y') }}
         </p>
     </footer>

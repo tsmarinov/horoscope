@@ -8,35 +8,35 @@
     $initDate = old('birth_date', $profile?->birth_date?->format('Y-m-d')) ?? '';
 @endphp
 
-<div style="display:flex;flex-direction:column;gap:0.75rem">
+<div class="col-stack-lg">
 
     {{-- Name row --}}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+    <div class="form-row-2">
         <div>
-            <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">First name <span style="color:#dc2626">*</span></label>
+            <label class="form-label-light">First name <span style="color:#dc2626">*</span></label>
             @error('first_name')
-            <div style="font-size:0.73rem;color:#dc2626;margin-bottom:0.2rem">{{ $message }}</div>
+            <div class="field-error-sm">{{ $message }}</div>
             @enderror
             <input type="text" name="first_name" value="{{ old('first_name', $profile?->first_name) }}" required
-                   style="width:100%;box-sizing:border-box;background:var(--theme-raised);border:1px solid {{ $errors->has('first_name') ? '#dc2626' : 'var(--theme-border)' }};border-radius:0.35rem;padding:0.45rem 0.6rem;font-size:0.85rem;color:var(--theme-text);outline:none"
+                   class="form-input-sm" style="border-color:{{ $errors->has('first_name') ? '#dc2626' : 'var(--theme-border)' }}"
                    onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
         </div>
         <div>
-            <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">Last name</label>
+            <label class="form-label-light">Last name</label>
             <input type="text" name="last_name" value="{{ old('last_name', $profile?->last_name) }}"
-                   style="width:100%;box-sizing:border-box;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.45rem 0.6rem;font-size:0.85rem;color:var(--theme-text);outline:none"
+                   class="form-input-sm"
                    onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
         </div>
     </div>
 
     {{-- Gender --}}
     <div>
-        <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">Gender <span style="color:#dc2626">*</span></label>
+        <label class="form-label-light">Gender <span style="color:#dc2626">*</span></label>
         @error('gender')
-        <div style="font-size:0.73rem;color:#dc2626;margin-bottom:0.2rem">{{ $message }}</div>
+        <div class="field-error-sm">{{ $message }}</div>
         @enderror
         <select name="gender" required
-                style="width:100%;box-sizing:border-box;background:var(--theme-raised);border:1px solid {{ $errors->has('gender') ? '#dc2626' : 'var(--theme-border)' }};border-radius:0.35rem;padding:0.45rem 0.6rem;font-size:0.85rem;color:var(--theme-text);outline:none;appearance:none">
+                class="form-select" style="border-color:{{ $errors->has('gender') ? '#dc2626' : 'var(--theme-border)' }}">
             <option value="">— Select —</option>
             <option value="female" {{ old('gender', $profile?->gender?->value) === 'female' ? 'selected' : '' }}>Female</option>
             <option value="male"   {{ old('gender', $profile?->gender?->value) === 'male'   ? 'selected' : '' }}>Male</option>
@@ -45,13 +45,13 @@
     </div>
 
     {{-- Birth date + time --}}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+    <div class="form-row-2">
 
         {{-- Custom date picker --}}
         <div>
-            <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">Birth date <span style="color:#dc2626">*</span></label>
+            <label class="form-label-light">Birth date <span style="color:#dc2626">*</span></label>
             @error('birth_date')
-            <div style="font-size:0.73rem;color:#dc2626;margin-bottom:0.2rem">{{ $message }}</div>
+            <div class="field-error-sm">{{ $message }}</div>
             @enderror
 
             <div x-data="datePicker('{{ $initDate }}')" @click.outside="open=false" style="position:relative">
@@ -192,15 +192,15 @@
             $initMin  = $initTime ? substr($initTime, 3, 2) : '';
         @endphp
         <div x-data="{ hour: '{{ $initHour }}', minute: '{{ $initMin }}' }">
-            <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">Birth time <span style="font-size:0.72rem;font-weight:400">(optional)</span></label>
+            <label class="form-label-light">Birth time <span style="font-size:0.72rem;font-weight:400">(optional)</span></label>
             @error('birth_time')
-            <div style="font-size:0.73rem;color:#dc2626;margin-bottom:0.2rem">{{ $message }}</div>
+            <div class="field-error-sm">{{ $message }}</div>
             @enderror
             <input type="hidden" name="birth_time" :value="hour && minute !== '' ? hour + ':' + minute : ''">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem">
                 <select x-model="hour"
                         @change="window.dispatchEvent(new CustomEvent('birth-data-change'))"
-                        style="width:100%;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.5rem 0.6rem;font-size:0.92rem;color:var(--theme-text);outline:none;appearance:none;text-align:center"
+                        class="form-select" style="padding:0.5rem 0.6rem;font-size:0.92rem;text-align:center"
                         onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
                     <option value="">HH</option>
                     @for($h = 0; $h < 24; $h++)
@@ -209,7 +209,7 @@
                 </select>
                 <select x-model="minute"
                         @change="window.dispatchEvent(new CustomEvent('birth-data-change'))"
-                        style="width:100%;background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.5rem 0.6rem;font-size:0.92rem;color:var(--theme-text);outline:none;appearance:none;text-align:center"
+                        class="form-select" style="padding:0.5rem 0.6rem;font-size:0.92rem;text-align:center"
                         onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
                     <option value="">MM</option>
                     @for($m = 0; $m < 60; $m++)
@@ -217,7 +217,7 @@
                     @endfor
                 </select>
             </div>
-            <p style="font-size:0.72rem;color:var(--theme-muted);margin-top:0.3rem;line-height:1.4">Without an exact birth time, horoscopes will be incomplete — houses, Ascendant, and MC won't be calculated.</p>
+            <p class="form-hint">Without an exact birth time, horoscopes will be incomplete — houses, Ascendant, and MC won't be calculated.</p>
         </div>
     </div>
 
@@ -233,9 +233,9 @@
 
     {{-- Birth city autocomplete --}}
     <div>
-        <label style="display:block;font-size:0.78rem;color:var(--theme-muted);margin-bottom:0.25rem">Birth city <span style="font-size:0.72rem;font-weight:400">(optional, needed for exact houses)</span></label>
+        <label class="form-label-light">Birth city <span style="font-size:0.72rem;font-weight:400">(optional, needed for exact houses)</span></label>
         @error('birth_city_id')
-        <div style="font-size:0.73rem;color:#dc2626;margin-bottom:0.2rem">{{ $message }}</div>
+        <div class="field-error-sm">{{ $message }}</div>
         @enderror
         <div style="position:relative">
             <input type="text"
@@ -244,7 +244,7 @@
                    @keydown.escape="cityOpen = false"
                    placeholder="Start typing a city…"
                    autocomplete="off"
-                   style="width:100%;box-sizing:border-box;background:var(--theme-raised);border:1px solid {{ $errors->has('birth_city_id') ? '#dc2626' : 'var(--theme-border)' }};border-radius:0.35rem;padding:0.45rem 0.6rem;font-size:0.85rem;color:var(--theme-text);outline:none"
+                   class="form-input-sm" style="border-color:{{ $errors->has('birth_city_id') ? '#dc2626' : 'var(--theme-border)' }}"
                    onfocus="this.style.borderColor='#6a329f'" onblur="this.style.borderColor='var(--theme-border)'">
             <input type="hidden" name="birth_city_id" :value="cityId">
 

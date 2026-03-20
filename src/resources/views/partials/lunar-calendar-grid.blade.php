@@ -33,7 +33,7 @@
 </div>
 
 <div class="lunar-legend">
-    <span style="color:var(--theme-muted);font-size:0.75rem">* New Moon / Full Moon</span>
+    <span class="lunar-grid-note">* New Moon / Full Moon</span>
 </div>
 
 @else

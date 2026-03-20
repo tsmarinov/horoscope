@@ -201,7 +201,7 @@
         <div class="transit-subtitle">{{ $transitSubtitle }}</div>
         @endif
         <div style="text-align:center;margin-top:0.4rem">
-            <a href="{{ route('natal.show', $profile) }}" style="font-size:0.78rem;color:var(--theme-muted);text-decoration:none;opacity:0.7" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">View Natal Chart →</a>
+            <a href="{{ route('natal.show', $profile) }}" class="forecast-nav-link">View Natal Chart →</a>
         </div>
     </div>
 
@@ -223,7 +223,7 @@
                 <span>{{ $pos->name }}</span>
                 <span class="planet-in">in</span>
                 <span>{{ $signGlyphs[$pos->signIndex] ?? '' }} {{ $pos->signName }}@if($pos->isRetrograde) <span class="rx-badge">Rx</span>@endif</span>
-                <span style="color:var(--theme-muted);font-size:0.78rem">{{ $pd }}°{{ str_pad($pm,2,'0',STR_PAD_LEFT) }}'{{ str_pad($ps,2,'0',STR_PAD_LEFT) }}"</span>
+                <span class="deg-text">{{ $pd }}°{{ str_pad($pm,2,'0',STR_PAD_LEFT) }}'{{ str_pad($ps,2,'0',STR_PAD_LEFT) }}"</span>
             </div>
             @endforeach
         </div>
@@ -249,8 +249,8 @@
                 <span>{{ $bodyNames[$planet['body']] ?? '' }}</span>
                 <span class="planet-in">in</span>
                 <span>{{ $signGlyphs[$planet['sign']] ?? '' }} {{ $signNames[$planet['sign']] ?? '' }}</span>
-                <span style="color:var(--theme-muted);font-size:0.78rem">{{ $nd }}°{{ str_pad($nm,2,'0',STR_PAD_LEFT) }}'{{ str_pad($ns,2,'0',STR_PAD_LEFT) }}"</span>
-                <span style="color:var(--theme-muted);font-size:0.78rem;text-align:right">{{ isset($planet['house']) ? ($houseNames[$planet['house'] - 1] ?? '') : '' }}@if($planet['is_retrograde']) <span class="rx-badge">Rx</span>@endif</span>
+                <span class="deg-text">{{ $nd }}°{{ str_pad($nm,2,'0',STR_PAD_LEFT) }}'{{ str_pad($ns,2,'0',STR_PAD_LEFT) }}"</span>
+                <span class="deg-text" style="text-align:right">{{ isset($planet['house']) ? ($houseNames[$planet['house'] - 1] ?? '') : '' }}@if($planet['is_retrograde']) <span class="rx-badge">Rx</span>@endif</span>
             </div>
             @endforeach
         </div>
@@ -311,7 +311,7 @@
     @foreach([['full', $lunarText], ['short', $lunarTextShort]] as [$ver, $text])
     <div class="card card-mt card-lunar" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
         <div class="section-label section-label-sm">{{ __('ui.daily.lunar_day') }}</div>
-        <div class="card-meta" @if($text) style="margin-bottom:0.6rem" @endif>
+        <div @class(['card-meta', 'card-meta-mb' => $text])>
             <a href="{{ route('lunar.show', [$carbon->year, $carbon->format('m')]) }}" style="color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem">
                 {!! $moonSvg($dto->moon->elongation, 22) !!} Moon in {{ $moonSignGlyph }} {{ $dto->moon->signName }}
                 &nbsp;·&nbsp; Day {{ $dto->moon->lunarDay }} / 30
@@ -339,7 +339,7 @@
     @if($text)
     <div class="card card-mt card-clothing" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
         <div class="label-purple">{{ __('ui.daily.clothing_label') }}</div>
-        <div class="card-meta" style="margin-bottom:0.5rem">
+        <div class="card-meta card-meta-mb-sm">
             🗓 {{ $dto->dayRuler->weekday }}
             &nbsp;·&nbsp; {{ $rulerGlyph }} {{ $dto->dayRuler->planet }}
             @if($dto->natalVenusSign !== null)
@@ -366,7 +366,7 @@
             @if($isWait)
             <span class="area-wait">{{ __('ui.rating_wait') }}</span>
             @else
-            <span class="area-stars">{{ str_repeat('★', $area->rating) }}<span style="opacity:0.25">{{ str_repeat('☆', $area->maxRating - $area->rating) }}</span></span>
+            <span class="area-stars">{{ str_repeat('★', $area->rating) }}<span class="opacity-muted">{{ str_repeat('☆', $area->maxRating - $area->rating) }}</span></span>
             @endif
         </div>
         @endforeach

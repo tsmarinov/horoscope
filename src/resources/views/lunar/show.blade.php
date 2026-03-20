@@ -89,7 +89,7 @@
 
 </div>
 
-<div class="pdf-row" style="justify-content:flex-end">
+<div class="pdf-row lunar-pdf-row">
     <a href="{{ route('lunar.pdf', [$year, str_pad($month, 2, '0', STR_PAD_LEFT)]) }}"
        class="btn-pdf" target="_blank"
        title="{{ __('ui.lunar.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
