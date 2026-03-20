@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->alias(['locale' => \App\Http\Middleware\SetLocale::class]);
+        $middleware->web(prepend: [
+            \App\Http\Middleware\PreLaunchMiddleware::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\EnsureGuestSession::class,
             \App\Http\Middleware\SetLocale::class,
