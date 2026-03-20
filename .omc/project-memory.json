@@ -1,0 +1,160 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1773790065266,
+  "projectRoot": "/var/www/horo/web",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "src"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "backups": {
+      "path": "backups",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1773790065260,
+      "keyFiles": [
+        "horo_2026-03-10_140344.sql",
+        "horo_2026-03-11_101037.sql.gz",
+        "project-2026-03-03.zip"
+      ]
+    },
+    "deploy": {
+      "path": "deploy",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1773790065262,
+      "keyFiles": []
+    },
+    "nginx": {
+      "path": "nginx",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1773790065263,
+      "keyFiles": [
+        "default.conf"
+      ]
+    },
+    "php": {
+      "path": "php",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1773790065263,
+      "keyFiles": [
+        "Dockerfile",
+        "entrypoint.sh"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 18,
+      "lastAccessed": 1773790065263,
+      "keyFiles": [
+        "AGENTS.md",
+        "README.md",
+        "artisan",
+        "composer.json",
+        "composer.lock"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/resources/views/natal/pdf.blade.php",
+      "accessCount": 17,
+      "lastAccessed": 1773821451460,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/natal/show.blade.php",
+      "accessCount": 17,
+      "lastAccessed": 1773821789184,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Services/ReportBuilder.php",
+      "accessCount": 5,
+      "lastAccessed": 1773790414640,
+      "type": "directory"
+    },
+    {
+      "path": "src/resources/views/natal/pdf_footer.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773820785242,
+      "type": "file"
+    },
+    {
+      "path": "src/lang/en/ui.php",
+      "accessCount": 4,
+      "lastAccessed": 1773821227728,
+      "type": "directory"
+    },
+    {
+      "path": "src/resources/css/app.css",
+      "accessCount": 4,
+      "lastAccessed": 1773821752925,
+      "type": "directory"
+    },
+    {
+      "path": "src/resources/views/lunar/show.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1773960664649,
+      "type": "file"
+    },
+    {
+      "path": "src/resources",
+      "accessCount": 1,
+      "lastAccessed": 1773790472275,
+      "type": "directory"
+    },
+    {
+      "path": "src/resources/views/partials/premium-button.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1773820052740,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Http/Controllers/LunarCalendarController.php",
+      "accessCount": 1,
+      "lastAccessed": 1773960501820,
+      "type": "file"
+    },
+    {
+      "path": "src/routes/web.php",
+      "accessCount": 1,
+      "lastAccessed": 1773960502236,
+      "type": "directory"
+    },
+    {
+      "path": "src/resources/css/app.scss",
+      "accessCount": 1,
+      "lastAccessed": 1773960633381,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

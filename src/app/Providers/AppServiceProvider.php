@@ -2,16 +2,50 @@
 
 namespace App\Providers;
 
+use Anthropic\Client as AnthropicClient;
+use App\Contracts\AiProvider;
+use App\Services\Ai\ClaudeProvider;
+use App\Services\AspectCalculator;
+use App\Services\HouseCalculator;
+use App\Services\ReportBuilder;
+use App\Services\VariantPicker;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->singleton(HouseCalculator::class);
+        $this->app->singleton(AspectCalculator::class);
+        $this->app->singleton(VariantPicker::class);
+
+        $this->app->singleton(AiProvider::class, function () {
+            $provider = config('astrology.ai.provider', 'claude');
+            $model    = config('astrology.ai.model', 'claude-haiku-4-5-20251001');
+
+            return match ($provider) {
+                'claude' => new ClaudeProvider(
+                    client: new AnthropicClient(apiKey: env('ANTHROPIC_API_KEY', '')),
+                    model: $model,
+                ),
+                default  => throw new \InvalidArgumentException("Unknown AI provider: {$provider}"),
+            };
+        });
+
+        $this->app->singleton(\App\Services\Ai\HoroscopeSynthesisService::class, function ($app) {
+            return new \App\Services\Ai\HoroscopeSynthesisService(
+                ai: $app->make(\App\Contracts\AiProvider::class),
+            );
+        });
+
+        $this->app->singleton(ReportBuilder::class, function ($app) {
+            return new ReportBuilder(
+                aspectCalculator: $app->make(AspectCalculator::class),
+                aiProvider:       $app->make(AiProvider::class),
+            );
+        });
     }
 
     /**
@@ -19,6 +53,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Explicit binding needed because {locale} prefix param shifts implicit resolution
+        Route::bind('profile', fn($value) =>
+            \App\Models\Profile::where('uuid', $value)->firstOrFail()
+        );
+
+        View::composer('layouts.app', function ($view) {
+            $natalNavUrl = route('natal.index');
+            if (auth()->check()) {
+                $profile = \App\Models\Profile::where('user_id', auth()->id())->latest()->first();
+                $natalNavUrl = $profile
+                    ? route('natal.show', $profile)
+                    : route('stellar-profiles.index');
+            }
+            $view->with('natalNavUrl', $natalNavUrl);
+        });
     }
 }

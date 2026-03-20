@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\DeletedAccount;
+use App\Notifications\ConfirmEmailNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+
+class AuthController extends Controller
+{
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email'    => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('home'));
+        }
+
+        return back()->withErrors([
+            'email' => 'These credentials do not match our records.',
+        ])->onlyInput('email');
+    }
+
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = User::create([
+            'name'              => $data['name'],
+            'email'             => $data['email'],
+            'password'          => Hash::make($data['password']),
+            'accepts_marketing' => $request->boolean('newsletter'),
+        ]);
+
+        Auth::login($user);
+
+        // Migrate guest profiles to the new user account
+        $uuid = $request->cookie('guest_uuid');
+        if ($uuid) {
+            $guest = \App\Models\Guest::where('uuid', $uuid)->first();
+            if ($guest) {
+                \App\Models\Profile::where('guest_id', $guest->id)
+                    ->update(['guest_id' => null, 'user_id' => $user->id]);
+            }
+        }
+        // Clear guest cookie
+        cookie()->queue(cookie()->forget('guest_uuid'));
+
+        // Audit log
+        DeletedAccount::create([
+            'event'         => 'registered',
+            'email'         => $user->email,
+            'registered_at' => $user->created_at,
+            'deleted_at'    => $user->created_at,
+        ]);
+
+        if (config('mail.enabled', false)) {
+            $user->notify(new ConfirmEmailNotification());
+        }
+
+        return redirect()->route('home')->with('status', 'registered');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('home');
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@204.168.178.25 \\\"echo 'Connected'; lsb_release -d 2>/dev/null || cat /etc/os-release | head -3; php --version 2>/dev/null || echo ...",
+  "error": "Exit code 255\nssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory\r\nPermission denied, please try again.\r\nssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory\r\nReceived disconnect from 204.168.178.25 port 22:2: Too many authentication failures\r\nDisconnected from 204.168.178.25 port 22",
+  "timestamp": "2026-03-20T13:54:09.483Z",
+  "retry_count": 1
+}
