@@ -44,9 +44,7 @@ class EmailController extends Controller
 
         RateLimiter::hit($key, 300); // 5-minute window
 
-        if (config('mail.enabled', false)) {
-            $user->notify(new ConfirmEmailNotification());
-        }
+        $user->notify(new ConfirmEmailNotification());
 
         return back()->with('status', 'confirmation_sent');
     }
