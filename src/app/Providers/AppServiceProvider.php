@@ -9,6 +9,7 @@ use App\Services\AspectCalculator;
 use App\Services\HouseCalculator;
 use App\Services\ReportBuilder;
 use App\Services\VariantPicker;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -52,8 +53,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Explicit binding needed because {locale} prefix param shifts implicit resolution
+        Route::bind('profile', fn($value) =>
+            \App\Models\Profile::where('uuid', $value)->firstOrFail()
+        );
+
         View::composer('layouts.app', function ($view) {
-            $natalNavUrl = url('/natal');
+            $natalNavUrl = route('natal.index');
             if (auth()->check()) {
                 $profile = \App\Models\Profile::where('user_id', auth()->id())->latest()->first();
                 $natalNavUrl = $profile

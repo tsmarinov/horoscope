@@ -21,6 +21,11 @@
     $isPremium = $user->isPremium();
     $remaining = $isPremium ? $user->premiumRemaining() : 0;
     $limit     = config('premium.monthly_limit');
+    $ctx       = $context ?? 'retrograde';
+    $premBase  = 'ui.' . $ctx . '.premium.';
+    $premShow   = \Lang::has($premBase . 'button_show')  ? __($premBase . 'button_show')  : __('ui.retrograde.premium.button_show');
+    $premLocked = \Lang::has($premBase . 'button_locked') ? __($premBase . 'button_locked') : __('ui.retrograde.premium.button_locked');
+    $premTitle  = \Lang::has($premBase . 'dialog_title') ? __($premBase . 'dialog_title') : __('ui.retrograde.premium.dialog_title');
 @endphp
 
 @if($isPremium)
@@ -63,7 +68,7 @@
     @if($generated ?? false)
     <button disabled
             style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:not-allowed;font-family:inherit;opacity:0.45">
-        {{ __('ui.retrograde.premium.button_show') }}
+        {{ $premShow }}
     </button>
     @else
     <button @click="openDialog()"
@@ -71,7 +76,7 @@
             style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid #6a329f;background:none;color:#6a329f;font-size:0.82rem;cursor:pointer;font-family:inherit"
             onmouseover="this.style.background='#6a329f';this.style.color='#fff'"
             onmouseout="this.style.background='none';this.style.color='#6a329f'">
-        {{ __('ui.retrograde.premium.button_show') }}
+        {{ $premShow }}
     </button>
     @endif
 
@@ -88,7 +93,7 @@
              x-transition:enter-end="opacity-100 scale-100">
 
             <div style="font-size:1rem;font-weight:600;color:var(--theme-text);margin-bottom:0.6rem">
-                {{ __('ui.retrograde.premium.dialog_title') }}
+                {{ $premTitle }}
             </div>
 
             <p style="font-size:0.85rem;color:var(--theme-muted);line-height:1.6;margin:0 0 0.4rem">
@@ -122,7 +127,7 @@
 {{-- Non-premium: show locked button --}}
 <button disabled
         style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.45rem 1rem;border-radius:6px;border:1px solid var(--theme-border);background:none;color:var(--theme-muted);font-size:0.82rem;cursor:not-allowed;font-family:inherit;opacity:0.6">
-    {{ __('ui.retrograde.premium.button_locked') }}
+    {{ $premLocked }}
 </button>
 @endif
 

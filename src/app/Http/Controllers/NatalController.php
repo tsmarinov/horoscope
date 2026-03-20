@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class NatalController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsPdfFooter;
     private const SIGN_ELEMENTS = [
         'fire', 'earth', 'air', 'water',
         'fire', 'earth', 'air', 'water',
@@ -64,15 +65,6 @@ class NatalController extends Controller
         0 => 'sun', 1 => 'moon', 2 => 'mercury', 3 => 'venus', 4 => 'mars',
         5 => 'jupiter', 6 => 'saturn', 7 => 'uranus', 8 => 'neptune', 9 => 'pluto',
     ];
-
-    private function buildFooterFile(): string
-    {
-        $html = view('natal.pdf_footer')->render();
-        $path = sys_get_temp_dir() . '/natal_footer_' . uniqid() . '.html';
-        file_put_contents($path, $html);
-        register_shutdown_function(static function () use ($path) { @unlink($path); });
-        return 'file://' . $path;
-    }
 
     public function pdf(Profile $profile)
     {

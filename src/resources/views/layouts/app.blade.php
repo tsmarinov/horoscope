@@ -24,7 +24,7 @@
         <div class="navbar-inner">
 
             {{-- Logo --}}
-            <a href="{{ url('/') }}" class="logo-text">
+            <a href="{{ route('home') }}" class="logo-text">
                 STELLAR <span class="logo-accent">✦ OMENS</span>
             </a>
 
@@ -35,7 +35,7 @@
                 <div class="navbar-desktop">
 
                 {{-- Home --}}
-                <a href="{{ url('/') }}" class="icon-btn" title="Home" style="text-decoration:none">
+                <a href="{{ route('home') }}" class="icon-btn" title="Home" style="text-decoration:none">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z"/>
                         <path d="M5.5 15V9.5h5V15"/>
@@ -43,7 +43,7 @@
                 </a>
 
                 {{-- Theme toggle --}}
-                <button class="icon-btn" @click="toggleTheme()" :title="theme === 'dark' ? 'Switch to light' : 'Switch to dark'">
+                <button class="icon-btn" @click="toggleTheme()" :title="theme === 'dark' ? '{{ __('ui.nav.switch_to_light') }}' : '{{ __('ui.nav.switch_to_dark') }}'">
                     <span x-show="theme === 'dark'" x-cloak>☀</span>
                     <span x-show="theme === 'light'" x-cloak>☽</span>
                     <span x-show="!theme">◐</span>
@@ -51,7 +51,7 @@
 
                 {{-- Profile --}}
                 <div style="position:relative">
-                    <button class="icon-btn" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" aria-label="Account" title="Account">
+                    <button class="icon-btn" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" aria-label="{{ __('ui.nav.account') }}" title="{{ __('ui.nav.account') }}">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="9" cy="6.5" r="3"/>
                             <path d="M2.5 16c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5"/>
@@ -73,37 +73,37 @@
                         </div>
                         <div class="pd-divider"></div>
                         <a href="{{ route('profile') }}" class="pd-item" @click="profileOpen = false">
-                            <span class="pd-icon">👤</span> My Profile
+                            <span class="pd-icon">👤</span> {{ __('ui.nav.my_profile') }}
                         </a>
                         <a href="{{ route('stellar-profiles.index') }}" class="pd-item" @click="profileOpen = false">
-                            <span class="pd-icon">✦</span> Stellar Profiles
+                            <span class="pd-icon">✦</span> {{ __('ui.nav.stellar_profiles') }}
                         </a>
                         <div class="pd-divider"></div>
                         @if(Route::has('logout'))
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="pd-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
-                                <span class="pd-icon">↩</span> Sign Out
+                                <span class="pd-icon">↩</span> {{ __('ui.nav.sign_out') }}
                             </button>
                         </form>
                         @endif
                         @else
                         <div class="pd-header">
-                            <span class="pd-hello">Hello, visitor</span>
+                            <span class="pd-hello">{{ __('ui.nav.hello_visitor') }}</span>
                         </div>
                         <div class="pd-divider"></div>
                         <a href="{{ route('stellar-profiles.index') }}" class="pd-item" @click="profileOpen = false">
-                            <span class="pd-icon">✦</span> Stellar Profiles
+                            <span class="pd-icon">✦</span> {{ __('ui.nav.stellar_profiles') }}
                         </a>
                         <div class="pd-divider"></div>
                         @if(Route::has('login'))
                         <a href="{{ route('login') }}" class="pd-item" @click="profileOpen = false">
-                            <span class="pd-icon">↪</span> Sign In
+                            <span class="pd-icon">↪</span> {{ __('ui.nav.sign_in') }}
                         </a>
                         @endif
                         @if(Route::has('register'))
                         <a href="{{ route('register') }}" class="pd-item" @click="profileOpen = false">
-                            <span class="pd-icon">✦</span> Create Account
+                            <span class="pd-icon">✦</span> {{ __('ui.nav.create_account') }}
                         </a>
                         @endif
                         @endauth
@@ -163,79 +163,79 @@
                 </div>
 
                 {{-- Home --}}
-                <a href="{{ url('/') }}" class="drawer-item @yield('nav_home')">
-                    <span class="di-icon">⌂</span> Home
+                <a href="{{ route('home') }}" class="drawer-item @yield('nav_home')">
+                    <span class="di-icon">⌂</span> {{ __('ui.nav.home') }}
                 </a>
                 <div class="divider" style="margin:0.4rem 0"></div>
 
                 {{-- Horoscopes --}}
-                <div class="drawer-section">Horoscopes</div>
-                <a href="{{ url('/horoscope/daily') }}"  class="drawer-item @yield('nav_daily')">
-                    <span class="di-icon">☀</span> Daily
+                <div class="drawer-section">{{ __('ui.nav.horoscopes') }}</div>
+                <a href="{{ route('daily.index') }}"  class="drawer-item @yield('nav_daily')">
+                    <span class="di-icon">☀</span> {{ __('ui.nav.daily') }}
                 </a>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">📅</span> Weekly
+                    <span class="di-icon">📅</span> {{ __('ui.nav.weekly') }}
                 </span>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">🌙</span> Monthly
+                    <span class="di-icon">🌙</span> {{ __('ui.nav.monthly') }}
                 </span>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">✦</span> Solar Return
+                    <span class="di-icon">✦</span> {{ __('ui.nav.solar_return') }}
                 </span>
-                <a href="{{ url('/horoscope/weekday') }}" class="drawer-item @yield('nav_weekday')">
-                    <span class="di-icon">🗓</span> Day of the Week
+                <a href="{{ url('/' . app()->getLocale() . '/horoscope/weekday') }}" class="drawer-item @yield('nav_weekday')">
+                    <span class="di-icon">🗓</span> {{ __('ui.nav.day_of_week') }}
                 </a>
 
                 {{-- Charts --}}
-                <div class="drawer-section">Charts</div>
+                <div class="drawer-section">{{ __('ui.nav.charts') }}</div>
                 <a href="{{ $natalNavUrl }}" class="drawer-item @yield('nav_natal')">
-                    <span class="di-icon">♈</span> Natal Chart
+                    <span class="di-icon">♈</span> {{ __('ui.nav.natal_chart') }}
                 </a>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">♾</span> Synastry
+                    <span class="di-icon">♾</span> {{ __('ui.nav.synastry') }}
                 </span>
 
                 {{-- Tools --}}
-                <div class="drawer-section">Tools</div>
+                <div class="drawer-section">{{ __('ui.nav.tools') }}</div>
                 <a href="{{ route('lunar.index') }}" class="drawer-item @yield('nav_lunar')">
-                    <span class="di-icon">🌑</span> Lunar Calendar
+                    <span class="di-icon">🌑</span> {{ __('ui.nav.lunar_calendar') }}
                 </a>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">℞</span> Retrograde
+                    <span class="di-icon">℞</span> {{ __('ui.nav.retrograde') }}
                 </span>
                 <span class="drawer-item drawer-item-disabled">
-                    <span class="di-icon">🪐</span> Planet Positions
+                    <span class="di-icon">🪐</span> {{ __('ui.nav.planet_positions') }}
                 </span>
 
                 {{-- Account --}}
-                <div class="drawer-section">Account</div>
+                <div class="drawer-section">{{ __('ui.nav.account') }}</div>
                 @auth
-                <a href="{{ url('/profile') }}"          class="drawer-item @yield('nav_profile')">
-                    <span class="di-icon">👤</span> My Profile
+                <a href="{{ route('profile') }}"          class="drawer-item @yield('nav_profile')">
+                    <span class="di-icon">👤</span> {{ __('ui.nav.my_profile') }}
                 </a>
-                <a href="{{ url('/stellar-profiles') }}" class="drawer-item @yield('nav_stellar')">
-                    <span class="di-icon">✦</span> Stellar Profiles
+                <a href="{{ route('stellar-profiles.index') }}" class="drawer-item @yield('nav_stellar')">
+                    <span class="di-icon">✦</span> {{ __('ui.nav.stellar_profiles') }}
                 </a>
                 @if(Route::has('logout'))
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="drawer-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
-                        <span class="di-icon">↩</span> Sign Out
+                        <span class="di-icon">↩</span> {{ __('ui.nav.sign_out') }}
                     </button>
                 </form>
                 @endif
                 @else
-                <a href="{{ url('/stellar-profiles') }}" class="drawer-item @yield('nav_stellar')">
-                    <span class="di-icon">✦</span> Stellar Profiles
+                <a href="{{ route('stellar-profiles.index') }}" class="drawer-item @yield('nav_stellar')">
+                    <span class="di-icon">✦</span> {{ __('ui.nav.stellar_profiles') }}
                 </a>
                 @if(Route::has('login'))
                 <a href="{{ route('login') }}"    class="drawer-item">
-                    <span class="di-icon">↪</span> Sign In
+                    <span class="di-icon">↪</span> {{ __('ui.nav.sign_in') }}
                 </a>
                 @endif
                 @if(Route::has('register'))
                 <a href="{{ route('register') }}" class="drawer-item">
-                    <span class="di-icon">✦</span> Create Account
+                    <span class="di-icon">✦</span> {{ __('ui.nav.create_account') }}
                 </a>
                 @endif
                 @endauth
@@ -248,7 +248,7 @@
                         <span x-show="theme === 'light'" x-cloak>☽</span>
                         <span x-show="!theme">◐</span>
                     </span>
-                    <span x-text="theme === 'dark' ? 'Switch to light' : 'Switch to dark'">Theme</span>
+                    <span x-text="theme === 'dark' ? '{{ __('ui.nav.switch_to_light') }}' : '{{ __('ui.nav.switch_to_dark') }}'">{{ __('ui.nav.theme') }}</span>
                 </button>
 
             </nav>
@@ -266,9 +266,9 @@
         <p style="font-size:0.72rem;color:var(--theme-muted);letter-spacing:0.05em">
             <span class="logo-text" style="font-size:0.72rem">STELLAR <span class="logo-accent">✦ OMENS</span></span>
             &nbsp;·&nbsp;
-            <a href="{{ route('terms') }}"   style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">Terms</a>
+            <a href="{{ route('terms') }}"   style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">{{ __('ui.nav.terms') }}</a>
             &nbsp;·&nbsp;
-            <a href="{{ route('privacy') }}" style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">Privacy</a>
+            <a href="{{ route('privacy') }}" style="color:var(--theme-muted);text-decoration:none;font-size:0.72rem" onmouseover="this.style.color='#6a329f'" onmouseout="this.style.color='var(--theme-muted)'">{{ __('ui.nav.privacy') }}</a>
             &nbsp;·&nbsp; {{ date('Y') }}
         </p>
     </footer>
@@ -277,7 +277,7 @@
 
     {{-- Back to top button (global) --}}
     <button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})"
-            title="Back to top"
+            title="{{ __('ui.nav.back_to_top') }}"
             class="scroll-top">↑</button>
     <script>
     (function(){

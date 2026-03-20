@@ -9,25 +9,25 @@
 
     <div style="padding:1.5rem 0 1.25rem">
         <h1 class="font-display" style="font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--theme-text);margin-bottom:0.25rem">
-            Stellar Profiles
+            {{ __('ui.stellar_profiles.title') }}
         </h1>
-        <p style="font-size:0.85rem;color:var(--theme-muted)">Birth data for personalised horoscopes — add yourself, a partner, or anyone you'd like to read for</p>
+        <p style="font-size:0.85rem;color:var(--theme-muted)">{{ __('ui.stellar_profiles.subtitle') }}</p>
     </div>
 
     {{-- Flash messages --}}
     @if(session('status') === 'profile_created')
     <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:0.4rem;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.83rem;color:#16a34a">
-        ✓ Profile created.
+        {{ __('ui.stellar_profiles.flash_created') }}
     </div>
     @endif
     @if(session('status') === 'profile_updated')
     <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:0.4rem;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.83rem;color:#16a34a">
-        ✓ Profile updated.
+        {{ __('ui.stellar_profiles.flash_updated') }}
     </div>
     @endif
     @if(session('status') === 'profile_deleted')
     <div style="background:rgba(107,114,128,0.08);border:1px solid rgba(107,114,128,0.25);border-radius:0.4rem;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.83rem;color:var(--theme-muted)">
-        Profile deleted.
+        {{ __('ui.stellar_profiles.flash_deleted') }}
     </div>
     @endif
 
@@ -47,7 +47,7 @@
           @click.outside="open = false">
         <div style="display:flex;gap:0.5rem">
             <div style="position:relative;flex:1">
-                <input type="text" name="q" x-model="q" placeholder="Search by name…"
+                <input type="text" name="q" x-model="q" placeholder="{{ __('ui.stellar_profiles.search_placeholder') }}"
                        @input="open = true"
                        @keydown.escape="open = false"
                        @keydown.enter="open = false"
@@ -67,12 +67,12 @@
             </div>
             <button type="submit"
                     style="background:var(--theme-raised);border:1px solid var(--theme-border);border-radius:0.35rem;padding:0.45rem 0.85rem;font-size:0.83rem;color:var(--theme-text);cursor:pointer">
-                Search
+                {{ __('ui.stellar_profiles.search') }}
             </button>
             @if($q)
             <a href="{{ route('stellar-profiles.index') }}"
                style="display:flex;align-items:center;padding:0.45rem 0.75rem;font-size:0.83rem;color:var(--theme-muted);border:1px solid var(--theme-border);border-radius:0.35rem;text-decoration:none">
-                ✕ Clear
+                ✕ {{ __('ui.stellar_profiles.clear') }}
             </a>
             @endif
         </div>

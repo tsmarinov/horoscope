@@ -617,7 +617,7 @@ img.emoji {
 
 // ── Natal wheel ────────────────────────────────────────────────────────────
 .wheel-label       { margin-bottom: 0.5rem; } // override section-label default
-.wheel-svg         { max-width: 600px; display: block; margin: 0 auto; }
+.wheel-svg         { max-width: 860px; display: block; margin: 0 auto; }
 .chart-unlock-hint { text-align: center; margin-top: 0.75rem; }
 .chart-unlock-link { font-size: 1rem; color: $accent; text-decoration: none; font-weight: 500;
     &:hover { text-decoration: underline; } }

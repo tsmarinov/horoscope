@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 class LunarCalendarController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsPdfFooter;
     private const MOON_PHASES = [
         [0,     22.5,  '🌑', 'New Moon'],
         [22.5,  67.5,  '🌒', 'Waxing Crescent'],
@@ -44,7 +45,9 @@ class LunarCalendarController extends Controller
             ->setOption('margin-top', '15')
             ->setOption('margin-bottom', '22')
             ->setOption('margin-left', '20')
-            ->setOption('margin-right', '20');
+            ->setOption('margin-right', '20')
+            ->setOption('footer-html', $this->buildFooterFile())
+            ->setOption('footer-spacing', '3');
         $filename = 'lunar-' . $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '.pdf';
         return $pdf->stream($filename);
     }

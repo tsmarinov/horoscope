@@ -271,7 +271,7 @@
 
 {{-- ── Footer CTA ────────────────────────────────────────────────────────── --}}
 <p style="text-align:center;font-size:0.75rem;color:var(--theme-muted);padding-bottom:1rem;line-height:1.6">
-    {{ __('ui.home.cta_free') }}
+    <a href="{{ route('register') }}" style="color:inherit;text-decoration:underline">{{ __('ui.home.cta_free') }}</a>
 </p>
 
 <style>

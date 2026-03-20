@@ -13,6 +13,7 @@ use Carbon\Carbon;
 
 class DailyHoroscopeController extends Controller
 {
+    use \App\Http\Controllers\Concerns\BuildsPdfFooter;
     private const BODY_GLYPHS = [
         0 => '☉', 1 => '☽',  2 => '☿', 3 => '♀',  4 => '♂',
         5 => '♃', 6 => '♄',  7 => '♅', 8 => '♆',  9 => '♇',
@@ -288,7 +289,12 @@ class DailyHoroscopeController extends Controller
           ->setOption('margin-top', '15')
           ->setOption('margin-bottom', '22')
           ->setOption('margin-left', '20')
-          ->setOption('margin-right', '20');
+          ->setOption('margin-right', '20')
+          ->setOption('enable-javascript', true)
+          ->setOption('javascript-delay', 500)
+          ->setOption('no-stop-slow-scripts', true)
+          ->setOption('footer-html', $this->buildFooterFile())
+          ->setOption('footer-spacing', '3');
 
         $filename = 'daily-' . \Str::slug($profile->name) . '-' . $date . '.pdf';
         return $pdf->download($filename);

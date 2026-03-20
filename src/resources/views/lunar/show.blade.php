@@ -76,7 +76,7 @@
         </div>
         <div class="pdf-row">
             <a href="{{ route('lunar.pdf', [$year, str_pad($month, 2, '0', STR_PAD_LEFT)]) }}"
-               class="btn-pdf"
+               class="btn-pdf" target="_blank"
                title="{{ __('ui.lunar.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
         </div>
     </div>
@@ -85,44 +85,13 @@
 {{-- ── B) Calendar grid card ────────────────────────────────────────────── --}}
 <div class="card card-mt">
 
-    {{-- Weekday headers --}}
-    <div class="lunar-weekdays">
-        @foreach($weekdays as $wd)
-            <span class="lunar-weekday">{{ $wd }}</span>
-        @endforeach
-    </div>
-
-    {{-- Calendar grid --}}
-    <div class="lunar-grid">
-
-        {{-- Empty leading cells --}}
-        @for($i = 1; $i < $firstWeekday; $i++)
-            <div class="lunar-cell lunar-cell-empty"></div>
-        @endfor
-
-        {{-- Day cells --}}
-        @foreach($days as $d => $day)
-            <div class="lunar-cell {{ $day['is_today'] ? 'lunar-cell-today' : '' }}">
-                <span class="lunar-day-num {{ $day['is_today'] ? 'lunar-day-today' : '' }}">{{ $d }}</span>
-                @if($day['new_moon'] || $day['full_moon'])<span class="lunar-cell-star">*</span>@endif
-                <span class="lunar-cell-phase">{!! $moonSvg($day['elongation'], 40) !!}</span>
-                <span class="lunar-cell-phase-name">{{ $day['phase_name'] }}</span>
-                <span class="lunar-cell-sign">{{ $signGlyphs[$day['sign_idx']] }} {{ substr($signNames[$day['sign_idx']], 0, 3) }}</span>
-            </div>
-        @endforeach
-
-    </div>
-
-    {{-- Legend --}}
-    <div class="lunar-legend">
-        <span style="color:var(--theme-muted);font-size:0.75rem">* New Moon / Full Moon</span>
-    </div>
+    @include('partials.lunar-calendar-grid')
 
 </div>
 
 <div class="pdf-row" style="justify-content:flex-end">
     <a href="{{ route('lunar.pdf', [$year, str_pad($month, 2, '0', STR_PAD_LEFT)]) }}"
-       class="btn-pdf"
+       class="btn-pdf" target="_blank"
        title="{{ __('ui.lunar.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
 </div>
 
@@ -181,7 +150,7 @@
 
 <div class="pdf-row-end">
     <a href="{{ route('lunar.pdf', [$year, str_pad($month, 2, '0', STR_PAD_LEFT)]) }}"
-       class="btn-pdf"
+       class="btn-pdf" target="_blank"
        title="{{ __('ui.lunar.download_pdf') }}"><svg width="9" height="11" viewBox="0 0 9 11" fill="none"><path d="M4.5 1v6M2 5.5l2.5 2.5L7 5.5M1 10h7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>PDF</a>
 </div>
 
