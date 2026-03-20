@@ -125,4 +125,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'launch_at'       => env('LAUNCH_AT'),
+    'launch_timezone' => env('LAUNCH_TIMEZONE', 'Europe/Sofia'),
+    'preview_ips'     => env('PREVIEW_IPS', ''),
+
 ];
