@@ -8,11 +8,23 @@ return [
         'cta_free'   => 'Free preview — create an account for your personal chart',
         'nav_label'  => 'Home',
         'cards' => [
+            'natal' => [
+                'title' => 'Natal Chart',
+                'glyph' => '♈',
+                'desc'  => 'Your complete birth chart with every planet, sign, house, and aspect decoded. Goes beyond sun-sign astrology to show the full picture: your psychological drives, relational patterns, vocational strengths, and the deeper story your chart is telling.',
+                'cta'   => 'View birth chart',
+            ],
             'daily' => [
                 'title' => 'Daily Horoscope',
                 'glyph' => '☉',
                 'desc'  => 'A transit-based reading personalised to your birth chart. See which planets are active today, which areas of life they touch, and the exact tone they bring — supportive, tense, or quietly transformative. Includes an Areas of Life snapshot and a one-line focus for the day.',
                 'cta'   => 'Read today',
+            ],
+            'lunar' => [
+                'title' => 'Lunar Calendar',
+                'glyph' => '🌑',
+                'desc'  => 'Every new moon, full moon, and void-of-course window for the year, mapped to your natal houses. Know which life area each lunation activates, when to set intentions, when to release, and when the Moon goes quiet and decisions are better delayed.',
+                'cta'   => 'Open calendar',
             ],
             'weekly' => [
                 'title' => 'Weekly Forecast',
@@ -32,23 +44,11 @@ return [
                 'desc'  => 'Your personal new year chart, cast the exact moment the Sun returns to its natal degree. Reveals the dominant themes, key planets, and house activations that shape the entire year ahead. The city you\'re in at that moment shifts the chart — location matters.',
                 'cta'   => 'View solar return',
             ],
-            'natal' => [
-                'title' => 'Natal Chart',
-                'glyph' => '♈',
-                'desc'  => 'Your complete birth chart with every planet, sign, house, and aspect decoded. Goes beyond sun-sign astrology to show the full picture: your psychological drives, relational patterns, vocational strengths, and the deeper story your chart is telling.',
-                'cta'   => 'View birth chart',
-            ],
             'synastry' => [
                 'title' => 'Synastry',
                 'glyph' => '♾',
                 'desc'  => 'Overlay two birth charts to map the exact connections between two people. See where you harmonise naturally, where friction is built in, and which aspects carry the most weight. Works for any bond — romantic partners, close friends, family, or collaborators.',
                 'cta'   => 'Compare charts',
-            ],
-            'lunar' => [
-                'title' => 'Lunar Calendar',
-                'glyph' => '🌑',
-                'desc'  => 'Every new moon, full moon, and void-of-course window for the year, mapped to your natal houses. Know which life area each lunation activates, when to set intentions, when to release, and when the Moon goes quiet and decisions are better delayed.',
-                'cta'   => 'Open calendar',
             ],
             'retrograde' => [
                 'title' => 'Retrograde Calendar',
@@ -94,8 +94,10 @@ return [
     ],
 
     'lunar' => [
-        'day_of' => 'Day :day / 30',
-        'moon_in' => 'Moon in',
+        'day_of'       => 'Day :day / 30',
+        'moon_in'      => 'Moon in',
+        'page_title'   => 'Lunar Calendar',
+        'download_pdf' => 'Download PDF',
     ],
 
     'weekday' => [
@@ -146,10 +148,15 @@ return [
         'lunar_day'      => 'LUNAR DAY',
         'tip_label'      => 'Tip of the Day',
         'clothing_label' => 'Clothing & Jewelry',
+        'areas_of_life'  => 'Areas of Life',
         'no_transits'    => 'No significant transit factors today.',
         'generating'     => 'Generating…',
         'back_to_natal'  => '← Natal Chart',
         'today'          => 'Today',
+        'preparing_pdf'  => 'Preparing PDF…',
+        'download_pdf'   => 'Download as PDF',
+        'transits_today' => 'Transits for Today',
+        'natal_planets'  => 'Natal Planets',
     ],
     'weekly' => [
         'ai_overview' => 'WEEKLY OVERVIEW',
@@ -228,6 +235,11 @@ return [
             'sexual'        => '🔥',
             'creative'      => '🎨',
         ],
+    ],
+
+    'switcher' => [
+        'add_profile'     => '✦ Add profile',
+        'register_to_add' => '✦ Create account to add profiles',
     ],
 
     'stellar_profiles' => [

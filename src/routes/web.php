@@ -59,8 +59,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // Daily horoscope — guest-accessible
-Route::get('/horoscope/daily',                   [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
-Route::get('/horoscope/daily/{profile}/{date?}', [DailyHoroscopeController::class, 'show'])->name('daily.show');
+Route::get('/horoscope/daily',                        [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
+Route::get('/horoscope/daily/{profile}/{date}/pdf',   [DailyHoroscopeController::class, 'pdf'])->name('daily.pdf');
+Route::get('/horoscope/daily/{profile}/{date?}',      [DailyHoroscopeController::class, 'show'])->name('daily.show');
 // Daily horoscope — auth-only (AI L1)
 Route::middleware('auth')->group(function () {
     Route::post('/horoscope/daily/{profile}/{date}/synthesis', [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
@@ -90,3 +91,4 @@ Route::middleware('auth')->group(function () {
 // Lunar calendar (public)
 Route::get('/lunar-calendar', [LunarCalendarController::class, 'redirect'])->name('lunar.index');
 Route::get('/lunar-calendar/{year}/{month}', [LunarCalendarController::class, 'show'])->name('lunar.show');
+Route::get('/lunar-calendar/{year}/{month}/pdf', [LunarCalendarController::class, 'pdf'])->name('lunar.pdf');

@@ -165,6 +165,7 @@
 
 {{-- ── Profile info (centered, above wheel) ─────────────────────────────── --}}
 <div style="text-align:center;margin-bottom:10px;margin-top:4px">
+    <div style="font-size:8pt;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#8a70b8;margin-bottom:5px">{{ __('ui.natal.page_title') }}</div>
     <div style="font-size:16pt;font-weight:700;color:#1a1a2e;letter-spacing:0.02em">{{ $profile->name }}</div>
     <div style="font-size:9pt;color:#666;margin-top:3px">
         @if($profile->birth_date)<span>{{ $profile->birth_date->format('F j, Y') }}</span>@endif

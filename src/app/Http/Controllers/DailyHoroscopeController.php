@@ -65,6 +65,26 @@ class DailyHoroscopeController extends Controller
             abort(404, $e->getMessage());
         }
 
+        $profile->loadMissing('natalChart');
+        $natalChart    = $profile->natalChart;
+        $wheelAsc      = $natalChart?->ascendant;
+        $wheelNatalPlanets = array_values(array_map(fn($p) => [
+            'body' => (int)($p['body'] ?? 0),
+            'lon'  => (float)(($p['sign'] ?? 0) * 30 + ($p['degree'] ?? 0)),
+            'rx'   => (bool)($p['is_retrograde'] ?? false),
+        ], $natalChart?->planets ?? []));
+        $wheelHouses  = array_values($natalChart?->houses ?? []);
+        $wheelAspects = array_values(array_map(fn($a) => [
+            'a'    => (int)($a['body_a'] ?? 0),
+            'b'    => (int)($a['body_b'] ?? 0),
+            'type' => $a['aspect'] ?? '',
+        ], $natalChart?->aspects ?? []));
+        $wheelTransits = array_values(array_map(fn($pos) => [
+            'body' => (int)$pos->body,
+            'lon'  => (float)$pos->longitude,
+            'rx'   => (bool)$pos->isRetrograde,
+        ], $dto->positions));
+
         $gender = TextBlock::resolveGender($profile->gender?->value ?? null);
         $carbon = Carbon::parse($date);
 
@@ -91,7 +111,8 @@ class DailyHoroscopeController extends Controller
             'lunarText', 'lunarTextShort',
             'tipText', 'tipTextShort',
             'clothingText', 'clothingTextShort',
-            'aiText'
+            'aiText',
+            'wheelAsc', 'wheelNatalPlanets', 'wheelHouses', 'wheelAspects', 'wheelTransits'
         ));
     }
 
@@ -215,6 +236,62 @@ class DailyHoroscopeController extends Controller
             ->where('gender', $gender)
             ->first();
         return $block?->text;
+    }
+
+    public function pdf(Profile $profile, string $date)
+    {
+        abort_if(!$this->ownsProfile($profile), 403);
+
+        $profile->loadMissing('birthCity');
+
+        $service = app(DailyHoroscopeService::class);
+        try {
+            $dto = $service->build($profile, $date);
+        } catch (\RuntimeException $e) {
+            abort(404, $e->getMessage());
+        }
+
+        $gender       = TextBlock::resolveGender($profile->gender?->value ?? null);
+        $carbon       = Carbon::parse($date);
+        $transitTexts = $this->buildTransitTexts($dto, $gender, $profile->id, false);
+        $lunarText    = $this->loadLunarText($dto, $gender, $profile->id, false);
+        $tipText      = $this->loadTipText($dto, $carbon, $gender, false);
+        $clothingText = $this->loadClothingText($dto, $carbon, $gender, false);
+        $aiText       = $this->loadAiSynthesis($profile->id, $date, $gender);
+
+        $profile->loadMissing('natalChart');
+        $natalChart        = $profile->natalChart;
+        $wheelAsc          = $natalChart?->ascendant;
+        $wheelNatalPlanets = array_values(array_map(fn($p) => [
+            'body' => (int)($p['body'] ?? 0),
+            'lon'  => (float)(($p['sign'] ?? 0) * 30 + ($p['degree'] ?? 0)),
+            'rx'   => (bool)($p['is_retrograde'] ?? false),
+        ], $natalChart?->planets ?? []));
+        $wheelHouses  = array_values($natalChart?->houses ?? []);
+        $wheelAspects = array_values(array_map(fn($a) => [
+            'a'    => (int)($a['body_a'] ?? 0),
+            'b'    => (int)($a['body_b'] ?? 0),
+            'type' => $a['aspect'] ?? '',
+        ], $natalChart?->aspects ?? []));
+        $wheelTransits = array_values(array_map(fn($pos) => [
+            'body' => (int)$pos->body,
+            'lon'  => (float)$pos->longitude,
+            'rx'   => (bool)$pos->isRetrograde,
+        ], $dto->positions));
+
+        $pdf = \PDF::loadView('horoscope.daily.pdf', compact(
+            'profile', 'dto', 'date', 'carbon', 'gender',
+            'transitTexts', 'lunarText', 'tipText', 'clothingText', 'aiText',
+            'wheelAsc', 'wheelNatalPlanets', 'wheelHouses', 'wheelAspects', 'wheelTransits'
+        ))->setPaper('a4')
+          ->setOption('encoding', 'UTF-8')
+          ->setOption('margin-top', '15')
+          ->setOption('margin-bottom', '22')
+          ->setOption('margin-left', '20')
+          ->setOption('margin-right', '20');
+
+        $filename = 'daily-' . \Str::slug($profile->name) . '-' . $date . '.pdf';
+        return $pdf->download($filename);
     }
 
     private function loadAiSynthesis(int $profileId, string $date, ?string $gender): ?string

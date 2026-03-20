@@ -13,7 +13,10 @@ class HomeController extends Controller
         'monthly' => '/horoscope/monthly',
         'solar'   => '/horoscope/solar',
         'weekday' => '/horoscope/weekday',
+        'lunar'   => '/lunar-calendar',
     ];
+
+    private const ACTIVE_KEYS = ['daily', 'natal', 'lunar'];
 
     public function index(): View
     {
@@ -32,7 +35,8 @@ class HomeController extends Controller
                 'title' => __("ui.home.cards.{$key}.title"),
                 'desc'  => __("ui.home.cards.{$key}.desc"),
                 'cta'   => __("ui.home.cards.{$key}.cta"),
-                'url'   => $key === 'natal' ? $natalUrl : url(self::URL_MAP[$key] ?? "/{$key}"),
+                'url'      => $key === 'natal' ? $natalUrl : url(self::URL_MAP[$key] ?? "/{$key}"),
+                'disabled' => !in_array($key, self::ACTIVE_KEYS),
             ]);
 
         return view('home', compact('cards'));

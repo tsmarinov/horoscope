@@ -31,6 +31,26 @@ class LunarCalendarController extends Controller
 
     public function show(int $year, int $month)
     {
+        $data = $this->buildMonthData($year, $month);
+        return view('lunar.show', $data);
+    }
+
+    public function pdf(int $year, int $month)
+    {
+        $data     = $this->buildMonthData($year, $month);
+        $pdf      = \PDF::loadView('lunar.pdf', $data)
+            ->setPaper('a4')
+            ->setOption('encoding', 'UTF-8')
+            ->setOption('margin-top', '15')
+            ->setOption('margin-bottom', '22')
+            ->setOption('margin-left', '20')
+            ->setOption('margin-right', '20');
+        $filename = 'lunar-' . $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) . '.pdf';
+        return $pdf->stream($filename);
+    }
+
+    private function buildMonthData(int $year, int $month): array
+    {
         if ($month < 1 || $month > 12 || $year < 2020 || $year > 2040) {
             abort(404);
         }
@@ -39,10 +59,13 @@ class LunarCalendarController extends Controller
         $end   = $start->copy()->endOfMonth();
         $today = now()->toDateString();
 
-        // ── Load Sun + Moon positions ─────────────────────────────────────
+        // ── Load Sun + Moon positions (±3 days for cross-boundary lunations) ──
+        $queryStart = $start->copy()->subDays(3);
+        $queryEnd   = $end->copy()->addDays(3);
+
         $allPositions = PlanetaryPosition::whereBetween('date', [
-            $start->toDateString(),
-            $end->toDateString(),
+            $queryStart->toDateString(),
+            $queryEnd->toDateString(),
         ])
             ->whereIn('body', [PlanetaryPosition::SUN, PlanetaryPosition::MOON])
             ->orderBy('date')
@@ -87,7 +110,24 @@ class LunarCalendarController extends Controller
             ];
         }
 
-        $this->resolveLunations($days);
+        // ── Build extended day data for cross-boundary lunation detection ──
+        $extDays = [];
+        for ($cur = $queryStart->copy(); $cur->lte($queryEnd); $cur->addDay()) {
+            $ds     = $cur->toDateString();
+            $dayPos = $allPositions->get($ds, collect());
+            $moon   = $dayPos->firstWhere('body', PlanetaryPosition::MOON);
+            $sun    = $dayPos->firstWhere('body', PlanetaryPosition::SUN);
+            if (! $moon || ! $sun) {
+                continue;
+            }
+            $elong = fmod($moon->longitude - $sun->longitude + 360, 360);
+            $extDays[$ds] = [
+                'dist_new'  => min($elong, 360 - $elong),
+                'dist_full' => abs($elong - 180),
+            ];
+        }
+
+        $this->resolveLunations($days, $extDays, $start->toDateString(), $end->toDateString());
 
         $prevMonth    = $start->copy()->subMonth();
         $nextMonth    = $start->copy()->addMonth();
@@ -171,36 +211,39 @@ class LunarCalendarController extends Controller
             }
         }
 
-        return view('lunar.show', compact(
+        return compact(
             'days', 'year', 'month', 'start',
             'prevMonth', 'nextMonth', 'firstWeekday',
             'profile', 'lunationCards', 'moonTexts', 'today'
-        ));
+        );
     }
 
     // ── Lunation resolver ────────────────────────────────────────────────
 
-    private function resolveLunations(array &$days): void
+    private function resolveLunations(array &$days, array $extDays, string $monthStart, string $monthEnd): void
     {
         foreach (['new' => 'dist_new', 'full' => 'dist_full'] as $type => $distKey) {
             $field      = $type . '_moon';
             $threshold  = 22.5;
-            $candidates = [];
 
-            foreach ($days as $d => $day) {
-                if ($day[$distKey] < $threshold) {
-                    $candidates[] = $d;
+            // Candidates across extended range (date strings, sorted)
+            $candidates = [];
+            foreach ($extDays as $ds => $data) {
+                if ($data[$distKey] < $threshold) {
+                    $candidates[] = $ds;
                 }
             }
+            sort($candidates);
 
+            // Group into consecutive-date runs
             $runs = [];
             $run  = [];
-            foreach ($candidates as $d) {
-                if (empty($run) || $d === end($run) + 1) {
-                    $run[] = $d;
+            foreach ($candidates as $ds) {
+                if (empty($run) || (strtotime($ds) - strtotime(end($run))) === 86400) {
+                    $run[] = $ds;
                 } else {
                     $runs[] = $run;
-                    $run    = [$d];
+                    $run    = [$ds];
                 }
             }
             if (! empty($run)) {
@@ -208,13 +251,20 @@ class LunarCalendarController extends Controller
             }
 
             foreach ($runs as $run) {
-                $winner = array_reduce($run, function ($best, $d) use ($days, $distKey) {
-                    return ($best === null || $days[$d][$distKey] < $days[$best][$distKey])
-                        ? $d : $best;
-                }, null);
+                // Find date with minimum distance in this run
+                $winner = null;
+                foreach ($run as $ds) {
+                    if ($winner === null || $extDays[$ds][$distKey] < $extDays[$winner][$distKey]) {
+                        $winner = $ds;
+                    }
+                }
 
-                if ($winner !== null) {
-                    $days[$winner][$field] = true;
+                // Only mark if winner falls within the current month
+                if ($winner !== null && $winner >= $monthStart && $winner <= $monthEnd) {
+                    $dayNum = (int) Carbon::parse($winner)->day;
+                    if (isset($days[$dayNum])) {
+                        $days[$dayNum][$field] = true;
+                    }
                 }
             }
         }

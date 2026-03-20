@@ -173,15 +173,15 @@
                 <a href="{{ url('/horoscope/daily') }}"  class="drawer-item @yield('nav_daily')">
                     <span class="di-icon">☀</span> Daily
                 </a>
-                <a href="{{ url('/horoscope/weekly') }}" class="drawer-item @yield('nav_weekly')">
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">📅</span> Weekly
-                </a>
-                <a href="{{ url('/horoscope/monthly') }}" class="drawer-item @yield('nav_monthly')">
+                </span>
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">🌙</span> Monthly
-                </a>
-                <a href="{{ url('/horoscope/solar') }}"  class="drawer-item @yield('nav_solar')">
+                </span>
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">✦</span> Solar Return
-                </a>
+                </span>
                 <a href="{{ url('/horoscope/weekday') }}" class="drawer-item @yield('nav_weekday')">
                     <span class="di-icon">🗓</span> Day of the Week
                 </a>
@@ -191,21 +191,21 @@
                 <a href="{{ $natalNavUrl }}" class="drawer-item @yield('nav_natal')">
                     <span class="di-icon">♈</span> Natal Chart
                 </a>
-                <a href="{{ url('/synastry') }}" class="drawer-item @yield('nav_synastry')">
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">♾</span> Synastry
-                </a>
+                </span>
 
                 {{-- Tools --}}
                 <div class="drawer-section">Tools</div>
-                <a href="{{ url('/lunar') }}"       class="drawer-item @yield('nav_lunar')">
+                <a href="{{ route('lunar.index') }}" class="drawer-item @yield('nav_lunar')">
                     <span class="di-icon">🌑</span> Lunar Calendar
                 </a>
-                <a href="{{ url('/retrograde') }}"  class="drawer-item @yield('nav_retro')">
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">℞</span> Retrograde
-                </a>
-                <a href="{{ url('/planets') }}"     class="drawer-item @yield('nav_planets')">
+                </span>
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">🪐</span> Planet Positions
-                </a>
+                </span>
 
                 {{-- Account --}}
                 <div class="drawer-section">Account</div>
@@ -274,5 +274,18 @@
     </footer>
 
     @stack('scripts')
+
+    {{-- Back to top button (global) --}}
+    <button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+            title="Back to top"
+            class="scroll-top">↑</button>
+    <script>
+    (function(){
+        var btn = document.getElementById('stt');
+        window.addEventListener('scroll', function(){
+            btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+        }, {passive: true});
+    })();
+    </script>
 </body>
 </html>

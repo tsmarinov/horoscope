@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1773822544604,
+  "lastScanned": 1773945435520,
   "projectRoot": "/var/www/horo/web/src",
   "techStack": {
     "languages": [
@@ -64,7 +64,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 1,
-      "lastAccessed": 1773822544597,
+      "lastAccessed": 1773945435506,
       "keyFiles": [
         "AGENTS.md"
       ]
@@ -73,7 +73,7 @@
       "path": "bootstrap",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1773822544598,
+      "lastAccessed": 1773945435507,
       "keyFiles": [
         "app.php",
         "providers.php"
@@ -82,8 +82,8 @@
     "config": {
       "path": "config",
       "purpose": "Configuration files",
-      "fileCount": 13,
-      "lastAccessed": 1773822544601,
+      "fileCount": 14,
+      "lastAccessed": 1773945435513,
       "keyFiles": [
         "app.php",
         "astrology.php",
@@ -96,7 +96,7 @@
       "path": "database",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773822544601,
+      "lastAccessed": 1773945435515,
       "keyFiles": [
         "AGENTS.md",
         "database.sqlite"
@@ -106,7 +106,7 @@
       "path": "documents",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435516,
       "keyFiles": [
         "console-commands.md",
         "implementation-status.md"
@@ -116,17 +116,16 @@
       "path": "lang",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435516,
       "keyFiles": []
     },
     "public": {
       "path": "public",
       "purpose": "Public files",
-      "fileCount": 5,
-      "lastAccessed": 1773822544602,
+      "fileCount": 4,
+      "lastAccessed": 1773945435516,
       "keyFiles": [
         "favicon.ico",
-        "hot",
         "index.php",
         "robots.txt"
       ]
@@ -135,14 +134,14 @@
       "path": "resources",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435516,
       "keyFiles": []
     },
     "routes": {
       "path": "routes",
       "purpose": "Route handlers",
       "fileCount": 3,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435516,
       "keyFiles": [
         "AGENTS.md",
         "console.php",
@@ -153,7 +152,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 2,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435517,
       "keyFiles": [
         "generate_ephemeris.py",
         "planetary_positions.csv"
@@ -163,14 +162,14 @@
       "path": "storage",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435517,
       "keyFiles": []
     },
     "tests": {
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 1,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435517,
       "keyFiles": [
         "TestCase.php"
       ]
@@ -179,7 +178,7 @@
       "path": "vendor",
       "purpose": "Third-party code",
       "fileCount": 1,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435517,
       "keyFiles": [
         "autoload.php"
       ]
@@ -188,7 +187,7 @@
       "path": "app/Helpers",
       "purpose": "Helper functions",
       "fileCount": 1,
-      "lastAccessed": 1773822544602,
+      "lastAccessed": 1773945435518,
       "keyFiles": [
         "UiTrans.php"
       ]
@@ -196,8 +195,8 @@
     "app/Models": {
       "path": "app/Models",
       "purpose": "Data models",
-      "fileCount": 16,
-      "lastAccessed": 1773822544603,
+      "fileCount": 17,
+      "lastAccessed": 1773945435518,
       "keyFiles": [
         "AiText.php",
         "City.php",
@@ -207,8 +206,8 @@
     "database/migrations": {
       "path": "database/migrations",
       "purpose": "Database migrations",
-      "fileCount": 31,
-      "lastAccessed": 1773822544603,
+      "fileCount": 33,
+      "lastAccessed": 1773945435519,
       "keyFiles": [
         "0001_01_01_000000_create_users_table.php",
         "0001_01_01_000001_create_cache_table.php",
@@ -219,7 +218,7 @@
       "path": "public/build",
       "purpose": "Build output",
       "fileCount": 1,
-      "lastAccessed": 1773822544603,
+      "lastAccessed": 1773945435519,
       "keyFiles": [
         "manifest.json"
       ]
@@ -228,7 +227,7 @@
       "path": "resources/views",
       "purpose": "View templates",
       "fileCount": 2,
-      "lastAccessed": 1773822544603,
+      "lastAccessed": 1773945435520,
       "keyFiles": [
         "home.blade.php",
         "welcome.blade.php"
@@ -238,14 +237,14 @@
       "path": "storage/app",
       "purpose": "Application code",
       "fileCount": 1,
-      "lastAccessed": 1773822544604,
+      "lastAccessed": 1773945435520,
       "keyFiles": []
     },
     "vendor/bin": {
       "path": "vendor/bin",
       "purpose": "Executable scripts",
       "fileCount": 9,
-      "lastAccessed": 1773822544604,
+      "lastAccessed": 1773945435520,
       "keyFiles": [
         "carbon",
         "patch-type-declarations",
@@ -255,184 +254,172 @@
   },
   "hotPaths": [
     {
-      "path": "resources/views/natal/show.blade.php",
-      "accessCount": 72,
-      "lastAccessed": 1773848639494,
+      "path": "resources/views/horoscope/daily/show.blade.php",
+      "accessCount": 87,
+      "lastAccessed": 1773960960490,
       "type": "directory"
     },
     {
       "path": "resources/css/app.scss",
-      "accessCount": 31,
-      "lastAccessed": 1773848654068,
-      "type": "file"
-    },
-    {
-      "path": "resources/views/horoscope/daily/show.blade.php",
-      "accessCount": 29,
-      "lastAccessed": 1773845941164,
-      "type": "file"
-    },
-    {
-      "path": "routes/web.php",
-      "accessCount": 11,
-      "lastAccessed": 1773847571818,
-      "type": "file"
-    },
-    {
-      "path": "resources/views",
-      "accessCount": 9,
-      "lastAccessed": 1773842052244,
+      "accessCount": 69,
+      "lastAccessed": 1773964310858,
       "type": "directory"
     },
     {
-      "path": "app/Http/Controllers/NatalController.php",
-      "accessCount": 8,
-      "lastAccessed": 1773847602014,
+      "path": "resources/views/lunar/show.blade.php",
+      "accessCount": 60,
+      "lastAccessed": 1773964142682,
       "type": "file"
     },
     {
-      "path": "app/Http/Controllers/DailyHoroscopeController.php",
-      "accessCount": 7,
-      "lastAccessed": 1773847024065,
+      "path": "resources/views/natal/show.blade.php",
+      "accessCount": 35,
+      "lastAccessed": 1773960204963,
+      "type": "directory"
+    },
+    {
+      "path": "lang/en/ui.php",
+      "accessCount": 17,
+      "lastAccessed": 1773961164629,
+      "type": "directory"
+    },
+    {
+      "path": "resources/views/horoscope/daily/pdf.blade.php",
+      "accessCount": 16,
+      "lastAccessed": 1773961128164,
       "type": "file"
     },
     {
       "path": "resources/views/layouts/app.blade.php",
-      "accessCount": 7,
-      "lastAccessed": 1773847548516,
-      "type": "file"
-    },
-    {
-      "path": "app/Http/Controllers/StellarProfileController.php",
-      "accessCount": 6,
-      "lastAccessed": 1773847132548,
-      "type": "file"
-    },
-    {
-      "path": "resources/views/partials/premium-button.blade.php",
-      "accessCount": 6,
-      "lastAccessed": 1773847157457,
-      "type": "file"
-    },
-    {
-      "path": "lang/en/ui.php",
-      "accessCount": 4,
-      "lastAccessed": 1773847176071,
-      "type": "file"
-    },
-    {
-      "path": "routes/console.php",
-      "accessCount": 4,
-      "lastAccessed": 1773847395093,
-      "type": "file"
-    },
-    {
-      "path": "app/Http/Controllers/AuthController.php",
-      "accessCount": 3,
-      "lastAccessed": 1773847145606,
-      "type": "file"
-    },
-    {
-      "path": "resources",
-      "accessCount": 2,
-      "lastAccessed": 1773822612554,
-      "type": "directory"
-    },
-    {
-      "path": "app/Http/Controllers/PremiumController.php",
-      "accessCount": 2,
-      "lastAccessed": 1773822754121,
-      "type": "file"
-    },
-    {
-      "path": "vite.config.js",
-      "accessCount": 2,
-      "lastAccessed": 1773840375759,
-      "type": "file"
-    },
-    {
-      "path": "app/Console/Commands/UiLunarCalendar.php",
-      "accessCount": 2,
-      "lastAccessed": 1773845927701,
-      "type": "file"
-    },
-    {
-      "path": "app/Models/Guest.php",
-      "accessCount": 2,
-      "lastAccessed": 1773846935276,
-      "type": "file"
-    },
-    {
-      "path": "bootstrap/app.php",
-      "accessCount": 2,
-      "lastAccessed": 1773846959927,
-      "type": "file"
-    },
-    {
-      "path": "app/Http/Controllers/Controller.php",
-      "accessCount": 2,
-      "lastAccessed": 1773846969525,
-      "type": "file"
-    },
-    {
-      "path": "resources/views/natal/pdf.blade.php",
-      "accessCount": 2,
-      "lastAccessed": 1773848620398,
-      "type": "file"
-    },
-    {
-      "path": "app/Models/PremiumUsage.php",
-      "accessCount": 1,
-      "lastAccessed": 1773822596949,
-      "type": "file"
-    },
-    {
-      "path": "app/Models/User.php",
-      "accessCount": 1,
-      "lastAccessed": 1773822601243,
-      "type": "directory"
-    },
-    {
-      "path": "resources/css/app.css",
-      "accessCount": 1,
-      "lastAccessed": 1773840222476,
-      "type": "file"
-    },
-    {
-      "path": "app/Services",
-      "accessCount": 1,
-      "lastAccessed": 1773845018871,
+      "accessCount": 12,
+      "lastAccessed": 1773960151979,
       "type": "directory"
     },
     {
       "path": "app/Http/Controllers/LunarCalendarController.php",
-      "accessCount": 1,
-      "lastAccessed": 1773845979866,
+      "accessCount": 11,
+      "lastAccessed": 1773964635055,
       "type": "file"
     },
     {
-      "path": "resources/views/lunar/show.blade.php",
-      "accessCount": 1,
-      "lastAccessed": 1773846037248,
+      "path": "app/Http/Controllers/DailyHoroscopeController.php",
+      "accessCount": 10,
+      "lastAccessed": 1773961127827,
       "type": "file"
     },
     {
-      "path": "app/Http/Middleware/EnsureGuestSession.php",
-      "accessCount": 1,
-      "lastAccessed": 1773846950510,
+      "path": "resources/views/natal/pdf.blade.php",
+      "accessCount": 9,
+      "lastAccessed": 1773959205311,
       "type": "file"
     },
     {
-      "path": "app/Console/Commands/PruneGuests.php",
-      "accessCount": 1,
-      "lastAccessed": 1773847289664,
-      "type": "file"
-    },
-    {
-      "path": "resources/views/natal",
-      "accessCount": 1,
-      "lastAccessed": 1773848594715,
+      "path": "routes/web.php",
+      "accessCount": 8,
+      "lastAccessed": 1773961175982,
       "type": "directory"
+    },
+    {
+      "path": "resources/views",
+      "accessCount": 6,
+      "lastAccessed": 1773960109252,
+      "type": "directory"
+    },
+    {
+      "path": "app/Http/Controllers/HomeController.php",
+      "accessCount": 4,
+      "lastAccessed": 1773955916641,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers/NatalController.php",
+      "accessCount": 4,
+      "lastAccessed": 1773957060235,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/home.blade.php",
+      "accessCount": 3,
+      "lastAccessed": 1773955662390,
+      "type": "file"
+    },
+    {
+      "path": "app/Http/Controllers",
+      "accessCount": 3,
+      "lastAccessed": 1773956295538,
+      "type": "directory"
+    },
+    {
+      "path": "app/Models/TextBlock.php",
+      "accessCount": 3,
+      "lastAccessed": 1773957138355,
+      "type": "directory"
+    },
+    {
+      "path": "",
+      "accessCount": 2,
+      "lastAccessed": 1773955531195,
+      "type": "directory"
+    },
+    {
+      "path": "lang",
+      "accessCount": 2,
+      "lastAccessed": 1773955726524,
+      "type": "directory"
+    },
+    {
+      "path": "app/Services/AspectCalculator.php",
+      "accessCount": 2,
+      "lastAccessed": 1773956870323,
+      "type": "directory"
+    },
+    {
+      "path": "app/Models/Profile.php",
+      "accessCount": 2,
+      "lastAccessed": 1773956912377,
+      "type": "directory"
+    },
+    {
+      "path": "routes",
+      "accessCount": 2,
+      "lastAccessed": 1773957724335,
+      "type": "directory"
+    },
+    {
+      "path": "app/DataTransfer",
+      "accessCount": 1,
+      "lastAccessed": 1773947697893,
+      "type": "directory"
+    },
+    {
+      "path": "app/Models",
+      "accessCount": 1,
+      "lastAccessed": 1773956892137,
+      "type": "directory"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/DailyHoroscopeDTO.php",
+      "accessCount": 1,
+      "lastAccessed": 1773957939166,
+      "type": "file"
+    },
+    {
+      "path": "app/DataTransfer/Horoscope/TransitAspectDTO.php",
+      "accessCount": 1,
+      "lastAccessed": 1773957951343,
+      "type": "file"
+    },
+    {
+      "path": "resources/js",
+      "accessCount": 1,
+      "lastAccessed": 1773958948053,
+      "type": "directory"
+    },
+    {
+      "path": "resources/views/lunar/pdf.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1773961293739,
+      "type": "file"
     }
   ],
   "userDirectives": []

@@ -19,10 +19,15 @@
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1.5rem"
      class="home-cards">
     @foreach ($cards as $card)
+    @if($card['disabled'])
+    <div style="display:flex;flex-direction:column;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:0.5rem;overflow:hidden;opacity:0.38;cursor:default;user-select:none">
+    @else
     <a href="{{ $card['url'] }}"
        style="display:flex;flex-direction:column;background:var(--theme-card);border:1px solid var(--theme-border);border-radius:0.5rem;overflow:hidden;text-decoration:none;transition:border-color 0.15s"
        onmouseover="this.style.borderColor='#6a329f'"
-       onmouseout="this.style.borderColor='var(--theme-border)'">
+       onmouseout="this.style.borderColor='var(--theme-border)'"
+    >
+    @endif
 
         {{-- Art header --}}
         <div class="hcard-art" style="height:110px;background:linear-gradient(150deg,rgba(106,50,159,0.13) 0%,rgba(106,50,159,0.04) 100%);position:relative;overflow:hidden;flex-shrink:0">
@@ -260,7 +265,7 @@
             </span>
         </div>
 
-    </a>
+    @if($card['disabled'])</div>@else</a>@endif
     @endforeach
 </div>
 

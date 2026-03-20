@@ -38,7 +38,6 @@
 
 @section('content')
     {{-- Profile switcher --}}
-    @if($profiles->count() > 1)
     @php
         $profileList = $profiles->map(fn($p) => [
             'id'    => $p->id,
@@ -76,13 +75,15 @@
         {{-- Dropdown --}}
         <div x-show="open" x-cloak class="switcher-dropdown">
 
-            {{-- Search --}}
+            {{-- Search (only when many profiles) --}}
+            @if($profiles->count() > 3)
             <div class="switcher-search-wrap">
                 <input x-ref="search" x-model="search" @keydown.escape="open = false"
                        placeholder="Search profiles…"
                        class="switcher-input"
                        x-init="$watch('open', v => v && $nextTick(() => $refs.search.focus()))">
             </div>
+            @endif
 
             {{-- List --}}
             <div class="switcher-list">
@@ -99,14 +100,20 @@
                         <span x-show="p.active" class="switcher-check">✓</span>
                     </a>
                 </template>
-                <div x-show="filtered.length === 0" class="switcher-empty">
+                <div x-show="search && filtered.length === 0" class="switcher-empty">
                     No profiles found
                 </div>
             </div>
+
+            {{-- Add profile --}}
+            @auth
+            <a href="{{ route('stellar-profiles.index') }}" class="switcher-add-link">{{ __('ui.switcher.add_profile') }}</a>
+            @else
+            <a href="{{ route('register') }}" class="switcher-add-link">{{ __('ui.switcher.register_to_add') }}</a>
+            @endauth
         </div>
         </div>{{-- /switcher-wrap --}}
     </div>
-    @endif
 
     {{-- Header --}}
     <div class="page-header">
@@ -115,6 +122,7 @@
                class="edit-profile-link">
                 ← Edit Profile
             </a>
+            <div class="page-type-label">{{ __('ui.natal.page_title') }}</div>
             <h1 class="font-display profile-name">
                 {{ $profile->name }}
             </h1>
@@ -157,6 +165,9 @@
                 </a>
             </div>
         @endif
+        <div style="text-align:center;margin-top:0.5rem;display:flex;justify-content:center;gap:1.2rem">
+            <a href="{{ route('daily.show', $profile) }}" style="font-size:0.78rem;color:var(--theme-muted);text-decoration:none;opacity:0.7" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Daily Horoscope →</a>
+        </div>
     </div>
 
     {{-- Planets --}}
@@ -207,28 +218,22 @@
 
     {{-- Houses (Tier 3 only) --}}
     @if(count($houses) && $chart->ascendant !== null)
-    <div class="card card-flush card-mt">
-        <div class="card-header">
-            <div class="section-label">Houses (Placidus)</div>
-        </div>
-        <div class="card-scroll">
-            <table class="ct">
-                <tbody>
-                    @foreach($houses as $i => $cusp)
-                    @php
-                        $sign = (int) floor($cusp / 30);
-                        $deg  = floor(fmod($cusp, 30));
-                        $min  = round((fmod($cusp, 30) - $deg) * 60);
-                        if ($min >= 60) { $deg++; $min = 0; }
-                    @endphp
-                    <tr>
-                        <td class="{{ in_array($i, [0,3,6,9]) ? 'ct-angle' : 'ct-house-num' }}">{{ $houseNames[$i] }}</td>
-                        <td class="ct-muted"><span class="ct-sign-glyph">{{ $signGlyphs[$sign] }}</span>{{ $signNames[$sign] }}</td>
-                        <td class="ct-num">{{ $deg }}°{{ str_pad($min, 2, '0', STR_PAD_LEFT) }}'</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    <div class="card card-mt">
+        <div class="section-label">Houses (Placidus)</div>
+        <div class="planet-grid">
+            @foreach($houses as $i => $cusp)
+            @php
+                $sign = (int) floor($cusp / 30);
+                $deg  = floor(fmod($cusp, 30));
+                $min  = round((fmod($cusp, 30) - $deg) * 60);
+                if ($min >= 60) { $deg++; $min = 0; }
+            @endphp
+            <div class="house-row{{ in_array($i, [0,3,6,9]) ? ' house-row-angle' : '' }}">
+                <span class="house-num">{{ $houseNames[$i] }}</span>
+                <span><span class="ct-sign-glyph">{{ $signGlyphs[$sign] }}</span>{{ $signNames[$sign] }}</span>
+                <span style="color:var(--theme-muted);font-size:0.78rem">{{ $deg }}°{{ str_pad($min,2,'0',STR_PAD_LEFT) }}'</span>
+            </div>
+            @endforeach
         </div>
     </div>
     @endif
@@ -306,35 +311,6 @@
     </div>
     @endif
 
-    {{-- Singleton / Missing Element --}}
-    @php
-        $elementEmoji = ['Fire'=>'🔥','Earth'=>'🌿','Air'=>'💨','Water'=>'💧'];
-    @endphp
-    @foreach([['full', $singletons], ['short', $singletonsShort]] as [$ver, $items])
-    @if(count($items))
-    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
-        <div class="section-label">Element Pattern</div>
-        <div class="stack">
-        @foreach($items as $s)
-        <div>
-            <div class="ep-header">
-                <span>{{ $elementEmoji[$s['element']] ?? '' }}</span>
-                @if($s['type'] === 'singleton')
-                    <span class="ep-label">Singleton: {{ $bodyGlyphs[$s['planet']['body']] ?? '' }} {{ $bodyNames[$s['planet']['body']] ?? '' }} ({{ $s['element'] }})</span>
-                @else
-                    <span class="ep-label ep-label-muted">Missing element: {{ $s['element'] }}</span>
-                @endif
-            </div>
-            @if($s['text'])
-            <p class="prose">{{ $s['text'] }}</p>
-            @endif
-        </div>
-        @endforeach
-        </div>
-    </div>
-    @endif
-    @endforeach
-
     {{-- House Lords --}}
     @foreach([['full', $houseLords], ['short', $houseLordsShort]] as [$ver, $items])
     @if(count($items))
@@ -362,6 +338,35 @@
             <p class="prose">{!! $item['text'] !!}</p>
         </div>
         @endforeach
+    </div>
+    @endif
+    @endforeach
+
+    {{-- Singleton / Missing Element --}}
+    @php
+        $elementEmoji = ['Fire'=>'🔥','Earth'=>'🌿','Air'=>'💨','Water'=>'💧'];
+    @endphp
+    @foreach([['full', $singletons], ['short', $singletonsShort]] as [$ver, $items])
+    @if(count($items))
+    <div class="card card-section" data-ver="{{ $ver }}" @if($ver === 'short') style="display:none" @endif>
+        <div class="section-label">Element Pattern</div>
+        <div class="stack">
+        @foreach($items as $s)
+        <div>
+            <div class="ep-header">
+                <span>{{ $elementEmoji[$s['element']] ?? '' }}</span>
+                @if($s['type'] === 'singleton')
+                    <span class="ep-label">Singleton: {{ $bodyGlyphs[$s['planet']['body']] ?? '' }} {{ $bodyNames[$s['planet']['body']] ?? '' }} ({{ $s['element'] }})</span>
+                @else
+                    <span class="ep-label ep-label-muted">Missing element: {{ $s['element'] }}</span>
+                @endif
+            </div>
+            @if($s['text'])
+            <p class="prose">{{ $s['text'] }}</p>
+            @endif
+        </div>
+        @endforeach
+        </div>
     </div>
     @endif
     @endforeach
@@ -418,6 +423,7 @@
     </div>
 
     {{-- Forecast links --}}
+    @php $activeForecasts = ['/horoscope/daily']; @endphp
     <div class="card card-section card-content">
         <div class="section-label">{{ __('ui.natal.forecasts_title') }}</div>
         <div class="forecast-list">
@@ -427,9 +433,15 @@
                 [__('ui.natal.forecast_links.monthly'), '/horoscope/monthly'],
                 [__('ui.natal.forecast_links.solar'),   '/horoscope/solar'],
             ] as [$label, $href])
+            @if(in_array($href, $activeForecasts))
             <a href="{{ url($href) }}" class="forecast-link">
                 <span class="forecast-arrow">→</span> {{ $label }}
             </a>
+            @else
+            <span class="forecast-link forecast-link-disabled">
+                <span class="forecast-arrow">→</span> {{ $label }}
+            </span>
+            @endif
             @endforeach
         </div>
     </div>
@@ -738,9 +750,20 @@
 
     const pts = PL.map(p => ({ ...p, origA: l2a(p.lon), a: l2a(p.lon), r: RPG }));
     pts.sort((a, b) => a.a - b.a);
-    // Angular spread — keep all planets at outer periphery, spread angularly to avoid overlap
+
+    // Helper: clamp a planet's display angle to its zodiac sign sector
+    function clampToSign(p) {
+        const signIdx = Math.floor(((p.lon % 360) + 360) % 360 / 30);
+        const aMid = l2a(signIdx * 30 + 15);
+        let d = ((p.a - aMid + 360) % 360);
+        if (d > 180) d -= 360;
+        if (d >  14) p.a = (aMid + 14 + 360) % 360;
+        if (d < -14) p.a = (aMid - 14 + 360) % 360;
+    }
+
+    // Angular spread — keep planets within their sign sector, spread to avoid overlap
     const MIN_ANG = 9;
-    for (let iter = 0; iter < 40; iter++) {
+    for (let iter = 0; iter < 60; iter++) {
         let moved = false;
         for (let i = 0; i < pts.length; i++) {
             const j = (i + 1) % pts.length;
@@ -752,6 +775,8 @@
                 moved = true;
             }
         }
+        // Enforce sign boundaries after every iteration
+        for (const p of pts) clampToSign(p);
         pts.sort((a, b) => a.a - b.a);
         if (!moved) break;
     }
@@ -1023,15 +1048,3 @@ function showPdfLoading() {
 }
 </style>
 
-{{-- Scroll-to-top button --}}
-<button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})"
-        title="Back to top"
-        class="scroll-top">↑</button>
-<script>
-(function(){
-    var btn = document.getElementById('stt');
-    window.addEventListener('scroll', function(){
-        btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
-    }, {passive: true});
-})();
-</script>
