@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"grep -i \\\"MYSQL_ROOT_PASSWORD\\\\|MYSQL_PASSWORD\\\\|MYSQL_USER\\\\|MYSQL_DATABASE\\\" /var/www/horo/docker-compose.yml\",\"description\":\"Find MySQL credentials in docker-compose.yml\"}",
-  "error": "Exit code 2\ngrep: /var/www/horo/docker-compose.yml: No such file or directory",
-  "timestamp": "2026-03-21T22:04:50.439Z",
-  "retry_count": 1
+  "tool_input_preview": "{\"command\":\"ssh horo-server \\\"sudo docker exec horo_php php artisan migrate --force 2>&1\\\"\",\"description\":\"Run migrations with sudo docker\"}",
+  "error": "Exit code 1\nsudo: docker: command not found",
+  "timestamp": "2026-03-21T22:11:17.221Z",
+  "retry_count": 2
 }

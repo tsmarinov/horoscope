@@ -7,10 +7,10 @@
 
 {{-- ── Hero ──────────────────────────────────────────────────────────────── --}}
 <div class="page-hero-lg">
-    <h1 class="font-display" style="font-size:1.35rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.4rem">
+    <h1 class="font-display home-hero-title">
         {{ __('ui.home.hero_title') }}
     </h1>
-    <p class="page-subtitle" style="max-width:26rem;margin:0 auto">
+    <p class="page-subtitle home-hero-sub">
         {{ __('ui.home.hero_sub') }}
     </p>
 </div>
@@ -21,10 +21,7 @@
     @if($card['disabled'])
     <div class="hcard-disabled">
     @else
-    <a href="{{ $card['url'] }}" class="hcard"
-       onmouseover="this.style.borderColor='#6a329f'"
-       onmouseout="this.style.borderColor='var(--theme-border)'"
-    >
+    <a href="{{ $card['url'] }}" class="hcard">
     @endif
 
         {{-- Art header --}}
@@ -297,13 +294,8 @@
 {{-- ── Footer CTA ────────────────────────────────────────────────────────── --}}
 @guest
 <p class="home-cta">
-    <a href="{{ route('register') }}" style="color:inherit;text-decoration:underline">{{ __('ui.home.cta_free') }}</a>
+    <a href="{{ route('register') }}" class="home-cta-link">{{ __('ui.home.cta_free') }}</a>
 </p>
 @endguest
-
-<style>
-@media (max-width: 419px) { .home-cards { grid-template-columns: 1fr !important; } }
-@media (min-width: 420px) { .home-cards { grid-template-columns: repeat(2, 1fr) !important; } }
-</style>
 
 @endsection
