@@ -270,9 +270,9 @@ return [
     'nav' => [
         'home'             => 'Home',
         'horoscopes'       => 'Horoscopes',
-        'daily'            => 'Daily',
-        'weekly'           => 'Weekly',
-        'monthly'          => 'Monthly',
+        'daily'            => 'Personal Daily Horoscope',
+        'weekly'           => 'Personal Weekly Horoscope',
+        'monthly'          => 'Personal Monthly Horoscope',
         'solar_return'     => 'Solar Return',
         'day_of_week'      => 'Day of the Week',
         'charts'           => 'Charts',
