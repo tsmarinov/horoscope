@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '🌙 Lunar Calendar — ' . $start->format('F Y'))
+@section('title', 'Lunar Calendar — ' . $start->format('F Y'))
 @section('main_class', 'page-wrap-narrow')
 @section('nav_lunar', 'active')
 
