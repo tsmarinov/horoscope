@@ -114,6 +114,18 @@
       "type": "file"
     },
     {
+      "path": "src/app/Services/SunSignHoroscopeService.php",
+      "accessCount": 3,
+      "lastAccessed": 1774129445649,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Http/Controllers/SunSignController.php",
+      "accessCount": 3,
+      "lastAccessed": 1774129460741,
+      "type": "file"
+    },
+    {
       "path": "src/routes/web.php",
       "accessCount": 2,
       "lastAccessed": 1774103932797,
@@ -126,9 +138,15 @@
       "type": "file"
     },
     {
-      "path": "src/app/Http/Controllers/SunSignController.php",
+      "path": "src/database/migrations/2026_03_21_214257_add_locale_to_sun_sign_horoscopes_table.php",
       "accessCount": 2,
-      "lastAccessed": 1774104436596,
+      "lastAccessed": 1774129405179,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Models/SunSignHoroscope.php",
+      "accessCount": 2,
+      "lastAccessed": 1774129425183,
       "type": "file"
     },
     {
@@ -147,6 +165,18 @@
       "path": "src/resources/views/partials/zodiac-picture.blade.php",
       "accessCount": 1,
       "lastAccessed": 1774104625845,
+      "type": "file"
+    },
+    {
+      "path": "src/database",
+      "accessCount": 1,
+      "lastAccessed": 1774129291510,
+      "type": "directory"
+    },
+    {
+      "path": "src/database/migrations/2026_03_21_100000_create_sun_sign_horoscopes_table.php",
+      "accessCount": 1,
+      "lastAccessed": 1774129296165,
       "type": "file"
     }
   ],

@@ -50,10 +50,11 @@ class SunSignHoroscopeService
      * Return horoscopes for all 12 signs for a given date.
      * Reads from DB; generates (with real transit aspects) only what's missing.
      */
-    /** Read-only: returns whatever is in DB, never calls the AI. */
-    public function getForDate(Carbon $date): array
+    /** Read-only: returns whatever is in DB for the given locale, never calls the AI. */
+    public function getForDate(Carbon $date, string $locale = 'en'): array
     {
         $existing = SunSignHoroscope::whereDate('date', $date->toDateString())
+            ->where('locale', $locale)
             ->get()->keyBy('sign')->map(fn ($r) => $r->body)->toArray();
 
         $ordered = [];
@@ -63,16 +64,16 @@ class SunSignHoroscopeService
         return $ordered;
     }
 
-    /** Force-regenerate all 12 signs for a date, overwriting DB. */
-    public function regenerateForDate(Carbon $date): array
+    /** Force-regenerate all 12 signs for a date and locale, overwriting DB. */
+    public function regenerateForDate(Carbon $date, string $locale = 'en'): array
     {
         $dateStr   = $date->toDateString();
         $transits  = $this->loadTransits($date);
-        $generated = $this->generateSigns(self::SIGNS, $date, $transits);
+        $generated = $this->generateSigns(self::SIGNS, $date, $transits, $locale);
 
         foreach ($generated as $sign => $body) {
             SunSignHoroscope::updateOrCreate(
-                ['sign' => $sign, 'date' => $dateStr],
+                ['sign' => $sign, 'date' => $dateStr, 'locale' => $locale],
                 ['body' => $body]
             );
         }
@@ -137,7 +138,7 @@ class SunSignHoroscopeService
             : implode('; ', $results);
     }
 
-    private function generateSigns(array $signs, Carbon $date, array $transits): array
+    private function generateSigns(array $signs, Carbon $date, array $transits, string $locale = 'en'): array
     {
         $dateStr = $date->format('F j, Y');
 

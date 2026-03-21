@@ -53,7 +53,7 @@ class SunSignController extends Controller
         return view('horoscope.sun-sign.index', [
             'signs'      => self::SIGNS,
             'date'       => $date,
-            'horoscopes' => $service->getForDate($date),
+            'horoscopes' => $service->getForDate($date, app()->getLocale()),
             'isAdmin'    => $isAdmin,
         ]);
     }
