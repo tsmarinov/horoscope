@@ -403,6 +403,17 @@ img.emoji {
 /* ── Navbar controls row + profile anchor ─────────────────────────────── */
 .nav-controls { display: flex; align-items: center; gap: 0.5rem; }
 .nav-profile  { position: relative; }
+
+.nav-profile-btn { position: relative; }
+.nav-logged-dot {
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    border: 1.5px solid var(--theme-bg);
+    pointer-events: none;
+}
 a.icon-btn    { text-decoration: none; }
 
 /* ── Button reset — full-width, no chrome ─────────────────────────────── */
@@ -814,12 +825,13 @@ a.icon-btn    { text-decoration: none; }
     margin-bottom: 0.9rem;
 }
 .date-nav-link {
-    font-size: 0.8rem;
-    color: var(--theme-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $accent;
     text-decoration: none;
     white-space: nowrap;
 
-    &:hover { color: $accent; }
+    &:hover { color: $accent-light; }
 }
 .date-nav-current {
     font-size: 0.85rem;
@@ -1550,3 +1562,264 @@ a.icon-btn    { text-decoration: none; }
 
 // ── Lunar grid legend note ────────────────────────────────────────────────
 .lunar-grid-note { color: var(--theme-muted); font-size: 0.75rem; }
+
+// ── Sun-sign horoscope ────────────────────────────────────────────────────
+
+.zsign-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    max-width: 900px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+
+    @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.zsign-card {
+    display: block;
+    padding: 0.9rem;
+    background: var(--theme-card);
+    border: 1px solid var(--theme-border);
+    border-radius: 10px;
+    color: var(--theme-text);
+    overflow: hidden; // clearfix for float
+
+    &::after { content: ''; display: table; clear: both; }
+}
+
+.zsign-card-img {
+    position: relative;
+    float: left;
+    width: 80px;
+    height: 80px;
+    margin: 0 0.85rem 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--theme-raised);
+    border-radius: 8px;
+    overflow: hidden;
+    color: $accent;
+
+    svg { width: 100%; height: 100%; display: block; }
+
+    // Light mode: override SVG presentation attrs so stars/lines show on light bg
+    circle      { fill: $accent; }
+    g[fill]     { fill: rgba(106,50,159,0.4); }
+    g[stroke]   { stroke: $accent; }
+
+    // Keep bright star glyph distinct in light mode
+    .zc-bright circle:nth-child(2) { fill: $accent; }
+    .zc-bright circle:last-child   { fill: #9870d8; }
+}
+
+[data-theme="dark"] .zsign-card-img {
+    background: #070712;
+
+    // Restore dark-mode SVG colors
+    circle      { fill: #8060b8; }
+    g[fill]     { fill: #28204a; }
+    g[stroke]   { stroke: #7050a8; }
+
+    // Bright star: white-ish glow
+    .zc-bright circle:nth-child(2) { fill: #c8a8f8; }
+    .zc-bright circle:last-child   { fill: #f0e8ff; }
+}
+
+.zsign-glyph-badge {
+    position: absolute;
+    bottom: 5px;
+    left: 7px;
+    font-size: 0.85rem;
+    opacity: 0.55;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.zsign-meta {
+    display: block;
+}
+
+.zsign-meta-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.zsign-name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.zsign-dates {
+    font-size: 0.7rem;
+    color: var(--theme-muted);
+    white-space: nowrap;
+}
+
+.zsign-preview {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--theme-text);
+    margin: 0.35rem 0 0;
+}
+
+.zsign-element {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    margin-top: 0.1rem;
+
+    &.zsign-element-fire  { background: rgba(220,80,40,0.12);  color: #c05030; }
+    &.zsign-element-earth { background: rgba(60,140,60,0.12);  color: #3a8040; }
+    &.zsign-element-air   { background: rgba(60,100,200,0.12); color: #3060b0; }
+    &.zsign-element-water { background: rgba(40,120,180,0.12); color: #2878a0; }
+}
+
+[data-theme="dark"] {
+    .zsign-element-fire  { background: rgba(220,80,40,0.18);  color: #e07850; }
+    .zsign-element-earth { background: rgba(60,140,60,0.18);  color: #60b060; }
+    .zsign-element-air   { background: rgba(60,100,200,0.18); color: #6090d0; }
+    .zsign-element-water { background: rgba(40,120,180,0.18); color: #50a8c8; }
+}
+
+// Sign nav bar (12 icons row)
+.zsign-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--theme-divider);
+    margin-bottom: 0.5rem;
+
+    &.zsign-nav-footer {
+        border-bottom: none;
+        border-top: 1px solid var(--theme-divider);
+        margin-top: 1.5rem;
+        margin-bottom: 0;
+    }
+}
+
+.zsign-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    color: var(--theme-muted);
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+
+    &:hover { background: var(--theme-raised); color: $accent; }
+
+    &.zsign-nav-item--active {
+        background: $accent-tint;
+        color: $accent;
+        border: 1px solid rgba(106,50,159,0.3);
+    }
+}
+
+// Show page hero icon
+.zsign-hero-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    color: $accent;
+}
+
+// Placeholder content
+.zsign-content-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--theme-muted);
+}
+
+.zsign-placeholder-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+    line-height: 1;
+}
+
+.zsign-placeholder-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    max-width: 28rem;
+}
+
+// Date nav row (shared pattern)
+.date-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.date-nav-arrow {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: $accent;
+    text-decoration: none;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    transition: background 0.12s, color 0.12s;
+
+    &:hover { background: var(--theme-raised); color: var(--theme-text); }
+
+    &.date-nav-arrow-disabled {
+        opacity: 0.3;
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+.date-nav-label {
+    font-size: 0.92rem;
+    color: var(--theme-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.date-nav-today {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $accent;
+    text-decoration: none;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid rgba(106,50,159,0.4);
+    border-radius: 20px;
+    transition: background 0.12s;
+
+    &:hover { background: $accent-tint; }
+}
+
+.btn-primary-sm {
+    display: inline-block;
+    padding: 0.45rem 1.2rem;
+    background: $accent;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.88; color: #fff; }
+}
