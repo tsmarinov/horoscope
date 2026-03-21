@@ -96,6 +96,30 @@
       "type": "file"
     },
     {
+      "path": "src/resources/views/layouts/app.blade.php",
+      "accessCount": 13,
+      "lastAccessed": 1774085004160,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/partials/wheel-biwheel.blade.php",
+      "accessCount": 11,
+      "lastAccessed": 1774044280453,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/css/app.scss",
+      "accessCount": 10,
+      "lastAccessed": 1774044634851,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/lunar/show.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1774042504133,
+      "type": "file"
+    },
+    {
       "path": "src/app/Services/ReportBuilder.php",
       "accessCount": 5,
       "lastAccessed": 1773790414640,
@@ -120,9 +144,27 @@
       "type": "directory"
     },
     {
-      "path": "src/resources/views/lunar/show.blade.php",
-      "accessCount": 4,
-      "lastAccessed": 1773960664649,
+      "path": "src/routes/web.php",
+      "accessCount": 2,
+      "lastAccessed": 1774041423440,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/Http/Controllers/EmailController.php",
+      "accessCount": 2,
+      "lastAccessed": 1774041557584,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/home.blade.php",
+      "accessCount": 2,
+      "lastAccessed": 1774042240798,
+      "type": "file"
+    },
+    {
+      "path": "src/config/app.php",
+      "accessCount": 2,
+      "lastAccessed": 1774087829205,
       "type": "file"
     },
     {
@@ -144,15 +186,21 @@
       "type": "file"
     },
     {
-      "path": "src/routes/web.php",
+      "path": "src/app/Models/User.php",
       "accessCount": 1,
-      "lastAccessed": 1773960502236,
-      "type": "directory"
+      "lastAccessed": 1774041739568,
+      "type": "file"
     },
     {
-      "path": "src/resources/css/app.scss",
+      "path": "src/resources/views/partials/wheel-natal.blade.php",
       "accessCount": 1,
-      "lastAccessed": 1773960633381,
+      "lastAccessed": 1774042860471,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/horoscope/daily/show.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1774044190232,
       "type": "file"
     }
   ],
