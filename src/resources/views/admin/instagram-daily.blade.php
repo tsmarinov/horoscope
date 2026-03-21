@@ -94,6 +94,33 @@
 .ig-sign-icon .zc-bright circle:nth-child(1) { fill: rgba(106,50,159,0.2); }
 .ig-sign-icon .zc-bright circle:nth-child(2) { fill: #6a329f; }
 .ig-sign-icon .zc-bright circle:last-child   { fill: #9860d8; }
+
+/* ── Slide inner layout ────────────────────────────────────────────────── */
+.ig-slide-inner      { position: relative; z-index: 1; width: 100%; height: 100%; padding: 25px; box-sizing: border-box; display: flex; flex-direction: column; }
+.ig-slide-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.ig-slide-brand      { font-family: 'Cinzel', serif; font-size: 30px; color: #6a329f; letter-spacing: 0.09em; font-weight: 600; }
+.ig-slide-date       { font-size: 25px; color: #9a88b8; letter-spacing: 0.03em; }
+.ig-slide-divider    { height: 1px; background: linear-gradient(90deg, rgba(106,50,159,0.5) 0%, rgba(106,50,159,0.15) 60%, rgba(106,50,159,0) 100%); margin-bottom: 30px; flex-shrink: 0; }
+.ig-slide-cards-row  { display: flex; gap: 28px; flex: 1; min-height: 0; }
+.ig-sign-card        { flex: 1; background: #ffffff; border: 1px solid rgba(106,50,159,0.18); border-left: 3px solid #6a329f; border-radius: 20px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 24px rgba(106,50,159,0.08); }
+.ig-card-top         { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+.ig-card-meta        { flex: 1; }
+.ig-card-name        { font-family: 'Cinzel', serif; font-size: 40px; font-weight: 700; color: #1a0830; letter-spacing: 0.05em; margin-bottom: 10px; }
+.ig-card-dates       { color: #9a88b8; font-size: 24px; margin-bottom: 10px; }
+.ig-card-element-row { display: flex; align-items: center; gap: 12px; }
+.ig-card-glyph       { font-size: 40px; line-height: 1; font-variant-emoji: text; color: var(--elem-color, #50327a); }
+.ig-card-badge       { color: #fff; font-size: 18px; font-weight: 700; padding: 4px 16px; border-radius: 20px; letter-spacing: 0.04em; background: var(--elem-bg, rgba(80,50,120,0.80)); }
+.ig-card-icon        { flex-shrink: 0; background: rgba(106,50,159,0.15); border: 1.5px solid rgba(106,50,159,0.35); border-radius: 14px; padding: 8px; }
+.ig-card-divider     { height: 1px; background: rgba(106,50,159,0.12); margin-bottom: 22px; flex-shrink: 0; }
+.ig-card-text        { font-size: 23px; color: #3a2a50; line-height: 1.70; overflow: hidden; flex: 1; }
+.ig-slide-footer-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; flex-shrink: 0; }
+.ig-slide-url        { color: #c0b0d8; font-size: 16px; letter-spacing: 0.04em; }
+.ig-slide-num        { color: #c0b0d8; font-size: 16px; }
+/* Element colours via CSS custom properties */
+.ig-elem-fire  { --elem-color: #b43218; --elem-bg: rgba(180,50,30,0.80); }
+.ig-elem-earth { --elem-color: #3c6428; --elem-bg: rgba(60,100,40,0.80); }
+.ig-elem-air   { --elem-color: #28598c; --elem-bg: rgba(40,90,140,0.80); }
+.ig-elem-water { --elem-color: #1e3782; --elem-bg: rgba(30,55,130,0.80); }
 </style>
 
 <div class="ig-admin">
@@ -117,68 +144,50 @@
                 <div class="ig-slide" id="slide-{{ $i + 1 }}">
 
                     {{-- Slide content --}}
-                    <div style="position:relative;z-index:1;width:100%;height:100%;padding:25px;box-sizing:border-box;display:flex;flex-direction:column;">
+                    <div class="ig-slide-inner">
 
                         {{-- Header --}}
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-                            <div style="font-family:'Cinzel',serif;font-size:30px;color:#6a329f;letter-spacing:0.09em;font-weight:600">STELLAR ✦ OMENS</div>
-                            <div style="font-size:25px;color:#9a88b8;letter-spacing:0.03em">{{ $date->format('F j, Y') }}</div>
+                        <div class="ig-slide-header-bar">
+                            <div class="ig-slide-brand">STELLAR ✦ OMENS</div>
+                            <div class="ig-slide-date">{{ $date->format('F j, Y') }}</div>
                         </div>
 
                         {{-- Divider --}}
-                        <div style="height:1px;background:linear-gradient(90deg,rgba(106,50,159,0.5) 0%,rgba(106,50,159,0.15) 60%,rgba(106,50,159,0) 100%);margin-bottom:30px;flex-shrink:0"></div>
+                        <div class="ig-slide-divider"></div>
 
                         {{-- Two sign cards --}}
-                        <div style="display:flex;gap:28px;flex:1;min-height:0">
+                        <div class="ig-slide-cards-row">
 
                             @foreach($pair as $slug => $sign)
-                            @php
-                                $elementBg = match($sign['element']) {
-                                    'Fire'  => 'rgba(180,50,30,0.80)',
-                                    'Earth' => 'rgba(60,100,40,0.80)',
-                                    'Air'   => 'rgba(40,90,140,0.80)',
-                                    'Water' => 'rgba(30,55,130,0.80)',
-                                    default => 'rgba(80,50,120,0.80)',
-                                };
-                                $elementColor = match($sign['element']) {
-                                    'Fire'  => '#b43218',
-                                    'Earth' => '#3c6428',
-                                    'Air'   => '#28598c',
-                                    'Water' => '#1e3782',
-                                    default => '#50327a',
-                                };
-                                $horoText = strip_tags($horoscopes[$slug] ?? '', '<strong><em>');
-                            @endphp
+                            @php $horoText = strip_tags($horoscopes[$slug] ?? '', '<strong><em>'); @endphp
 
-                            <div style="flex:1;background:#ffffff;border:1px solid rgba(106,50,159,0.18);border-left:3px solid #6a329f;border-radius:20px;padding:15px;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(106,50,159,0.08);">
+                            <div class="ig-sign-card ig-elem-{{ strtolower($sign['element']) }}">
 
                                 {{-- Header row: name+meta left, icon right --}}
-                                <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px">
+                                <div class="ig-card-top">
 
                                     {{-- Left: name + dates + element --}}
-                                    <div style="flex:1">
-                                        <div style="font-family:'Cinzel',serif;font-size:40px;font-weight:700;color:#1a0830;letter-spacing:0.05em;margin-bottom:10px">{{ ucfirst($slug) }}</div>
-                                        <div style="color:#9a88b8;font-size:24px;margin-bottom:10px">{{ $sign['dates'] }}</div>
-                                        <div style="display:flex;align-items:center;gap:12px">
-                                            <span style="font-size:40px;color:{{ $elementColor }};line-height:1;font-variant-emoji:text">{{ $sign['glyph'] }}&#xFE0E;</span>
-                                            <span style="background:{{ $elementBg }};color:#fff;font-size:18px;font-weight:700;padding:4px 16px;border-radius:20px;letter-spacing:0.04em">{{ $sign['element'] }}</span>
+                                    <div class="ig-card-meta">
+                                        <div class="ig-card-name">{{ ucfirst($slug) }}</div>
+                                        <div class="ig-card-dates">{{ $sign['dates'] }}</div>
+                                        <div class="ig-card-element-row">
+                                            <span class="ig-card-glyph">{{ $sign['glyph'] }}&#xFE0E;</span>
+                                            <span class="ig-card-badge">{{ $sign['element'] }}</span>
                                         </div>
                                     </div>
 
                                     {{-- Right: constellation icon --}}
-                                    <div class="ig-sign-icon" style="flex-shrink:0;background:rgba(106,50,159,0.15);border:1.5px solid rgba(106,50,159,0.35);border-radius:14px;padding:8px">
+                                    <div class="ig-sign-icon ig-card-icon">
                                         @include('partials.zodiac-picture', ['sign' => $slug, 'size' => 130])
                                     </div>
 
                                 </div>
 
                                 {{-- Divider --}}
-                                <div style="height:1px;background:rgba(106,50,159,0.12);margin-bottom:22px;flex-shrink:0"></div>
+                                <div class="ig-card-divider"></div>
 
                                 {{-- Horoscope text --}}
-                                <div style="font-size:23px;color:#3a2a50;line-height:1.70;overflow:hidden;flex:1">
-                                    {!! $horoText !!}
-                                </div>
+                                <div class="ig-card-text">{!! $horoText !!}</div>
 
                             </div>
                             @endforeach
@@ -186,9 +195,9 @@
                         </div>
 
                         {{-- Footer --}}
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-shrink:0">
-                            <div style="color:#c0b0d8;font-size:16px;letter-spacing:0.04em">stellaromens.com</div>
-                            <div style="color:#c0b0d8;font-size:16px">{{ $i + 1 }} / 6</div>
+                        <div class="ig-slide-footer-bar">
+                            <div class="ig-slide-url">stellaromens.com</div>
+                            <div class="ig-slide-num">{{ $i + 1 }} / 6</div>
                         </div>
 
                     </div>

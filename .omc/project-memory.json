@@ -85,8 +85,14 @@
   "hotPaths": [
     {
       "path": "src/resources/css/app.scss",
+      "accessCount": 16,
+      "lastAccessed": 1774131668263,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/home.blade.php",
       "accessCount": 9,
-      "lastAccessed": 1774104780865,
+      "lastAccessed": 1774131638670,
       "type": "file"
     },
     {
@@ -126,15 +132,15 @@
       "type": "file"
     },
     {
-      "path": "src/routes/web.php",
-      "accessCount": 2,
-      "lastAccessed": 1774103932797,
+      "path": "src/resources/views/admin/instagram-daily.blade.php",
+      "accessCount": 3,
+      "lastAccessed": 1774131597992,
       "type": "file"
     },
     {
-      "path": "src/resources/views/home.blade.php",
+      "path": "src/routes/web.php",
       "accessCount": 2,
-      "lastAccessed": 1774104018263,
+      "lastAccessed": 1774103932797,
       "type": "file"
     },
     {

@@ -1401,7 +1401,13 @@ a.icon-btn    { text-decoration: none; }
 .hcard-cta   { font-size: 0.72rem; color: $accent; font-weight: 600; letter-spacing: 0.02em; margin-top: 0.15rem; }
 .hcard-svg   { width: 100%; height: 100%; position: absolute; inset: 0; }
 .hcard-glyph { position: absolute; bottom: 0.55rem; left: 0.8rem; font-size: 1.15rem; line-height: 1; opacity: 0.85; }
-.home-cta    { text-align: center; font-size: 0.75rem; color: var(--theme-muted); padding-bottom: 1rem; line-height: 1.6; }
+.home-cta       { text-align: center; font-size: 0.75rem; color: var(--theme-muted); padding-bottom: 1rem; line-height: 1.6; }
+.home-cta-link  { color: inherit; text-decoration: underline; }
+.home-hero-title { font-size: 1.35rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.home-hero-sub   { max-width: 26rem; margin: 0 auto; }
+
+@media (max-width: 419px) { .home-cards { grid-template-columns: 1fr; } }
+@media (min-width: 420px) { .home-cards { grid-template-columns: repeat(2, 1fr); } }
 
 // ── Lunar pdf row ──────────────────────────────────────────────────────────
 .pdf-row-right { display: flex; justify-content: flex-end; }
