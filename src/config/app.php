@@ -125,7 +125,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'version'         => '1.0.0',
+    'version'         => '1.0.1',
 
     'launch_at'       => env('LAUNCH_AT'),
     'launch_timezone' => env('LAUNCH_TIMEZONE', 'Europe/Sofia'),
