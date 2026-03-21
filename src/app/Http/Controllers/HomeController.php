@@ -8,9 +8,9 @@ use Illuminate\View\View;
 class HomeController extends Controller
 {
     private const URL_MAP = [
-        'daily'   => '/horoscope/daily',
-        'weekly'  => '/horoscope/weekly',
-        'monthly' => '/horoscope/monthly',
+        'daily'   => '/horoscope/personal/daily',
+        'weekly'  => '/horoscope/personal/weekly',
+        'monthly' => '/horoscope/personal/monthly',
         'solar'   => '/horoscope/solar',
         'weekday' => '/horoscope/weekday',
         'lunar'   => '/lunar-calendar',

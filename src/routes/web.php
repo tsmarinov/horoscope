@@ -66,12 +66,12 @@ Route::prefix('{locale}')
         });
 
         // Daily horoscope — guest-accessible
-        Route::get('/horoscope/daily',                        [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
-        Route::get('/horoscope/daily/{profile}/{date}/pdf',   [DailyHoroscopeController::class, 'pdf'])->name('daily.pdf');
-        Route::get('/horoscope/daily/{profile}/{date?}',      [DailyHoroscopeController::class, 'show'])->name('daily.show');
+        Route::get('/horoscope/personal/daily',                        [DailyHoroscopeController::class, 'redirect'])->name('daily.index');
+        Route::get('/horoscope/personal/daily/{profile}/{date}/pdf',   [DailyHoroscopeController::class, 'pdf'])->name('daily.pdf');
+        Route::get('/horoscope/personal/daily/{profile}/{date?}',      [DailyHoroscopeController::class, 'show'])->name('daily.show');
         // Daily horoscope — auth-only (AI L1)
         Route::middleware('auth')->group(function () {
-            Route::post('/horoscope/daily/{profile}/{date}/synthesis', [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
+            Route::post('/horoscope/personal/daily/{profile}/{date}/synthesis', [DailyHoroscopeController::class, 'generateSynthesis'])->name('daily.synthesis');
         });
 
         // Stellar Profiles — guest-accessible

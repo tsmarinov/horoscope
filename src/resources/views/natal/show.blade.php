@@ -421,15 +421,15 @@
     </div>
 
     {{-- Forecast links --}}
-    @php $activeForecasts = ['/horoscope/daily']; @endphp
+    @php $activeForecasts = ['/horoscope/personal/daily']; @endphp
     <div class="card card-section card-content">
         <div class="section-label">{{ __('ui.natal.forecasts_title') }}</div>
         <div class="forecast-list">
             @foreach([
-                [__('ui.natal.forecast_links.daily'),   '/horoscope/daily'],
-                [__('ui.natal.forecast_links.weekly'),  '/horoscope/weekly'],
-                [__('ui.natal.forecast_links.monthly'), '/horoscope/monthly'],
-                [__('ui.natal.forecast_links.solar'),   '/horoscope/solar'],
+                [__('ui.natal.forecast_links.daily'),   '/horoscope/personal/daily'],
+                [__('ui.natal.forecast_links.weekly'),  '/horoscope/personal/weekly'],
+                [__('ui.natal.forecast_links.monthly'), '/horoscope/personal/monthly'],
+                [__('ui.natal.forecast_links.solar'),   '/horoscope/personal/solar'],
             ] as [$label, $href])
             @if(in_array($href, $activeForecasts))
             <a href="{{ url($href) }}" class="forecast-link">
