@@ -114,6 +114,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/Http/Controllers/AdminInstagramController.php",
+      "accessCount": 4,
+      "lastAccessed": 1774137356336,
+      "type": "directory"
+    },
+    {
       "path": "src/resources/views/horoscope/sun-sign/index.blade.php",
       "accessCount": 3,
       "lastAccessed": 1774104750469,

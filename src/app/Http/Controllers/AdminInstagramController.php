@@ -32,9 +32,10 @@ class AdminInstagramController extends Controller
             ]);
         }
 
+        $tz   = env('LAUNCH_TIMEZONE', 'Europe/Sofia');
         $date = $date
-            ? (Carbon::createFromFormat('Y-m-d', $date) ?? Carbon::today())
-            : Carbon::today();
+            ? (Carbon::createFromFormat('Y-m-d', $date) ?? Carbon::today($tz))
+            : Carbon::today($tz);
 
         $signKeys   = array_keys(SunSignController::SIGNS);
         $horoscopes = $service->getForDate($date);
