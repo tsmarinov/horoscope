@@ -420,6 +420,7 @@ a.icon-btn    { text-decoration: none; }
 /* ── Logo text size modifiers ──────────────────────────────────────────── */
 .logo-text-sm { font-size: 0.9rem; }
 .logo-text-xs { font-size: 0.72rem; }
+.logo-link     { text-decoration: none; }
 
 /* ── Site footer ───────────────────────────────────────────────────────── */
 .site-footer {
@@ -647,7 +648,7 @@ a.icon-btn    { text-decoration: none; }
 
 // ── Card variants ──────────────────────────────────────────────────────────
 .card-flush   { padding: 0; overflow: hidden; }
-.card-wheel   { padding: 0.75rem; overflow: hidden; margin-bottom: 0.75rem; }
+.card-wheel   { padding: 0.75rem; overflow: visible; margin-bottom: 0.75rem; }
 .card-section { margin-top: 0.75rem; padding: 0.75rem 1rem; }
 .card-content { padding: 0.75rem 1rem; }
 .card-scroll  { overflow-x: auto; }
@@ -660,7 +661,7 @@ a.icon-btn    { text-decoration: none; }
 
 // ── Natal wheel ────────────────────────────────────────────────────────────
 .wheel-label       { margin-bottom: 0.5rem; } // override section-label default
-.wheel-svg         { max-width: 860px; display: block; margin: 0 auto; }
+.wheel-svg         { max-width: 700px; display: block; margin: 0 auto; }
 .chart-unlock-hint { text-align: center; margin-top: 0.75rem; }
 .chart-unlock-link { font-size: 1rem; color: $accent; text-decoration: none; font-weight: 500;
     &:hover { text-decoration: underline; } }

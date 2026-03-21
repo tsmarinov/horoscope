@@ -1,3 +1,10 @@
+@php
+    $appName   = config('app.name', 'Stellar Omens');
+    $appUrl    = config('app.url', '/');
+    $nameParts = explode(' ', $appName, 2);
+    $logoFirst = strtoupper($nameParts[0]);
+    $logoRest  = strtoupper($nameParts[1] ?? '');
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
       x-data="themeManager()"
@@ -15,6 +22,17 @@
 
     {{-- Twemoji — flat SVG emojis --}}
     <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+
+    @production
+    {{-- Google Analytics --}}
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0V7E5WET68"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0V7E5WET68');
+    </script>
+    @endproduction
 </head>
 
 <body class="min-h-screen">
@@ -24,8 +42,8 @@
         <div class="navbar-inner">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" class="logo-text">
-                STELLAR <span class="logo-accent">✦ OMENS</span>
+            <a href="{{ $appUrl }}" class="logo-text">
+                {{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span>
             </a>
 
             {{-- Right controls --}}
@@ -78,7 +96,7 @@
                         <a href="{{ route('stellar-profiles.index') }}" class="pd-item" @click="profileOpen = false">
                             <span class="pd-icon">✦</span> {{ __('ui.nav.stellar_profiles') }}
                         </a>
-                        <div class="pd-divider"></div>
+                        <div class="pd-divider"></div>appUrl
                         @if(Route::has('logout'))
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -153,7 +171,7 @@
 
                 {{-- Drawer logo + close --}}
                 <div class="drawer-logo">
-                    <span class="logo-text logo-text-sm">STELLAR <span class="logo-accent">✦ OMENS</span></span>
+                    <span class="logo-text logo-text-sm">{{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span></span>
                     <button class="icon-btn" @click="menuOpen = false" aria-label="Close menu">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                             <line x1="2" y1="2" x2="14" y2="14"/>
@@ -182,9 +200,9 @@
                 <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">✦</span> {{ __('ui.nav.solar_return') }}
                 </span>
-                <a href="{{ url('/' . app()->getLocale() . '/horoscope/weekday') }}" class="drawer-item @yield('nav_weekday')">
+                <span class="drawer-item drawer-item-disabled">
                     <span class="di-icon">🗓</span> {{ __('ui.nav.day_of_week') }}
-                </a>
+                </span>
 
                 {{-- Charts --}}
                 <div class="drawer-section">{{ __('ui.nav.charts') }}</div>
@@ -264,7 +282,7 @@
     {{-- ── Footer ───────────────────────────────────────────────────────── --}}
     <footer class="site-footer">
         <p class="footer-text">
-            <span class="logo-text logo-text-xs">STELLAR <span class="logo-accent">✦ OMENS</span></span>
+            <a href="{{ $appUrl }}" class="logo-text logo-text-xs logo-link">{{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span></a>
             &nbsp;·&nbsp;
             <a href="{{ route('terms') }}"   class="footer-link">{{ __('ui.nav.terms') }}</a>
             &nbsp;·&nbsp;

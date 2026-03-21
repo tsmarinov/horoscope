@@ -268,9 +268,11 @@
 </div>
 
 {{-- ── Footer CTA ────────────────────────────────────────────────────────── --}}
+@guest
 <p class="home-cta">
     <a href="{{ route('register') }}" style="color:inherit;text-decoration:underline">{{ __('ui.home.cta_free') }}</a>
 </p>
+@endguest
 
 <style>
 @media (max-width: 419px) { .home-cards { grid-template-columns: 1fr !important; } }

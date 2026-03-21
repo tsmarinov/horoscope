@@ -11,6 +11,7 @@
 
 <svg id="{{ $svgId }}"
      viewBox="-28 -28 376 376"
+     overflow="visible"
      width="{{ $svgWidth }}"
      @if($svgHeight !== null) height="{{ $svgHeight }}" @endif
      @if($svgClass) class="{{ $svgClass }}" @endif
@@ -33,7 +34,7 @@
         var RPG  = 112;
         var RH   = 67;
         var RC   = 62;
-        var RTG  = 168;
+        var RTG  = 178;
         var ACCENT = '#6a329f';
 
         var ascEff = (ascLon !== null) ? ascLon : 0;
