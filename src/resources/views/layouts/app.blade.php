@@ -42,7 +42,7 @@
         <div class="navbar-inner">
 
             {{-- Logo --}}
-            <a href="{{ $appUrl }}" class="logo-text">
+            <a href="{{ route('home') }}" class="logo-text">
                 {{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span>
             </a>
 
@@ -69,11 +69,12 @@
 
                 {{-- Profile --}}
                 <div class="nav-profile">
-                    <button class="icon-btn" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" aria-label="{{ __('ui.nav.account') }}" title="{{ __('ui.nav.account') }}">
+                    <button class="icon-btn nav-profile-btn" @click="profileOpen = !profileOpen" @click.outside="profileOpen = false" aria-label="{{ __('ui.nav.account') }}" title="{{ __('ui.nav.account') }}">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="9" cy="6.5" r="3"/>
                             <path d="M2.5 16c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5"/>
                         </svg>
+                        @auth<span class="nav-logged-dot"></span>@endauth
                     </button>
 
                     <div class="profile-dropdown" x-show="profileOpen" x-cloak
@@ -188,6 +189,9 @@
 
                 {{-- Horoscopes --}}
                 <div class="drawer-section">{{ __('ui.nav.horoscopes') }}</div>
+                <a href="{{ route('sun-sign.index') }}" class="drawer-item @yield('nav_sun_sign')">
+                    <span class="di-icon">☽</span> {{ __('ui.nav.sun_sign_daily') }}
+                </a>
                 <a href="{{ route('daily.index') }}"  class="drawer-item @yield('nav_daily')">
                     <span class="di-icon">☀</span> {{ __('ui.nav.daily') }}
                 </a>
@@ -258,6 +262,18 @@
                 @endif
                 @endauth
 
+                {{-- Admin --}}
+                @auth
+                @php $adminEmails = array_filter(array_map('trim', explode(',', env('ADMIN_EMAILS', '')))); @endphp
+                @if(!empty($adminEmails) && in_array(auth()->user()->email, $adminEmails))
+                <div class="divider divider-sm"></div>
+                <div class="drawer-section">Admin</div>
+                <a href="/admin/instagram/daily" class="drawer-item" @click="menuOpen = false">
+                    <span class="di-icon">📸</span> Instagram Generator
+                </a>
+                @endif
+                @endauth
+
                 {{-- Theme --}}
                 <div class="divider divider-sm"></div>
                 <button class="drawer-item btn-reset" @click="toggleTheme()">
@@ -282,7 +298,7 @@
     {{-- ── Footer ───────────────────────────────────────────────────────── --}}
     <footer class="site-footer">
         <p class="footer-text">
-            <a href="{{ $appUrl }}" class="logo-text logo-text-xs logo-link">{{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span></a>
+            <a href="{{ route('home') }}" class="logo-text logo-text-xs logo-link">{{ $logoFirst }} <span class="logo-accent">✦ {{ $logoRest }}</span></a>
             &nbsp;·&nbsp;
             <a href="{{ route('terms') }}"   class="footer-link">{{ __('ui.nav.terms') }}</a>
             &nbsp;·&nbsp;

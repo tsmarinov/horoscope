@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1773790065266,
+  "lastScanned": 1774102405846,
   "projectRoot": "/var/www/horo/web",
   "techStack": {
     "languages": [],
@@ -35,7 +35,7 @@
       "path": "backups",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1773790065260,
+      "lastAccessed": 1774102405837,
       "keyFiles": [
         "horo_2026-03-10_140344.sql",
         "horo_2026-03-11_101037.sql.gz",
@@ -46,14 +46,14 @@
       "path": "deploy",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1773790065262,
+      "lastAccessed": 1774102405839,
       "keyFiles": []
     },
     "nginx": {
       "path": "nginx",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1773790065263,
+      "lastAccessed": 1774102405841,
       "keyFiles": [
         "default.conf"
       ]
@@ -62,7 +62,7 @@
       "path": "php",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1773790065263,
+      "lastAccessed": 1774102405842,
       "keyFiles": [
         "Dockerfile",
         "entrypoint.sh"
@@ -72,7 +72,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 18,
-      "lastAccessed": 1773790065263,
+      "lastAccessed": 1774102405842,
       "keyFiles": [
         "AGENTS.md",
         "README.md",
@@ -84,129 +84,99 @@
   },
   "hotPaths": [
     {
-      "path": "src/resources/views/natal/show.blade.php",
-      "accessCount": 20,
-      "lastAccessed": 1774101489448,
+      "path": "src/resources/css/app.scss",
+      "accessCount": 9,
+      "lastAccessed": 1774104780865,
       "type": "file"
     },
     {
-      "path": "src/resources/views/natal/pdf.blade.php",
-      "accessCount": 17,
-      "lastAccessed": 1773821451460,
+      "path": "src/app/Http/Controllers/HomeController.php",
+      "accessCount": 4,
+      "lastAccessed": 1774104000123,
       "type": "file"
     },
     {
       "path": "src/resources/views/layouts/app.blade.php",
-      "accessCount": 13,
-      "lastAccessed": 1774085004160,
-      "type": "file"
-    },
-    {
-      "path": "src/resources/views/partials/wheel-biwheel.blade.php",
-      "accessCount": 11,
-      "lastAccessed": 1774044280453,
-      "type": "file"
-    },
-    {
-      "path": "src/resources/css/app.scss",
-      "accessCount": 10,
-      "lastAccessed": 1774044634851,
-      "type": "file"
-    },
-    {
-      "path": "src/resources/views/lunar/show.blade.php",
-      "accessCount": 6,
-      "lastAccessed": 1774042504133,
+      "accessCount": 4,
+      "lastAccessed": 1774104030136,
       "type": "file"
     },
     {
       "path": "src/lang/en/ui.php",
-      "accessCount": 6,
-      "lastAccessed": 1774101414141,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Services/ReportBuilder.php",
-      "accessCount": 5,
-      "lastAccessed": 1773790414640,
-      "type": "directory"
-    },
-    {
-      "path": "src/resources/views/natal/pdf_footer.blade.php",
       "accessCount": 4,
-      "lastAccessed": 1773820785242,
+      "lastAccessed": 1774104160941,
       "type": "file"
     },
     {
-      "path": "src/resources/css/app.css",
-      "accessCount": 4,
-      "lastAccessed": 1773821752925,
-      "type": "directory"
+      "path": "src/resources/views/horoscope/sun-sign/index.blade.php",
+      "accessCount": 3,
+      "lastAccessed": 1774104750469,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Services/SunSignHoroscopeService.php",
+      "accessCount": 3,
+      "lastAccessed": 1774129445649,
+      "type": "file"
+    },
+    {
+      "path": "src/app/Http/Controllers/SunSignController.php",
+      "accessCount": 3,
+      "lastAccessed": 1774129460741,
+      "type": "file"
     },
     {
       "path": "src/routes/web.php",
-      "accessCount": 4,
-      "lastAccessed": 1774101426543,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/Http/Controllers/EmailController.php",
       "accessCount": 2,
-      "lastAccessed": 1774041557584,
+      "lastAccessed": 1774103932797,
       "type": "file"
     },
     {
       "path": "src/resources/views/home.blade.php",
       "accessCount": 2,
-      "lastAccessed": 1774042240798,
+      "lastAccessed": 1774104018263,
       "type": "file"
     },
     {
-      "path": "src/config/app.php",
+      "path": "src/database/migrations/2026_03_21_214257_add_locale_to_sun_sign_horoscopes_table.php",
       "accessCount": 2,
-      "lastAccessed": 1774087829205,
+      "lastAccessed": 1774129405179,
       "type": "file"
     },
     {
-      "path": "src/app/Http/Controllers/HomeController.php",
+      "path": "src/app/Models/SunSignHoroscope.php",
       "accessCount": 2,
-      "lastAccessed": 1774101467279,
+      "lastAccessed": 1774129425183,
       "type": "file"
     },
     {
-      "path": "src/resources",
+      "path": "src/resources/views/partials/zodiac-icon.blade.php",
       "accessCount": 1,
-      "lastAccessed": 1773790472275,
+      "lastAccessed": 1774103863483,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/horoscope/sun-sign/show.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1774103911368,
+      "type": "file"
+    },
+    {
+      "path": "src/resources/views/partials/zodiac-picture.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1774104625845,
+      "type": "file"
+    },
+    {
+      "path": "src/database",
+      "accessCount": 1,
+      "lastAccessed": 1774129291510,
       "type": "directory"
     },
     {
-      "path": "src/resources/views/partials/premium-button.blade.php",
+      "path": "src/database/migrations/2026_03_21_100000_create_sun_sign_horoscopes_table.php",
       "accessCount": 1,
-      "lastAccessed": 1773820052740,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Http/Controllers/LunarCalendarController.php",
-      "accessCount": 1,
-      "lastAccessed": 1773960501820,
-      "type": "file"
-    },
-    {
-      "path": "src/app/Models/User.php",
-      "accessCount": 1,
-      "lastAccessed": 1774041739568,
-      "type": "file"
-    },
-    {
-      "path": "src/resources/views/partials/wheel-natal.blade.php",
-      "accessCount": 1,
-      "lastAccessed": 1774042860471,
-      "type": "file"
-    },
-    {
-      "path": "src/resources/views/horoscope/daily/show.blade.php",
-      "accessCount": 1,
-      "lastAccessed": 1774044190232,
+      "lastAccessed": 1774129296165,
       "type": "file"
     }
   ],

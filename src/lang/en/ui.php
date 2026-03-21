@@ -8,6 +8,12 @@ return [
         'cta_free'   => 'Free preview — create an account for your personal chart',
         'nav_label'  => 'Home',
         'cards' => [
+            'sun_sign' => [
+                'title' => 'Daily Horoscope',
+                'glyph' => '♈',
+                'desc'  => 'Today\'s horoscope for every zodiac sign — based on active transits interpreted through your sun sign\'s houses. A clear, readable reading for each of the 12 signs. No birth data required.',
+                'cta'   => 'Read today\'s horoscope',
+            ],
             'natal' => [
                 'title' => 'Natal Chart',
                 'glyph' => '♈',
@@ -15,7 +21,7 @@ return [
                 'cta'   => 'View birth chart',
             ],
             'daily' => [
-                'title' => 'Daily Horoscope',
+                'title' => 'Personal Daily Horoscope',
                 'glyph' => '☉',
                 'desc'  => 'A transit-based reading personalised to your birth chart. See which planets are active today, which areas of life they touch, and the exact tone they bring — supportive, tense, or quietly transformative. Includes an Areas of Life snapshot and a one-line focus for the day.',
                 'cta'   => 'Read today',
@@ -266,10 +272,17 @@ return [
         ],
     ],
 
+    // ── Sun-sign horoscope ────────────────────────────────────────────────
+    'sun_sign' => [
+        'page_title' => 'Daily Horoscope',
+        'subtitle'   => 'Today\'s reading for every zodiac sign',
+    ],
+
     // ── Navigation ────────────────────────────────────────────────────────
     'nav' => [
         'home'             => 'Home',
         'horoscopes'       => 'Horoscopes',
+        'sun_sign_daily'   => 'Daily Horoscope',
         'daily'            => 'Personal Daily Horoscope',
         'weekly'           => 'Personal Weekly Horoscope',
         'monthly'          => 'Personal Monthly Horoscope',
@@ -295,6 +308,7 @@ return [
         'terms'            => 'Terms',
         'privacy'          => 'Privacy',
         'back_to_top'      => 'Back to top',
+        'today'            => 'Today',
     ],
 
     // ── Auth ──────────────────────────────────────────────────────────────

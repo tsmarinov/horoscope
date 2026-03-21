@@ -31,6 +31,33 @@
         <div class="hcard-art">
             @switch($card['key'])
 
+            @case('sun_sign')
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
+                @php
+                    $glyphs = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+                    $cx = 140; $cy = 55; $r = 44;
+                @endphp
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r }}" stroke="#6a329f" stroke-width="0.75" opacity="0.22"/>
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r - 14 }}" stroke="#6a329f" stroke-width="0.4" opacity="0.12"/>
+                @foreach($glyphs as $i => $g)
+                    @php
+                        $a  = ($i * 30 - 90) * M_PI / 180;
+                        $gx = round($cx + $r * cos($a), 1);
+                        $gy = round($cy + $r * sin($a), 1);
+                    @endphp
+                    <text x="{{ $gx }}" y="{{ $gy }}"
+                          font-family="serif" font-size="{{ $i % 3 === 0 ? 11 : 9 }}"
+                          fill="#6a329f"
+                          opacity="{{ $i % 3 === 0 ? 0.65 : 0.38 }}"
+                          text-anchor="middle" dominant-baseline="central">{{ $g }}</text>
+                @endforeach
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="#6a329f" opacity="0.18"/>
+                <circle cx="50"  cy="22" r="1.5" fill="#6a329f" opacity="0.3"/>
+                <circle cx="235" cy="20" r="1"   fill="#6a329f" opacity="0.25"/>
+                <circle cx="242" cy="88" r="1.5" fill="#6a329f" opacity="0.22"/>
+            </svg>
+            @break
+
             @case('daily')
             <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
                 <circle cx="140" cy="55" r="52" stroke="#6a329f" stroke-width="0.5" opacity="0.12"/>
