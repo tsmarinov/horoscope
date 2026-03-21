@@ -11,6 +11,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaticController;
 use App\Http\Controllers\StellarProfileController;
+use App\Http\Controllers\SunSignController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => redirect('/en/'));
@@ -95,12 +96,22 @@ Route::prefix('{locale}')
             Route::post('/email/change/cancel',  [EmailChangeController::class, 'cancel'])->name('email.change.cancel');
         });
 
+        // Sun-sign daily horoscope (public)
+        Route::get('/horoscope/daily', [SunSignController::class, 'index'])->name('sun-sign.index');
+
         // Lunar calendar (public)
         Route::get('/lunar-calendar', [LunarCalendarController::class, 'redirect'])->name('lunar.index');
         Route::get('/lunar-calendar/{year}/{month}', [LunarCalendarController::class, 'show'])->name('lunar.show');
         Route::get('/lunar-calendar/{year}/{month}/pdf', [LunarCalendarController::class, 'pdf'])->name('lunar.pdf');
 
     });
+
+// Admin tools
+Route::get('/admin/instagram/daily/{date?}', [\App\Http\Controllers\AdminInstagramController::class, 'daily'])
+    ->where('date', '\d{4}-\d{2}-\d{2}');
+Route::get('/admin/instagram/daily/{date}/slide/{num}.png', [\App\Http\Controllers\AdminInstagramController::class, 'slide'])
+    ->where('date', '\d{4}-\d{2}-\d{2}')
+    ->where('num', '[1-6]');
 
 // Redirect legacy URLs (no locale prefix) → /en/...
 Route::get('{any}', function ($any) {

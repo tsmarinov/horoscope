@@ -7,10 +7,10 @@
 
 {{-- ── Hero ──────────────────────────────────────────────────────────────── --}}
 <div class="page-hero-lg">
-    <h1 class="font-display" style="font-size:1.35rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.4rem">
+    <h1 class="font-display home-hero-title">
         {{ __('ui.home.hero_title') }}
     </h1>
-    <p class="page-subtitle" style="max-width:26rem;margin:0 auto">
+    <p class="page-subtitle home-hero-sub">
         {{ __('ui.home.hero_sub') }}
     </p>
 </div>
@@ -21,15 +21,39 @@
     @if($card['disabled'])
     <div class="hcard-disabled">
     @else
-    <a href="{{ $card['url'] }}" class="hcard"
-       onmouseover="this.style.borderColor='#6a329f'"
-       onmouseout="this.style.borderColor='var(--theme-border)'"
-    >
+    <a href="{{ $card['url'] }}" class="hcard">
     @endif
 
         {{-- Art header --}}
         <div class="hcard-art">
             @switch($card['key'])
+
+            @case('sun_sign')
+            <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
+                @php
+                    $glyphs = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+                    $cx = 140; $cy = 55; $r = 44;
+                @endphp
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r }}" stroke="#6a329f" stroke-width="0.75" opacity="0.22"/>
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="{{ $r - 14 }}" stroke="#6a329f" stroke-width="0.4" opacity="0.12"/>
+                @foreach($glyphs as $i => $g)
+                    @php
+                        $a  = ($i * 30 - 90) * M_PI / 180;
+                        $gx = round($cx + $r * cos($a), 1);
+                        $gy = round($cy + $r * sin($a), 1);
+                    @endphp
+                    <text x="{{ $gx }}" y="{{ $gy }}"
+                          font-family="serif" font-size="{{ $i % 3 === 0 ? 11 : 9 }}"
+                          fill="#6a329f"
+                          opacity="{{ $i % 3 === 0 ? 0.65 : 0.38 }}"
+                          text-anchor="middle" dominant-baseline="central">{{ $g }}</text>
+                @endforeach
+                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="8" fill="#6a329f" opacity="0.18"/>
+                <circle cx="50"  cy="22" r="1.5" fill="#6a329f" opacity="0.3"/>
+                <circle cx="235" cy="20" r="1"   fill="#6a329f" opacity="0.25"/>
+                <circle cx="242" cy="88" r="1.5" fill="#6a329f" opacity="0.22"/>
+            </svg>
+            @break
 
             @case('daily')
             <svg viewBox="0 0 280 110" fill="none" class="hcard-svg">
@@ -270,13 +294,8 @@
 {{-- ── Footer CTA ────────────────────────────────────────────────────────── --}}
 @guest
 <p class="home-cta">
-    <a href="{{ route('register') }}" style="color:inherit;text-decoration:underline">{{ __('ui.home.cta_free') }}</a>
+    <a href="{{ route('register') }}" class="home-cta-link">{{ __('ui.home.cta_free') }}</a>
 </p>
 @endguest
-
-<style>
-@media (max-width: 419px) { .home-cards { grid-template-columns: 1fr !important; } }
-@media (min-width: 420px) { .home-cards { grid-template-columns: repeat(2, 1fr) !important; } }
-</style>
 
 @endsection

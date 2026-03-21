@@ -4,19 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Profile;
 use Illuminate\View\View;
+use App\Http\Controllers\SunSignController;
 
 class HomeController extends Controller
 {
     private const URL_MAP = [
-        'daily'   => '/horoscope/personal/daily',
-        'weekly'  => '/horoscope/personal/weekly',
-        'monthly' => '/horoscope/personal/monthly',
-        'solar'   => '/horoscope/solar',
-        'weekday' => '/horoscope/weekday',
-        'lunar'   => '/lunar-calendar',
+        'sun_sign' => '/horoscope/daily',
+        'daily'    => '/horoscope/personal/daily',
+        'weekly'   => '/horoscope/personal/weekly',
+        'monthly'  => '/horoscope/personal/monthly',
+        'solar'    => '/horoscope/solar',
+        'weekday'  => '/horoscope/weekday',
+        'lunar'    => '/lunar-calendar',
     ];
 
-    private const ACTIVE_KEYS = ['daily', 'natal', 'lunar'];
+    private const ACTIVE_KEYS = ['sun_sign', 'daily', 'natal', 'lunar'];
 
     public function index(): View
     {
@@ -28,10 +30,13 @@ class HomeController extends Controller
                 : route('stellar-profiles.index');
         }
 
+        $zodiacGlyphs   = array_column(SunSignController::SIGNS, 'glyph');
+        $todaySignGlyph = $zodiacGlyphs[now()->dayOfYear % 12];
+
         $cards = collect(array_keys(__('ui.home.cards')))
             ->map(fn (string $key) => [
                 'key'   => $key,
-                'glyph' => __("ui.home.cards.{$key}.glyph"),
+                'glyph' => $key === 'sun_sign' ? $todaySignGlyph : __("ui.home.cards.{$key}.glyph"),
                 'title' => __("ui.home.cards.{$key}.title"),
                 'desc'  => __("ui.home.cards.{$key}.desc"),
                 'cta'   => __("ui.home.cards.{$key}.cta"),

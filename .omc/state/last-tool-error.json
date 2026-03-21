@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"ssh horo-server \\\"su - deploy -c 'bash /home/deploy/deploy-dev.sh 2>&1'\\\" 2>&1\",\"timeout\":180000,\"description\":\"Deploy to dev server\"}",
-  "error": "Exit code 1\n[2026-03-20 21:19:48] Deploy DEV started\nFrom github.com:tsmarinov/horoscope\n * branch            develop    -> FETCH_HEAD\n   7e855a8..1b8c0f6  develop    -> origin/develop\nUpdating 7e855a8..1b8c0f6\nFast-forward\n src/app/Http/Controllers/EmailController.php | 4 +---\n 1 file changed, 1 insertion(+), 3 deletions(-)\nInstalling dependencies from lock file (including require-dev)\nVerifying lock file contents can be installed on current platform.\nNothing to install, update or remove\nGenera...",
-  "timestamp": "2026-03-20T21:19:52.290Z",
-  "retry_count": 1
+  "tool_input_preview": "{\"command\":\"ssh horo-server \\\"sudo docker exec horo_php php artisan migrate --force 2>&1\\\"\",\"description\":\"Run migrations with sudo docker\"}",
+  "error": "Exit code 1\nsudo: docker: command not found",
+  "timestamp": "2026-03-21T22:11:17.221Z",
+  "retry_count": 2
 }
